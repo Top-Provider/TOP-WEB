@@ -841,19 +841,19 @@ export default function AdminProductsPage() {
 
                             // โหลดรายละเอียดเต็มเฉพาะตอนกดแก้ไข (On-demand)
                             try {
-                              const fullItem = await fetchRecords<ProductRecord>({
+                              const fullItems = await fetchRecords<Record<string, unknown>>({
                                 table: "TB_PRODUCTS",
                                 id: product.id,
                               });
-                              if (fullItem && fullItem[0]) {
-                                const fi = fullItem[0];
+                              if (fullItems && fullItems[0]) {
+                                const fi = fullItems[0];
                                 setFormData((prev) => ({
                                   ...prev,
-                                  short_description: fi.short_description || "",
-                                  full_description: fi.full_description || "",
-                                  specifications: fi.specifications || [],
-                                  gallery_images: fi.gallery_images || [],
-                                  cover_image_url: fi.cover_image_url || prev.cover_image_url,
+                                  short_description: typeof fi.short_description === "string" ? fi.short_description : "",
+                                  full_description: typeof fi.full_description === "string" ? fi.full_description : "",
+                                  specifications: Array.isArray(fi.specifications) ? (fi.specifications as { label: string; value: string }[]) : [],
+                                  gallery_images: Array.isArray(fi.gallery_images) ? (fi.gallery_images as string[]) : [],
+                                  cover_image_url: typeof fi.cover_image_url === "string" && fi.cover_image_url ? fi.cover_image_url : prev.cover_image_url,
                                 }));
                               }
                             } catch (e) {
