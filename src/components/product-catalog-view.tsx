@@ -22,6 +22,7 @@ import {
   X,
   Sparkles,
   ArrowUpRight,
+  Loader2,
 } from "lucide-react";
 import type { ProductItemResponse } from "@/app/api/products/route";
 
@@ -313,9 +314,33 @@ export function ProductCatalogView({
 
           {/* Product Grid */}
           {loading ? (
-            <div className="py-24 text-center">
-              <div className="inline-block w-8 h-8 border-3 border-blue-600 border-t-transparent rounded-full animate-spin mb-4" />
-              <p className="text-xs text-slate-500 font-medium">กำลังโหลดข้อมูลสินค้า...</p>
+            <div className="space-y-6">
+              <div className="flex items-center gap-2 text-xs font-medium text-slate-500">
+                <Loader2 className="w-4 h-4 animate-spin text-blue-600" />
+                <span>กำลังโหลดข้อมูลสินค้าจากฐานข้อมูล...</span>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5 sm:gap-6">
+                {Array.from({ length: 8 }).map((_, i) => (
+                  <div
+                    key={i}
+                    className="bg-white rounded-2xl border border-slate-200/80 p-5 space-y-4 animate-pulse shadow-2xs"
+                  >
+                    <div className="w-full aspect-square bg-slate-100 rounded-xl flex items-center justify-center">
+                      <Package className="w-8 h-8 text-slate-200" />
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div className="h-4 w-16 bg-slate-200 rounded" />
+                      <div className="h-3 w-12 bg-slate-100 rounded" />
+                    </div>
+                    <div className="h-4 w-5/6 bg-slate-200 rounded" />
+                    <div className="h-3 w-1/2 bg-slate-100 rounded" />
+                    <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
+                      <div className="h-8 w-24 bg-slate-100 rounded-lg" />
+                      <div className="h-8 w-8 bg-slate-100 rounded-lg" />
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           ) : filteredProducts.length === 0 ? (
             <div className="py-20 text-center bg-white rounded-3xl border border-slate-200/80 p-8 max-w-md mx-auto">

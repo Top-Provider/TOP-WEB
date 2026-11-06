@@ -14,6 +14,7 @@ import {
   ChevronRight,
   Award,
   Package,
+  Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -409,7 +410,35 @@ export function SoftwareSolutionView({ initialRecords, initialPrograms }: Softwa
             </div>
 
             {/* Right Column (9 cols on XL): Browser Preview & Overview Card */}
-            {activeProgram && (
+            {loading && !activeProgram ? (
+              <div className="lg:col-span-8 xl:col-span-9 space-y-4">
+                <div className="rounded-3xl bg-white border border-slate-200/90 shadow-md overflow-hidden animate-pulse">
+                  <div className="px-5 py-3 bg-slate-50/90 border-b border-slate-200/80 flex items-center justify-between">
+                    <div className="flex items-center gap-1.5">
+                      <span className="w-2.5 h-2.5 rounded-full bg-slate-300" />
+                      <span className="w-2.5 h-2.5 rounded-full bg-slate-300" />
+                      <span className="w-2.5 h-2.5 rounded-full bg-slate-300" />
+                      <div className="h-3 w-48 bg-slate-200 rounded ml-2" />
+                    </div>
+                    <div className="flex items-center gap-2 text-xs text-blue-600 font-medium">
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      <span>กำลังโหลดตัวอย่างระบบ...</span>
+                    </div>
+                  </div>
+                  <div className="aspect-[16/10] w-full bg-slate-100 flex items-center justify-center">
+                    <Loader2 className="w-8 h-8 animate-spin text-slate-300" />
+                  </div>
+                </div>
+
+                <div className="p-5 sm:p-6 rounded-3xl bg-white border border-slate-200 shadow-xs flex items-center justify-between animate-pulse">
+                  <div className="space-y-2">
+                    <div className="h-5 w-48 bg-slate-200 rounded" />
+                    <div className="h-3 w-80 bg-slate-100 rounded" />
+                  </div>
+                  <div className="h-10 w-36 bg-blue-100 rounded-full" />
+                </div>
+              </div>
+            ) : activeProgram ? (
               <div className="lg:col-span-8 xl:col-span-9 space-y-4">
                 {/* Mac Browser Window Mockup */}
                 <div className="rounded-3xl bg-white border border-slate-200/90 shadow-md shadow-slate-200/60 overflow-hidden">
@@ -473,7 +502,7 @@ export function SoftwareSolutionView({ initialRecords, initialPrograms }: Softwa
                   </div>
                 </Card>
               </div>
-            )}
+            ) : null}
           </div>
         )}
       </div>

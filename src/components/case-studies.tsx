@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ArrowUpRight, CheckCircle2, Play, Pause, Package } from 'lucide-react';
+import { ArrowUpRight, CheckCircle2, Play, Pause, Package, Loader2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import type { Project } from '../types';
 import { ProjectModal } from './project-modal';
@@ -623,10 +623,12 @@ export const StickyProjectSection: React.FC<StickyProjectSectionProps> = ({
   }, [initialSoftwareRecords]);
 
   const [dynamicSoftwareCards, setDynamicSoftwareCards] = useState<SolutionCardItem[]>(initialSoftwareCards);
+  const [softwareLoading, setSoftwareLoading] = useState<boolean>(initialSoftwareCards.length === 0);
 
   // Client-side fetch fallback for software from DB
   useEffect(() => {
     if (dynamicSoftwareCards.length === 0) {
+      setSoftwareLoading(true);
       fetchRecords<SoftwareRecord>({
         table: 'TB_PRODUCT_SOFTWARE',
         orderBy: 'id',
@@ -639,7 +641,10 @@ export const StickyProjectSection: React.FC<StickyProjectSectionProps> = ({
             );
           }
         })
-        .catch((err) => console.error('Error loading software from DB:', err));
+        .catch((err) => console.error('Error loading software from DB:', err))
+        .finally(() => {
+          setSoftwareLoading(false);
+        });
     }
   }, [dynamicSoftwareCards.length]);
 
@@ -732,8 +737,42 @@ export const StickyProjectSection: React.FC<StickyProjectSectionProps> = ({
           </div>
         </div>
 
-        {/* Dynamic Cards Stage or Empty State */}
-        {currentCards.length === 0 ? (
+        {/* Dynamic Cards Stage or Loading / Empty State */}
+        {activeTab === 'software' && softwareLoading ? (
+          <div className="rounded-[24px] sm:rounded-[32px] bg-white border border-blue-100/90 shadow-sm p-6 sm:p-10 space-y-6 animate-pulse my-6">
+            <div className="flex items-center justify-between pb-4 border-b border-slate-100">
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-slate-300" />
+                <span className="w-2.5 h-2.5 rounded-full bg-slate-300" />
+                <span className="w-2.5 h-2.5 rounded-full bg-slate-300" />
+                <div className="h-3 w-48 bg-slate-200 rounded ml-2" />
+              </div>
+              <div className="flex items-center gap-2 text-xs font-medium text-blue-600">
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                <span>กำลังโหลดข้อมูลระบบซอฟต์แวร์...</span>
+              </div>
+            </div>
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+              <div className="lg:col-span-6 space-y-4">
+                <div className="h-4 w-28 bg-blue-100 rounded" />
+                <div className="h-8 w-4/5 bg-slate-200 rounded-lg" />
+                <div className="space-y-2">
+                  <div className="h-3 w-full bg-slate-100 rounded" />
+                  <div className="h-3 w-3/4 bg-slate-100 rounded" />
+                </div>
+                <div className="pt-4 flex gap-3">
+                  <div className="h-10 w-36 bg-blue-600/20 rounded-full" />
+                  <div className="h-10 w-28 bg-slate-100 rounded-full" />
+                </div>
+              </div>
+              <div className="lg:col-span-6">
+                <div className="aspect-[16/10] bg-slate-100 rounded-2xl flex items-center justify-center">
+                  <Loader2 className="w-8 h-8 animate-spin text-slate-300" />
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : currentCards.length === 0 ? (
           <div className="rounded-3xl bg-white border border-slate-200/90 p-12 text-center my-8 shadow-sm">
             <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-blue-50 flex items-center justify-center text-[#0066FF]">
               <Package className="w-8 h-8" />
