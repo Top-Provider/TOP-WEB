@@ -17,20 +17,15 @@ export const metadata: Metadata = {
 export default async function PrintingSolutionPage() {
   let initialProducts: ProductItemResponse[] = [];
   try {
-    const fetchMerged = supabase
+    const { data: records, error } = await supabase
       .from("TB_PRODUCTS")
       .select("*")
       .eq("is_active", true)
       .order("id", { ascending: true });
 
-    const timeoutPromise = new Promise<{ data: null; error: Error }>((resolve) =>
-      setTimeout(() => resolve({ data: null, error: new Error("Timeout") }), 3500)
-    );
-
-    const { data: records } = await Promise.race([fetchMerged, timeoutPromise]);
     const combinedRecords: Record<string, unknown>[] = records && Array.isArray(records) ? records : [];
 
-    if (combinedRecords.length > 0) {
+    if (!error && combinedRecords.length > 0) {
       initialProducts = combinedRecords.map((item) => ({
         id: Number(item.id),
         name: String(item.name || ""),

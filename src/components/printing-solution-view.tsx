@@ -77,8 +77,16 @@ export function PrintingSolutionView({
   });
 
   // Active Category state
-  // "Black & White Laser Printer" is selected by default to match user's mockup!
-  const [selectedSubCategory, setSelectedSubCategory] = useState<string>("Black & White Laser Printer");
+  // Auto-detect first available sub-category from DB or fallback
+  const [selectedSubCategory, setSelectedSubCategory] = useState<string>(() => {
+    if (initialProducts && initialProducts.length > 0) {
+      const firstValid = initialProducts.find((p) => p.sub_category && p.sub_category.trim());
+      if (firstValid && firstValid.sub_category) {
+        return firstValid.sub_category;
+      }
+    }
+    return "Black & White Laser Printer";
+  });
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [detailProduct, setDetailProduct] = useState<ExtendedProductItem | null>(null);
 
@@ -130,6 +138,16 @@ export function PrintingSolutionView({
 
           // Only take what exists in the API!
           setAllProducts(dbProducts);
+
+          // If current selected category has 0 items but DB has items, auto-select first available
+          setSelectedSubCategory((prev) => {
+            const hasMatch = dbProducts.some((p) => p.sub_category === prev);
+            if (!hasMatch) {
+              const firstWithCat = dbProducts.find((p) => p.sub_category && p.sub_category.trim());
+              return firstWithCat ? firstWithCat.sub_category : prev;
+            }
+            return prev;
+          });
         }
       })
       .catch((err) => console.log("Live products fetch error:", err));

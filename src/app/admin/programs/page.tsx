@@ -12,8 +12,47 @@ import { ImageUpload } from "@/components/ui/image-upload";
 import { VideoUpload } from "@/components/ui/video-upload";
 import { toast } from "@/components/ui/toast";
 import { saveRecord, fetchRecords } from "@/lib/crud";
-import { DEFAULT_PROGRAMS } from "@/components/software-solution-view";
 import { Plus, Search, Video, Layers, Edit, Trash2, Loader2, Sparkles, PlaySquare, CheckCircle2, Award, DownloadCloud } from "lucide-react";
+
+const SAMPLE_TEMPLATES = [
+  {
+    id: "vitanix-claim",
+    name: "Vitanix Claim",
+    category: "Hospital Claim",
+    subCategory: "Healthcare Solution",
+    shortDesc: "ระบบบริหารจัดการและเบิกจ่ายค่ารักษาพยาบาลอัตโนมัติ เชื่อมต่อข้อมูลสิทธิการรักษาและประกันภัยครบวงจร ช่วยลดขั้นตอนการตรวจสอบเอกสารและเพิ่มความแม่นยำในการเคลม",
+    fullDesc: "Vitanix Claim ระบบบริหารจัดการและเบิกจ่ายค่ารักษาพยาบาลอัจฉริยะสำหรับโรงพยาบาลและสถานพยาบาลระดับองค์กร ช่วยให้การเคลมสิทธิการรักษาพยาบาล (e-Claim, ประกันสุขภาพ, สิทธิราชการ) เป็นไปอย่างถูกต้อง แม่นยำ และรวดเร็ว พร้อมระบบ Pre-audit ตรวจสอบความถูกต้องของเวชระเบียนและเอกสารก่อนส่งเคลม ลดอัตราการถูกปฏิเสธเคลมได้อย่างมีนัยสำคัญ",
+    coverImage: "/images/vitanix-dashboard-hd.png",
+    videoUrl: "https://www.youtube.com/embed/TNXBrlFZ5ps?autoplay=1&mute=1&playsinline=1&rel=0&start=1",
+    features: [
+      "Real-time Validation for OP-CR, PPFS & Fund Rules",
+      "Seamless HIS & Insurer Policy Integration",
+      "Automated ICD-10 & ICD-9 Coding Check",
+      "Business Intelligence & Denial Analytics",
+    ],
+    metricLabel: "ความแม่นยำในการส่งข้อมูลเคลม",
+    metricValue: "99.8%",
+    feature1Badge: "PRE-AUDIT & VALIDATION SYSTEM",
+    feature1Title: "Automated Healthcare Claim Validation & Pre-Audit System",
+    feature1Desc: "ระบบช่วยตรวจสอบความถูกต้องของเวชระเบียนและเงื่อนไขกองทุนสุขภาพภาครัฐและเอกชนล่วงหน้า (Pre-audit) ตรวจสอบความถูกต้องของรหัสโรค ICD-10, ICD-9-CM และสิทธิการรักษาแบบอัตโนมัติก่อนส่งเคลม",
+    feature1Bullets: [
+      "Real-time Validation for OP-CR, PPFS & Fund Rules",
+      "Seamless HIS & Insurer Policy Integration",
+      "Automated ICD-10 & ICD-9 Coding Check",
+    ],
+    feature1Image: "/images/vitanix-dashboard-hd.png",
+    feature2Badge: "HOSPITAL FINANCIAL BENEFITS",
+    feature2Title: "Why Hospital Financial Teams Choose Vitanix Claim?",
+    feature2Desc: "ลดความเสี่ยงในการสูญเสียรายได้จากการเบิกจ่ายไม่ทันเวลาหรือถูกตัดสิทธิ์ ช่วยให้ฝ่ายการเงินและเวชระเบียนมองเห็นสถานะการเคลมและลูกหนี้ค่ารักษาพยาบาลแบบ Real-time",
+    feature2Highlights: [
+      { title: "ลดความผิดพลาดก่อนส่งเบิก", desc: "ตัดปัญหาการถูกปฏิเสธเคลมหรือถูกตัดสิทธิ์ซ้ำซ้อนด้วยกฎ Pre-Audit" },
+      { title: "อัตราความสำเร็จ Pre-Audit สูง", desc: "เพิ่มโอกาสรับเงินชดเชยค่ารักษาพยาบาลเต็มจำนวนอย่างแม่นยำ" },
+      { title: "ลดรอบระยะเวลาการเบิกจ่าย", desc: "เพิ่มกระแสเงินสดหมุนเวียน (Cash Flow) ให้โรงพยาบาลได้รวดเร็วขึ้น" },
+    ],
+    feature2Tags: ["Fund Management", "E-Claim Validation", "Real-Time Analytics"],
+    feature2Image: "/images/vitanix-dashboard-hd.png",
+  },
+];
 
 interface ProgramFormState {
   name: string;
@@ -226,71 +265,18 @@ export default function AdminProgramsPage() {
           })
         );
       } else {
-        // Fallback to DEFAULT_PROGRAMS so the admin page displays all initial programs (e.g. Vitanix Claim)
-        setPrograms(
-          DEFAULT_PROGRAMS.map((p, idx) => ({
-            id: idx + 1,
-            name: p.name,
-            category: p.category,
-            subCategory: p.subCategory,
-            shortDesc: p.shortDesc,
-            fullDesc: p.fullDesc,
-            videoUrl: p.videoUrl || "",
-            coverImage: p.coverImage || "/images/vitanix-claim.png",
-            keyFeatures: p.features?.join("\n") || defaultProgramState.key_features,
-            metricLabel: p.metrics?.[0]?.label || defaultProgramState.metric_label,
-            metricValue: p.metrics?.[0]?.value || defaultProgramState.metric_value,
-            isActive: true,
-            feature1Badge: p.feature1Badge || "",
-            feature1Title: p.feature1Title || "",
-            feature1Desc: p.feature1Desc || "",
-            feature1Bullets: p.feature1Bullets?.join("\n") || "",
-            feature1Image: p.feature1Image || "",
-            feature2Badge: p.feature2Badge || "",
-            feature2Title: p.feature2Title || "",
-            feature2Desc: p.feature2Desc || "",
-            feature2Highlights: p.feature2Highlights?.map((h) => `${h.title} | ${h.desc}`).join("\n") || "",
-            feature2Tags: p.feature2Tags?.join(", ") || "",
-            feature2Image: p.feature2Image || "",
-          }))
-        );
+        setPrograms([]);
       }
     } catch (err) {
-      console.log("Could not load programs from API, using default programs:", err);
-      setPrograms(
-        DEFAULT_PROGRAMS.map((p, idx) => ({
-          id: idx + 1,
-          name: p.name,
-          category: p.category,
-          subCategory: p.subCategory,
-          shortDesc: p.shortDesc,
-          fullDesc: p.fullDesc,
-          videoUrl: p.videoUrl || "",
-          coverImage: p.coverImage || "/images/vitanix-claim.png",
-          keyFeatures: p.features?.join("\n") || defaultProgramState.key_features,
-          metricLabel: p.metrics?.[0]?.label || defaultProgramState.metric_label,
-          metricValue: p.metrics?.[0]?.value || defaultProgramState.metric_value,
-          isActive: true,
-          feature1Badge: p.feature1Badge || "",
-          feature1Title: p.feature1Title || "",
-          feature1Desc: p.feature1Desc || "",
-          feature1Bullets: p.feature1Bullets?.join("\n") || "",
-          feature1Image: p.feature1Image || "",
-          feature2Badge: p.feature2Badge || "",
-          feature2Title: p.feature2Title || "",
-          feature2Desc: p.feature2Desc || "",
-          feature2Highlights: p.feature2Highlights?.map((h) => `${h.title} | ${h.desc}`).join("\n") || "",
-          feature2Tags: p.feature2Tags?.join(", ") || "",
-          feature2Image: p.feature2Image || "",
-        }))
-      );
+      console.log("Could not load programs from API:", err);
+      setPrograms([]);
     } finally {
       setLoading(false);
     }
   };
 
   const handleLoadDefaultTemplate = (programKey: string = "vitanix-claim") => {
-    const p = DEFAULT_PROGRAMS.find((item) => item.id === programKey) || DEFAULT_PROGRAMS[0];
+    const p = SAMPLE_TEMPLATES.find((item) => item.id === programKey) || SAMPLE_TEMPLATES[0];
     if (!p) return;
     setFormData({
       name: p.name,
@@ -301,8 +287,8 @@ export default function AdminProgramsPage() {
       video_url: p.videoUrl || "",
       cover_image_url: p.coverImage || "/images/vitanix-claim.png",
       key_features: p.features?.join("\n") || "",
-      metric_label: p.metrics?.[0]?.label || "ความแม่นยำในการส่งข้อมูลเคลม",
-      metric_value: p.metrics?.[0]?.value || "99.8%",
+      metric_label: p.metricLabel || "ความแม่นยำในการส่งข้อมูลเคลม",
+      metric_value: p.metricValue || "99.8%",
       is_active: true,
       feature_1_badge: p.feature1Badge || "",
       feature_1_title: p.feature1Title || "",
@@ -310,8 +296,8 @@ export default function AdminProgramsPage() {
       feature_1_bullets: p.feature1Bullets?.join("\n") || "",
       feature_1_image: p.feature1Image || "",
       feature_2_badge: p.feature2Badge || "",
-      feature_2_title: p.feature2Title || "",
-      feature_2_desc: p.feature2Desc || "",
+      feature2Title: p.feature2Title || "",
+      feature2Desc: p.feature2Desc || "",
       feature_2_highlights: p.feature2Highlights?.map((h) => `${h.title} | ${h.desc}`).join("\n") || "",
       feature_2_tags: p.feature2Tags?.join(", ") || "",
       feature_2_image: p.feature2Image || "",
@@ -322,7 +308,7 @@ export default function AdminProgramsPage() {
     if (!confirm("คุณต้องการนำเข้าข้อมูลโปรแกรมเริ่มต้นทั้งหมด (Vitanix Claim, HIS ฯลฯ) เข้าสู่ฐานข้อมูล Supabase ใช่หรือไม่?")) return;
     try {
       setIsSaving(true);
-      for (const p of DEFAULT_PROGRAMS) {
+      for (const p of SAMPLE_TEMPLATES) {
         await saveRecord({
           table: "TB_PRODUCT_SOFTWARE",
           action: "insert",

@@ -12,23 +12,30 @@ export const revalidate = 60;
 
 export default async function Home() {
   let initialSoftwareRecords: Record<string, unknown>[] = [];
+  let initialProducts: Record<string, unknown>[] = [];
+
   try {
-    const fetchPromise = supabase
-      .from("TB_PRODUCT_SOFTWARE")
-      .select("*")
-      .order("id", { ascending: true });
+    const [softRes, prodRes] = await Promise.all([
+      supabase
+        .from("TB_PRODUCT_SOFTWARE")
+        .select("*")
+        .eq("is_active", true)
+        .order("id", { ascending: true }),
+      supabase
+        .from("TB_PRODUCTS")
+        .select("*")
+        .eq("is_active", true)
+        .order("id", { ascending: true }),
+    ]);
 
-    const timeoutPromise = new Promise<{ data: null; error: Error }>((resolve) =>
-      setTimeout(() => resolve({ data: null, error: new Error("Timeout") }), 500)
-    );
-
-    const { data: records, error } = await Promise.race([fetchPromise, timeoutPromise]);
-
-    if (!error && records && records.length > 0) {
-      initialSoftwareRecords = records as Record<string, unknown>[];
+    if (!softRes.error && softRes.data) {
+      initialSoftwareRecords = softRes.data as Record<string, unknown>[];
+    }
+    if (!prodRes.error && prodRes.data) {
+      initialProducts = prodRes.data as Record<string, unknown>[];
     }
   } catch (err) {
-    console.error("Error loading software programs on home page:", err);
+    console.error("Error loading data from database on home page:", err);
   }
 
   return (
@@ -45,7 +52,10 @@ export default async function Home() {
         <HospitalDashboard />
 
         {/* 3. IT Solution & Product (Sticky Stacked Cards) */}
-        <CaseStudies initialSoftwareRecords={initialSoftwareRecords} />
+        <CaseStudies
+          initialSoftwareRecords={initialSoftwareRecords}
+          initialProducts={initialProducts}
+        />
 
         {/* 4. Core Leadership & Specialist Team */}
         <TeamSection />

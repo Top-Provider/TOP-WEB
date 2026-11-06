@@ -15,16 +15,11 @@ export const metadata: Metadata = {
 export default async function SoftwareSolutionPage() {
   let initialRecords: Record<string, unknown>[] = [];
   try {
-    const fetchPromise = supabase
+    const { data: records, error } = await supabase
       .from("TB_PRODUCT_SOFTWARE")
       .select("*")
+      .eq("is_active", true)
       .order("id", { ascending: true });
-
-    const timeoutPromise = new Promise<{ data: null; error: Error }>((resolve) =>
-      setTimeout(() => resolve({ data: null, error: new Error("Timeout") }), 500)
-    );
-
-    const { data: records, error } = await Promise.race([fetchPromise, timeoutPromise]);
 
     if (!error && records && records.length > 0) {
       initialRecords = records as Record<string, unknown>[];
