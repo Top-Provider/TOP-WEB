@@ -12,7 +12,7 @@ export function Footer() {
 
   return (
     <footer id="contact" className="bg-white border-t border-slate-200/80 pt-14 pb-10 overflow-hidden relative">
-      <div className="w-[92%] max-w-[1500px] mx-auto px-2 sm:px-4 lg:px-6 relative z-10">
+      <div className="w-[94%] max-w-[1680px] mx-auto px-2 sm:px-4 lg:px-6 relative z-10">
         {/* Top 4-Column Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 pb-12 border-b border-slate-100">
           {/* Brand Info (2 cols) */}

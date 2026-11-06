@@ -12,6 +12,7 @@ export interface SelectOption {
 }
 
 export interface CustomSelectProps {
+  id?: string;
   value: string;
   onChange: (value: string) => void;
   options: SelectOption[];
@@ -21,6 +22,7 @@ export interface CustomSelectProps {
 }
 
 export function Select({
+  id,
   value,
   onChange,
   options,
@@ -73,9 +75,13 @@ export function Select({
   };
 
   return (
-    <div ref={containerRef} className={cn("relative w-full", className)}>
+    <div
+      ref={containerRef}
+      className={cn("relative w-full", isOpen && "z-50", className)}
+    >
       {/* Trigger Button */}
       <button
+        id={id}
         type="button"
         disabled={disabled}
         onClick={() => setIsOpen((prev) => !prev)}
@@ -106,7 +112,7 @@ export function Select({
       {isOpen && (
         <div
           className={cn(
-            "absolute z-50 mt-1.5 w-full bg-white rounded-2xl border border-slate-100 shadow-xl shadow-slate-900/10",
+            "absolute top-full left-0 z-[100] mt-1.5 w-full bg-white rounded-2xl border border-slate-200 shadow-xl shadow-slate-900/15",
             "p-1.5 max-h-60 overflow-y-auto space-y-0.5",
             "animate-in fade-in-0 zoom-in-95 duration-150"
           )}

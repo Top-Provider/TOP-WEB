@@ -51,7 +51,14 @@ export async function saveRecord<T = unknown>(
     const result: ApiResponse<T> = await res.json();
 
     if (!res.ok || !result.success) {
-      throw new Error(result.error || "เกิดข้อผิดพลาดในการบันทึกข้อมูล");
+      let errStr = result.error || "เกิดข้อผิดพลาดในการบันทึกข้อมูล";
+      const lower = errStr.toLowerCase();
+      if (lower.includes("value too long") || lower.includes("character varying")) {
+        errStr = "ข้อมูลที่ระบุมีความยาวเกินกำหนด กรุณาตรวจสอบหรือลดขนาดข้อความ";
+      } else if (lower.includes("duplicate key") || lower.includes("23505")) {
+        errStr = "มีข้อมูลนี้อยู่ในระบบแล้ว (ข้อมูลซ้ำ)";
+      }
+      throw new Error(errStr);
     }
 
     return result;
@@ -71,6 +78,7 @@ export async function fetchRecords<T = unknown>(params: {
   orderBy?: string;
   orderDir?: "asc" | "desc";
   limit?: number;
+  select?: string;
 }): Promise<T[]> {
   try {
     const searchParams = new URLSearchParams();
@@ -79,6 +87,7 @@ export async function fetchRecords<T = unknown>(params: {
     if (params.orderBy) searchParams.set("orderBy", params.orderBy);
     if (params.orderDir) searchParams.set("orderDir", params.orderDir);
     if (params.limit) searchParams.set("limit", String(params.limit));
+    if (params.select) searchParams.set("select", params.select);
 
     const res = await fetch(`/api/admin/save?${searchParams.toString()}`);
     const result = await res.json();

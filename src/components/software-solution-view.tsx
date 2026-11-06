@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -39,6 +39,17 @@ export interface ProgramItem {
   clientSubtitle?: string;
   features?: string[];
   metrics?: { label: string; value: string }[];
+  feature1Badge?: string;
+  feature1Title?: string;
+  feature1Desc?: string;
+  feature1Bullets?: string[];
+  feature1Image?: string;
+  feature2Badge?: string;
+  feature2Title?: string;
+  feature2Desc?: string;
+  feature2Highlights?: { title: string; desc: string }[];
+  feature2Tags?: string[];
+  feature2Image?: string;
 }
 
 export const DEFAULT_PROGRAMS: ProgramItem[] = [
@@ -65,6 +76,42 @@ export const DEFAULT_PROGRAMS: ProgramItem[] = [
       { label: "ความแม่นยำในการส่งข้อมูลเคลม", value: "99.8%" },
       { label: "เจ้าหน้าที่จัดการงานเคลมได้เร็วขึ้น", value: "2.4x" },
     ],
+    feature1Badge: "PRE-AUDIT & VALIDATION SYSTEM",
+    feature1Title: "Automated Healthcare Claim Validation & Pre-Audit System",
+    feature1Desc:
+      "ระบบช่วยตรวจสอบความถูกต้องของเวชระเบียนและเงื่อนไขกองทุนสุขภาพภาครัฐและเอกชนล่วงหน้า (Pre-audit) ตรวจสอบความถูกต้องของรหัสโรค ICD-10, ICD-9-CM และสิทธิการรักษาแบบอัตโนมัติก่อนส่งเคลม ลดขั้นตอนการทำงานของเจ้าหน้าที่และลดอัตราการถูกปฏิเสธเคลม (Denial Rate) ได้อย่างมีนัยสำคัญ\n\nเชื่อมต่อข้อมูลกับระบบสารสนเทศโรงพยาบาล (HIS) แบบไร้รอยต่อ พร้อมระบบแจ้งเตือนข้อผิดพลาดและแนะนำการแก้ไขทันที",
+    feature1Bullets: [
+      "Real-time Validation for OP-CR, PPFS & Fund Rules",
+      "Seamless HIS & Insurer Policy Integration",
+      "Automated ICD-10 & ICD-9 Coding Check",
+    ],
+    feature1Image: "/images/vitanix-dashboard-hd.png",
+    feature2Badge: "HOSPITAL FINANCIAL BENEFITS",
+    feature2Title: "Why Hospital Financial Teams Choose Vitanix Claim?",
+    feature2Desc:
+      "ลดความเสี่ยงในการสูญเสียรายได้จากการเบิกจ่ายไม่ทันเวลาหรือถูกตัดสิทธิ์ ช่วยให้ฝ่ายการเงินและเวชระเบียนมองเห็นสถานะการเคลมและลูกหนี้ค่ารักษาพยาบาลแบบ Real-time Dashboard ครอบคลุมสิทธิ สปสช., ประกันสังคม, ข้าราชการ และประกันเอกชน",
+    feature2Highlights: [
+      {
+        title: "ลดความผิดพลาดก่อนส่งเบิก",
+        desc: "ตัดปัญหาการถูกปฏิเสธเคลมหรือถูกตัดสิทธิ์ซ้ำซ้อนด้วยกฎ Pre-Audit",
+      },
+      {
+        title: "อัตราความสำเร็จ Pre-Audit สูง",
+        desc: "เพิ่มโอกาสรับเงินชดเชยค่ารักษาพยาบาลเต็มจำนวนอย่างแม่นยำ",
+      },
+      {
+        title: "ลดรอบระยะเวลาการเบิกจ่าย",
+        desc: "เพิ่มกระแสเงินสดหมุนเวียน (Cash Flow) ให้โรงพยาบาลได้รวดเร็วขึ้น",
+      },
+    ],
+    feature2Tags: [
+      "Fund Management",
+      "E-Claim Validation",
+      "Real-Time Analytics",
+      "Financial Intelligence",
+      "Fast Reimbursement",
+    ],
+    feature2Image: "/images/vitanix-dashboard-hd.png",
   },
   {
     id: "pharmacy-stock",
@@ -171,7 +218,7 @@ export const DEFAULT_PROGRAMS: ProgramItem[] = [
 ];
 
 export const SOLUTION_CATEGORY_TABS = [
-  { id: "printing", label: "Printing & Supply Solution", href: "/#case-studies" },
+  { id: "printing", label: "Printing & Supply Solution", href: "/solutions/printing" },
   { id: "hardware", label: "Hardware Solution", href: "/#case-studies" },
   { id: "software", label: "Software Solution", href: "/solutions/software", active: true },
   { id: "network", label: "Network Solution", href: "/#case-studies" },
@@ -179,60 +226,206 @@ export const SOLUTION_CATEGORY_TABS = [
   { id: "iot", label: "Smart Solution (IoT)", href: "/#case-studies" },
 ];
 
-export function SoftwareSolutionView() {
-  const [programs, setPrograms] = useState<ProgramItem[]>(DEFAULT_PROGRAMS);
-  const [selectedId, setSelectedId] = useState<string>("vitanix-claim");
+export function mapSoftwareRecordToProgram(
+  r: {
+    id: number;
+    name?: string;
+    category_id?: string;
+    program_code?: string;
+    client_subtitle?: string;
+    short_description?: string;
+    full_description?: string;
+    cover_image_url?: string;
+    video_url?: string;
+    is_active?: boolean;
+    key_features?: string[] | string;
+    metric_label?: string;
+    metric_value?: string;
+    feature_1_badge?: string;
+    feature_1_title?: string;
+    feature_1_desc?: string;
+    feature_1_bullets?: string[] | string;
+    feature_1_image?: string;
+    feature_2_badge?: string;
+    feature_2_title?: string;
+    feature_2_desc?: string;
+    feature_2_highlights?: string[] | string;
+    feature_2_tags?: string[] | string;
+    feature_2_image?: string;
+  },
+  i: number = 0
+): ProgramItem {
+  const fallback = DEFAULT_PROGRAMS[i % DEFAULT_PROGRAMS.length];
 
-  // Dynamic fetch from Supabase TBM_PRODUCT_SOFTWARE (if available, blends with default mock)
+  const parseBullets = (val: string[] | string | undefined, fallbackBullets?: string[]) => {
+    if (Array.isArray(val) && val.length > 0) return val;
+    if (typeof val === "string" && val.trim()) return val.split("\n").map((s) => s.trim()).filter(Boolean);
+    return fallbackBullets;
+  };
+
+  const parseHighlights = (val: string[] | string | undefined, fallbackHigh?: { title: string; desc: string }[]) => {
+    if (Array.isArray(val) && val.length > 0) {
+      return val.map((v) => {
+        if (typeof v === "object" && v !== null && "title" in v) return v as { title: string; desc: string };
+        const parts = String(v).split("|");
+        return { title: parts[0]?.trim() || "", desc: parts[1]?.trim() || "" };
+      });
+    }
+    if (typeof val === "string" && val.trim()) {
+      return val
+        .split("\n")
+        .map((line) => {
+          const parts = line.split("|");
+          return { title: parts[0]?.trim() || "", desc: parts[1]?.trim() || "" };
+        })
+        .filter((h) => h.title);
+    }
+    return fallbackHigh;
+  };
+
+  const parseTags = (val: string[] | string | undefined, fallbackTags?: string[]) => {
+    if (Array.isArray(val) && val.length > 0) return val;
+    if (typeof val === "string" && val.trim()) {
+      return val.includes(",")
+        ? val.split(",").map((s) => s.trim()).filter(Boolean)
+        : val.split("\n").map((s) => s.trim()).filter(Boolean);
+    }
+    return fallbackTags;
+  };
+
+  return {
+    id: `software-${r.id}`,
+    name: r.name || fallback.name,
+    category:
+      (r.program_code && r.program_code !== "Software")
+        ? r.program_code
+        : (r.category_id && r.category_id !== "Software"
+          ? r.category_id
+          : fallback.category),
+    subCategory: r.client_subtitle || fallback.subCategory,
+    clientSubtitle: r.client_subtitle || fallback.clientSubtitle,
+    shortDesc: r.short_description || fallback.shortDesc,
+    fullDesc: r.full_description || fallback.fullDesc,
+    coverImage: r.cover_image_url || fallback.coverImage || "/images/vitanix-dashboard-hd.png",
+    videoUrl: r.video_url || fallback.videoUrl,
+    features: parseBullets(r.key_features, fallback.features),
+    metrics: fallback.metrics,
+    feature1Badge: r.feature_1_badge || fallback.feature1Badge,
+    feature1Title: r.feature_1_title || fallback.feature1Title,
+    feature1Desc: r.feature_1_desc || fallback.feature1Desc,
+    feature1Bullets: parseBullets(r.feature_1_bullets, fallback.feature1Bullets),
+    feature1Image: r.feature_1_image || fallback.feature1Image,
+    feature2Badge: r.feature_2_badge || fallback.feature2Badge,
+    feature2Title: r.feature_2_title || fallback.feature2Title,
+    feature2Desc: r.feature_2_desc || fallback.feature2Desc,
+    feature2Highlights: parseHighlights(r.feature_2_highlights, fallback.feature2Highlights),
+    feature2Tags: parseTags(r.feature_2_tags, fallback.feature2Tags),
+    feature2Image: r.feature_2_image || fallback.feature2Image,
+  };
+}
+
+export interface SoftwareSolutionViewProps {
+  initialRecords?: Record<string, unknown>[];
+  initialPrograms?: ProgramItem[];
+}
+
+export function SoftwareSolutionView({ initialRecords, initialPrograms }: SoftwareSolutionViewProps = {}) {
+  // แปลงข้อมูลฝั่ง Client เพื่อไม่ให้เกิด RSC Cross-boundary function invocation
+  const initialList = useMemo(() => {
+    if (initialPrograms && initialPrograms.length > 0) return initialPrograms;
+    if (initialRecords && initialRecords.length > 0) {
+      return initialRecords.map((r, i) => mapSoftwareRecordToProgram(r as any, i));
+    }
+    return [];
+  }, [initialRecords, initialPrograms]);
+
+  const hasInitial = initialList.length > 0;
+  const [programs, setPrograms] = useState<ProgramItem[]>(initialList);
+  const [loading, setLoading] = useState(!hasInitial);
+  const [selectedId, setSelectedId] = useState<string>(
+    initialList[0]?.id || ""
+  );
+
+  // Dynamic Solution Category Tabs from /api/admin/categories
+  const [categoryTabs, setCategoryTabs] = useState(SOLUTION_CATEGORY_TABS);
+
   useEffect(() => {
+    fetch("/api/admin/categories")
+      .then((res) => res.json())
+      .then((json) => {
+        if (json && json.success && Array.isArray(json.categories) && json.categories.length > 0) {
+          const dynamicTabs = json.categories
+            .filter((c: { is_active?: boolean }) => c.is_active !== false)
+            .map((c: { category_id: string; name: string }) => {
+              const rawId = (c.category_id || "").toLowerCase();
+              let href = "/#case-studies";
+              if (rawId === "printing") href = "/solutions/printing";
+              else if (rawId === "software") href = "/solutions/software";
+
+              return {
+                id: rawId,
+                label: c.name || c.category_id,
+                href,
+                active: rawId === "software",
+              };
+            });
+          if (dynamicTabs.length > 0) setCategoryTabs(dynamicTabs);
+        }
+      })
+      .catch((err) => console.log("Category tabs API fallback:", err));
+  }, []);
+
+  // Dynamic fetch from Supabase TB_PRODUCT_SOFTWARE (เฉพาะเมื่อยังไม่มีข้อมูลจาก SSR)
+  useEffect(() => {
+    if (hasInitial && programs.length > 0) {
+      return;
+    }
+
     fetchRecords<{
       id: number;
       name: string;
       category_id?: string;
+      program_code?: string;
       client_subtitle?: string;
       short_description?: string;
       full_description?: string;
       cover_image_url?: string;
       video_url?: string;
       is_active?: boolean;
+      key_features?: string[] | string;
+      metric_label?: string;
+      metric_value?: string;
+      feature_1_badge?: string;
+      feature_1_title?: string;
+      feature_1_desc?: string;
+      feature_1_bullets?: string[] | string;
+      feature_1_image?: string;
+      feature_2_badge?: string;
+      feature_2_title?: string;
+      feature_2_desc?: string;
+      feature_2_highlights?: string[] | string;
+      feature_2_tags?: string[] | string;
+      feature_2_image?: string;
     }>({
-      table: "TBM_PRODUCT_SOFTWARE",
+      table: "TB_PRODUCT_SOFTWARE",
       orderBy: "id",
       orderDir: "asc",
     })
       .then((records) => {
         if (records && records.length > 0) {
-          const mapped: ProgramItem[] = records.map((r, i) => {
-            const fallback = DEFAULT_PROGRAMS[i % DEFAULT_PROGRAMS.length];
-            return {
-              id: `software-${r.id}`,
-              name: r.name || fallback.name,
-              category: r.category_id || fallback.category,
-              subCategory: r.client_subtitle || fallback.subCategory,
-              clientSubtitle: r.client_subtitle || fallback.clientSubtitle,
-              shortDesc: r.short_description || fallback.shortDesc,
-              fullDesc: r.full_description || fallback.fullDesc,
-              coverImage: r.cover_image_url || "/images/vitanix-dashboard-hd.png",
-              videoUrl: r.video_url || fallback.videoUrl,
-              features: fallback.features,
-              metrics: fallback.metrics,
-            };
-          });
-
-          // Ensure Vitanix Claim is pinned or merged smoothly
-          setPrograms((prev) => {
-            const vitanixExists = mapped.some((p) =>
-              p.name.toLowerCase().includes("vitanix")
-            );
-            if (!vitanixExists) {
-              return [DEFAULT_PROGRAMS[0], ...mapped];
-            }
-            return mapped;
+          const mapped: ProgramItem[] = records.map((r, i) => mapSoftwareRecordToProgram(r, i));
+          setPrograms(mapped);
+          setSelectedId((prev) => {
+            if (prev && mapped.some((p) => p.id === prev)) return prev;
+            return mapped[0]?.id || "";
           });
         }
       })
       .catch((err) => {
-        console.log("Using rich default programs:", err);
+        console.log("Could not load software programs from API:", err);
+      })
+      .finally(() => {
+        setLoading(false);
       });
   }, []);
 
@@ -251,19 +444,20 @@ export function SoftwareSolutionView() {
       {/* ========================================================================= */}
       {/* 1. TOP SOLUTION CATEGORY TABS (Matching the Reference Image Header)       */}
       {/* ========================================================================= */}
-      <div className="w-full bg-white/90 backdrop-blur-md border-b border-slate-200/80 sticky top-16 z-30 py-3">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6">
-          <div className="flex items-center gap-2 sm:gap-2.5 overflow-x-auto no-scrollbar py-1">
-            {SOLUTION_CATEGORY_TABS.map((tab) => {
+      <div className="w-full pt-4 pb-2">
+        <div className="w-[94%] max-w-[1720px] mx-auto px-2 sm:px-4 lg:px-6">
+          <div className="flex items-center justify-start sm:justify-center gap-2 sm:gap-2.5 overflow-x-auto no-scrollbar py-1">
+            {categoryTabs.map((tab) => {
               const isActive = tab.active;
               return (
                 <Link
                   key={tab.id}
                   href={tab.href}
+                  prefetch={true}
                   className={`shrink-0 px-4 sm:px-5 py-2 sm:py-2.5 rounded-full text-xs font-medium transition-all ${
                     isActive
-                      ? "bg-[#0062FF] text-white shadow-sm shadow-blue-600/30 font-semibold"
-                      : "bg-slate-100/80 hover:bg-slate-200/80 text-slate-700 border border-slate-200/60"
+                      ? "bg-[#0062FF] text-white shadow-sm shadow-blue-600/30 font-semibold border border-[#0062FF]"
+                      : "bg-white hover:bg-slate-50 text-slate-700 border border-slate-200/90 shadow-2xs hover:border-blue-200 hover:text-blue-600"
                   }`}
                 >
                   {tab.label}
@@ -274,13 +468,13 @@ export function SoftwareSolutionView() {
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-8 sm:pt-10 space-y-12 sm:space-y-16">
-        {/* ========================================================================= */}
-        {/* 2. HERO SHOWCASE: SIDEBAR PROGRAM SELECTOR + BROWSER DASHBOARD MOCKUP    */}
-        {/* ========================================================================= */}
+      {/* ========================================================================= */}
+      {/* 2. HERO SHOWCASE: SIDEBAR PROGRAM SELECTOR + BROWSER DASHBOARD MOCKUP    */}
+      {/* ========================================================================= */}
+      <div className="w-[94%] max-w-[1720px] mx-auto px-2 sm:px-4 lg:px-6 pt-8 sm:pt-10">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-          {/* Left Column (4 cols): Vertical Program Menu */}
-          <div className="lg:col-span-4 bg-white rounded-3xl border border-slate-200/90 p-4 sm:p-5 shadow-xs">
+          {/* Left Column (3 cols on XL): Vertical Program Menu */}
+          <div className="lg:col-span-4 xl:col-span-3 bg-white rounded-3xl border border-slate-200/90 p-4 sm:p-5 shadow-xs">
             <div className="pb-3 border-b border-slate-100 mb-3 flex items-center justify-between">
               <div>
                 <p className="text-[11px] font-bold text-blue-600 uppercase tracking-wider">
@@ -291,12 +485,30 @@ export function SoftwareSolutionView() {
                 </h3>
               </div>
               <span className="text-[11px] font-mono text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">
-                {programs.length} ระบบ
+                {loading && programs.length === 0 ? "..." : `${programs.length} ระบบ`}
               </span>
             </div>
 
             <div className="space-y-1.5 max-h-[460px] overflow-y-auto pr-1">
-              {programs.map((prog, idx) => {
+              {loading && programs.length === 0 ? (
+                <div className="space-y-2 py-1">
+                  {[1, 2].map((i) => (
+                    <div
+                      key={i}
+                      className="w-full p-3 rounded-2xl border border-slate-100 bg-slate-50/70 animate-pulse flex items-center justify-between"
+                    >
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="w-7 h-7 rounded-xl bg-slate-200 shrink-0" />
+                        <div className="space-y-1.5">
+                          <div className="w-24 h-3.5 bg-slate-200 rounded-md" />
+                          <div className="w-16 h-2.5 bg-slate-100 rounded-md" />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                programs.map((prog, idx) => {
                 const isSelected = prog.id === activeProgram.id;
                 return (
                   <button
@@ -304,8 +516,8 @@ export function SoftwareSolutionView() {
                     onClick={() => setSelectedId(prog.id)}
                     className={`w-full text-left p-3 rounded-2xl transition-all flex items-center justify-between group cursor-pointer ${
                       isSelected
-                        ? "bg-blue-50/90 text-blue-900 border border-blue-200/80 shadow-xs"
-                        : "hover:bg-slate-50 text-slate-700 border border-transparent"
+                        ? "bg-blue-50/90 text-blue-900 border border-blue-300 shadow-xs"
+                        : "bg-white hover:bg-slate-50/90 text-slate-700 border border-slate-200 hover:border-blue-300 shadow-2xs hover:shadow-xs"
                     }`}
                   >
                     <div className="flex items-center gap-3 min-w-0">
@@ -313,7 +525,7 @@ export function SoftwareSolutionView() {
                         className={`w-7 h-7 rounded-xl flex items-center justify-center text-xs font-bold shrink-0 transition-colors ${
                           isSelected
                             ? "bg-blue-600 text-white shadow-xs"
-                            : "bg-slate-100 text-slate-500 group-hover:bg-slate-200"
+                            : "bg-slate-100 text-slate-500 border border-slate-200/60 group-hover:bg-slate-200"
                         }`}
                       >
                         {idx + 1}
@@ -341,12 +553,12 @@ export function SoftwareSolutionView() {
                     />
                   </button>
                 );
-              })}
+              }))}
             </div>
           </div>
 
-          {/* Right Column (8 cols): Browser Mockup & Overview Card */}
-          <div className="lg:col-span-8 space-y-4">
+          {/* Right Column (9 cols on XL): Browser Mockup & Overview Card */}
+          <div className="lg:col-span-8 xl:col-span-9 space-y-4">
             {/* Mac Browser Window Mockup */}
             <div className="rounded-3xl bg-white border border-slate-200/90 shadow-md shadow-slate-200/60 overflow-hidden">
               {/* Window Header */}
@@ -369,13 +581,13 @@ export function SoftwareSolutionView() {
               </div>
 
               {/* Window Content: High-Resolution Dashboard Mockup */}
-              <div className="relative aspect-[16/10] w-full bg-slate-900 overflow-hidden group">
+              <div className="relative aspect-[16/10] w-full bg-white overflow-hidden group">
                 <Image
                   src={activeProgram.coverImage || "/images/vitanix-dashboard-hd.png"}
                   alt={activeProgram.name}
                   fill
                   priority
-                  className="object-contain object-top group-hover:scale-[1.01] transition-transform duration-500 bg-slate-950"
+                  className="object-cover object-top group-hover:scale-[1.02] transition-transform duration-500"
                   unoptimized
                 />
               </div>
@@ -410,301 +622,303 @@ export function SoftwareSolutionView() {
             </Card>
           </div>
         </div>
+      </div>
 
-        {/* ========================================================================= */}
-        {/* 3. DEEP-DIVE SECTION: PRODUCT TITLE & CONTACT SALES BAR                   */}
-        {/* ========================================================================= */}
-        <div
-          id="details-deep-dive"
-          className="pt-6 border-t border-slate-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
-        >
-          <div>
-            <div className="flex items-center gap-2 mb-1.5">
-              <span className="text-[11px] font-mono font-semibold text-blue-600 bg-blue-50 px-2.5 py-0.5 rounded-full border border-blue-100">
-                {activeProgram.clientSubtitle || "Healthcare Management • 2026"}
-              </span>
-              <span className="text-slate-300">•</span>
-              <span className="text-xs text-slate-500">
-                Enterprise Solution
-              </span>
-            </div>
-            <h2 className="text-2xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
-              {activeProgram.name}
-            </h2>
-            <p className="text-xs sm:text-sm text-slate-500 mt-1 max-w-2xl leading-relaxed">
-              {activeProgram.fullDesc}
-            </p>
-          </div>
-
-          <div className="shrink-0">
-            <Button
-              asChild
-              className="rounded-full bg-[#0062FF] hover:bg-blue-700 text-white font-semibold text-xs sm:text-sm px-6 py-3 shadow-md shadow-blue-600/20"
-            >
-              <Link href="/#contact" className="flex items-center gap-2">
-                <PhoneCall className="w-4 h-4" />
-                <span>Contact Sales</span>
-              </Link>
-            </Button>
-          </div>
-        </div>
-
-        {/* ========================================================================= */}
-        {/* 4. FEATURE BLOCK 1 (Text Left, Image Right)                              */}
-        {/* ========================================================================= */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-center">
-          {/* Left Column (6 cols): Text, Description & Bullet points */}
-          <div className="lg:col-span-6 space-y-4">
-            <span className="text-[11px] font-bold text-blue-600 tracking-wider uppercase block">
-              PRE-AUDIT & VALIDATION SYSTEM
-            </span>
-            <h3 className="text-xl sm:text-3xl font-extrabold text-slate-900 leading-snug">
-              Automated Healthcare Claim Validation & Pre-Audit System
-            </h3>
-            <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-              ระบบช่วยตรวจสอบความถูกต้องของเวชระเบียนและเงื่อนไขกองทุนสุขภาพภาครัฐและเอกชนล่วงหน้า (Pre-audit) ตรวจสอบความถูกต้องของรหัสโรค ICD-10, ICD-9-CM และสิทธิการรักษาแบบอัตโนมัติก่อนส่งเคลม ลดขั้นตอนการทำงานของเจ้าหน้าที่และลดอัตราการถูกปฏิเสธเคลม (Denial Rate) ได้อย่างมีนัยสำคัญ
-            </p>
-            <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-              เชื่อมต่อข้อมูลกับระบบสารสนเทศโรงพยาบาล (HIS) แบบไร้รอยต่อ พร้อมระบบแจ้งเตือนข้อผิดพลาดและแนะนำการแก้ไขทันที
-            </p>
-
-            <div className="space-y-2.5 pt-2">
-              <div className="flex items-start gap-2.5">
-                <CheckCircle2 className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
-                <span className="text-xs sm:text-sm text-slate-700 font-medium">
-                  Real-time Validation for OP-CR, PPFS & Fund Rules
+      {/* ========================================================================= */}
+      {/* 3. DEEP-DIVE SECTIONS: WHITE BACKGROUND CONTAINER (Requested by User)    */}
+      {/* ========================================================================= */}
+      <div
+        id="details-deep-dive"
+        className="w-full bg-white border-y border-slate-200/80 py-16 sm:py-20 my-12 sm:my-16"
+      >
+        <div className="w-[94%] max-w-[1720px] mx-auto px-2 sm:px-4 lg:px-6 space-y-16 sm:space-y-20">
+          {/* Header Bar */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-2 mb-1.5">
+                <span className="text-[11px] font-mono font-semibold text-blue-600 bg-blue-50 px-2.5 py-0.5 rounded-full border border-blue-100">
+                  {activeProgram.clientSubtitle || "Healthcare Solution • Enterprise Solution"}
+                </span>
+                <span className="text-slate-300">•</span>
+                <span className="text-xs text-slate-500">
+                  Enterprise Solution
                 </span>
               </div>
-              <div className="flex items-start gap-2.5">
-                <CheckCircle2 className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
-                <span className="text-xs sm:text-sm text-slate-700 font-medium">
-                  Seamless HIS & Insurer Policy Integration
-                </span>
-              </div>
-              <div className="flex items-start gap-2.5">
-                <CheckCircle2 className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
-                <span className="text-xs sm:text-sm text-slate-700 font-medium">
-                  Automated ICD-10 & ICD-9 Coding Check
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {/* Right Column (6 cols): System Screenshot Card */}
-          <div className="lg:col-span-6">
-            <Card className="rounded-3xl border border-slate-200/90 shadow-lg shadow-slate-200/50 overflow-hidden bg-slate-950 p-2 group">
-              <div className="relative aspect-[16/10] w-full rounded-2xl overflow-hidden">
-                <Image
-                  src="/images/vitanix-dashboard-hd.png"
-                  alt="Vitanix Claim Pre-Audit Table"
-                  fill
-                  className="object-contain object-top group-hover:scale-105 transition-transform duration-500"
-                  unoptimized
-                />
-              </div>
-            </Card>
-          </div>
-        </div>
-
-        {/* ========================================================================= */}
-        {/* 5. FEATURE BLOCK 2 (Image Left, Text Right)                              */}
-        {/* ========================================================================= */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-center">
-          {/* Left Column (6 cols): System Analytics Chart Screenshot */}
-          <div className="lg:col-span-6 order-2 lg:order-1">
-            <Card className="rounded-3xl border border-slate-200/90 shadow-lg shadow-slate-200/50 overflow-hidden bg-slate-950 p-2 group">
-              <div className="relative aspect-[16/10] w-full rounded-2xl overflow-hidden">
-                <Image
-                  src="/images/vitanix-dashboard-hd.png"
-                  alt="Vitanix Claim Analytics & Donut Overview"
-                  fill
-                  className="object-contain object-center group-hover:scale-105 transition-transform duration-500"
-                  unoptimized
-                />
-              </div>
-            </Card>
-          </div>
-
-          {/* Right Column (6 cols): Text & Benefit Highlights */}
-          <div className="lg:col-span-6 space-y-4 order-1 lg:order-2">
-            <span className="text-[11px] font-bold text-blue-600 tracking-wider uppercase block">
-              HOSPITAL FINANCIAL BENEFITS
-            </span>
-            <h3 className="text-xl sm:text-3xl font-extrabold text-slate-900 leading-snug">
-              Why Hospital Financial Teams Choose Vitanix Claim?
-            </h3>
-            <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-              ลดความเสี่ยงในการสูญเสียรายได้จากการเบิกจ่ายไม่ทันเวลาหรือถูกตัดสิทธิ์ ช่วยให้ฝ่ายการเงินและเวชระเบียนมองเห็นสถานะการเคลมและลูกหนี้ค่ารักษาพยาบาลแบบ Real-time Dashboard ครอบคลุมสิทธิ สปสช., ประกันสังคม, ข้าราชการ และประกันเอกชน
-            </p>
-
-            <div className="space-y-3 pt-2">
-              <div className="p-3.5 rounded-2xl bg-blue-50/80 border border-blue-100 flex items-center gap-3">
-                <span className="w-8 h-8 rounded-xl bg-blue-600 text-white flex items-center justify-center shrink-0">
-                  <CheckCircle2 className="w-4 h-4" />
-                </span>
-                <div>
-                  <p className="text-xs sm:text-sm font-bold text-slate-900">
-                    ลดความผิดพลาดก่อนส่งเบิก
-                  </p>
-                  <p className="text-[11px] sm:text-xs text-slate-500">
-                    ตัดปัญหาการถูกปฏิเสธเคลมหรือถูกตัดสิทธิ์ซ้ำซ้อนด้วยกฎ Pre-Audit
-                  </p>
-                </div>
-              </div>
-
-              <div className="p-3.5 rounded-2xl bg-blue-50/80 border border-blue-100 flex items-center gap-3">
-                <span className="w-8 h-8 rounded-xl bg-blue-600 text-white flex items-center justify-center shrink-0">
-                  <Award className="w-4 h-4" />
-                </span>
-                <div>
-                  <p className="text-xs sm:text-sm font-bold text-slate-900">
-                    อัตราความสำเร็จ Pre-Audit สูง
-                  </p>
-                  <p className="text-[11px] sm:text-xs text-slate-500">
-                    เพิ่มโอกาสรับเงินชดเชยค่ารักษาพยาบาลเต็มจำนวนอย่างแม่นยำ
-                  </p>
-                </div>
-              </div>
-
-              <div className="p-3.5 rounded-2xl bg-blue-50/80 border border-blue-100 flex items-center gap-3">
-                <span className="w-8 h-8 rounded-xl bg-blue-600 text-white flex items-center justify-center shrink-0">
-                  <Zap className="w-4 h-4" />
-                </span>
-                <div>
-                  <p className="text-xs sm:text-sm font-bold text-slate-900">
-                    ลดรอบระยะเวลาการเบิกจ่าย
-                  </p>
-                  <p className="text-[11px] sm:text-xs text-slate-500">
-                    เพิ่มกระแสเงินสดหมุนเวียน (Cash Flow) ให้โรงพยาบาลได้รวดเร็วขึ้น
-                  </p>
-                </div>
-              </div>
+              <h2 className="text-2xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
+                {activeProgram.name}
+              </h2>
+              <p className="text-xs sm:text-sm text-slate-500 mt-1 max-w-2xl leading-relaxed">
+                {activeProgram.fullDesc}
+              </p>
             </div>
 
-            {/* Keyword tags */}
-            <div className="flex flex-wrap gap-2 pt-2">
-              {[
-                "Fund Management",
-                "E-Claim Validation",
-                "Real-Time Analytics",
-                "Financial Intelligence",
-                "Fast Reimbursement",
-              ].map((tag) => (
-                <span
-                  key={tag}
-                  className="text-[11px] font-medium text-slate-600 bg-white border border-slate-200 px-3 py-1 rounded-full shadow-2xs"
-                >
-                  {tag}
-                </span>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* ========================================================================= */}
-        {/* 6. TECHNOLOGY GRID: 4 CAPABILITY CARDS                                   */}
-        {/* ========================================================================= */}
-        <div className="space-y-8 pt-4">
-          <div className="text-center max-w-2xl mx-auto space-y-2">
-            <span className="text-[11px] font-bold text-blue-600 tracking-wider uppercase">
-              TECHNOLOGY & CAPABILITIES
-            </span>
-            <h3 className="text-2xl sm:text-3xl font-extrabold text-slate-900">
-              Technology That Powers Smarter Hospital Claims
-            </h3>
-            <p className="text-xs sm:text-sm text-slate-500">
-              เทคโนโลยีล้ำสมัยที่อยู่เบื้องหลังการประมวลผลและการตรวจสอบข้อมูลเคลมระดับ Enterprise
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
-            {/* Card 1 */}
-            <Card className="p-6 rounded-3xl bg-white border border-slate-200/90 shadow-xs hover:shadow-md hover:border-blue-200 transition-all space-y-3">
-              <div className="w-10 h-10 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center">
-                <ShieldCheck className="w-5 h-5" />
-              </div>
-              <h4 className="text-sm font-bold text-slate-900">
-                Clinical E-Claiming Accuracy
-              </h4>
-              <p className="text-xs text-slate-500 leading-relaxed">
-                ตรวจสอบความสมบูรณ์ของรหัสโรค ICD-10, ICD-9-CM และเอกสารแนบตามเกณฑ์กองทุนอย่างแม่นยำ
-              </p>
-            </Card>
-
-            {/* Card 2 */}
-            <Card className="p-6 rounded-3xl bg-white border border-slate-200/90 shadow-xs hover:shadow-md hover:border-blue-200 transition-all space-y-3">
-              <div className="w-10 h-10 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center">
-                <Cpu className="w-5 h-5" />
-              </div>
-              <h4 className="text-sm font-bold text-slate-900">
-                Real-time Rule Engine
-              </h4>
-              <p className="text-xs text-slate-500 leading-relaxed">
-                ประมวลผลกฎเกณฑ์ประกันสุขภาพและเงื่อนไขกองทุนแบบ Real-time ทันทีที่เจ้าหน้าที่ลงข้อมูล
-              </p>
-            </Card>
-
-            {/* Card 3 */}
-            <Card className="p-6 rounded-3xl bg-white border border-slate-200/90 shadow-xs hover:shadow-md hover:border-blue-200 transition-all space-y-3">
-              <div className="w-10 h-10 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center">
-                <Zap className="w-5 h-5" />
-              </div>
-              <h4 className="text-sm font-bold text-slate-900">
-                Faster Reimbursement
-              </h4>
-              <p className="text-xs text-slate-500 leading-relaxed">
-                เร่งรอบการรับเงินชดเชยจาก สปสช., ประกันสังคม และบริษัทประกันให้เร็วขึ้นกว่าเดิม
-              </p>
-            </Card>
-
-            {/* Card 4 */}
-            <Card className="p-6 rounded-3xl bg-white border border-slate-200/90 shadow-xs hover:shadow-md hover:border-blue-200 transition-all space-y-3">
-              <div className="w-10 h-10 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center">
-                <RefreshCw className="w-5 h-5" />
-              </div>
-              <h4 className="text-sm font-bold text-slate-900">
-                Continuous Rule Updates
-              </h4>
-              <p className="text-xs text-slate-500 leading-relaxed">
-                อัปเดตหลักเกณฑ์การเบิกจ่ายและประกาศใหม่จากกองทุนสุขภาพภาครัฐอย่างต่อเนื่อง
-              </p>
-            </Card>
-          </div>
-        </div>
-
-        {/* ========================================================================= */}
-        {/* 7. CALL TO ACTION BANNER (Vibrant Blue Enterprise)                       */}
-        {/* ========================================================================= */}
-        <div className="rounded-[32px] sm:rounded-[36px] bg-gradient-to-r from-blue-700 via-blue-600 to-indigo-700 p-8 sm:p-12 text-white shadow-xl shadow-blue-600/20 relative overflow-hidden">
-          {/* Subtle Glow Circle Effect */}
-          <div className="absolute top-0 right-0 w-80 h-80 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
-
-          <div className="relative z-10 max-w-2xl space-y-3">
-            <span className="text-[11px] font-bold text-blue-200 uppercase tracking-wider bg-white/10 px-3 py-1 rounded-full inline-block backdrop-blur-xs">
-              TOP PROVIDER ENTERPRISE
-            </span>
-            <h3 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight leading-snug">
-              พร้อมยกระดับองค์กรของคุณด้วยเทคโนโลยีที่ใช่หรือยัง?
-            </h3>
-            <p className="text-xs sm:text-sm text-blue-100 leading-relaxed">
-              ปรึกษาทีมผู้เชี่ยวชาญของ TOP PROVIDER เพื่อรับคำแนะนำ ออกแบบโซลูชัน หรือนัดหมายรับชมการสาธิตระบบ (Demo) ได้ทันที
-            </p>
-
-            <div className="pt-3">
+            <div className="shrink-0">
               <Button
                 asChild
-                className="rounded-full bg-white hover:bg-slate-100 text-[#0062FF] font-bold text-xs sm:text-sm px-7 py-3.5 shadow-md transition-all"
+                className="rounded-full bg-[#0062FF] hover:bg-blue-700 text-white font-semibold text-xs sm:text-sm px-6 py-3 shadow-md shadow-blue-600/20"
               >
                 <Link href="/#contact" className="flex items-center gap-2">
-                  <span>Contact Our Team</span>
-                  <ArrowRight className="w-4 h-4" />
+                  <PhoneCall className="w-4 h-4" />
+                  <span>Contact Sales</span>
                 </Link>
               </Button>
             </div>
           </div>
+
+          {/* Feature Block 1 (Text Left, Image Right) */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-center">
+            {/* Left Column (6 cols): Text, Description & Bullet points */}
+            <div className="lg:col-span-6 space-y-4">
+              <span className="text-[11px] font-bold text-blue-600 tracking-wider uppercase block">
+                {activeProgram.feature1Badge || "PRE-AUDIT & VALIDATION SYSTEM"}
+              </span>
+              <h3 className="text-xl sm:text-3xl font-extrabold text-slate-900 leading-snug">
+                {activeProgram.feature1Title || "Automated Healthcare Claim Validation & Pre-Audit System"}
+              </h3>
+              <div className="text-xs sm:text-sm text-slate-600 leading-relaxed whitespace-pre-line space-y-2">
+                {activeProgram.feature1Desc ||
+                  "ระบบช่วยตรวจสอบความถูกต้องของเวชระเบียนและเงื่อนไขกองทุนสุขภาพภาครัฐและเอกชนล่วงหน้า (Pre-audit) ตรวจสอบความถูกต้องของรหัสโรค ICD-10, ICD-9-CM และสิทธิการรักษาแบบอัตโนมัติก่อนส่งเคลม ลดขั้นตอนการทำงานของเจ้าหน้าที่และลดอัตราการถูกปฏิเสธเคลม (Denial Rate) ได้อย่างมีนัยสำคัญ\n\nเชื่อมต่อข้อมูลกับระบบสารสนเทศโรงพยาบาล (HIS) แบบไร้รอยต่อ พร้อมระบบแจ้งเตือนข้อผิดพลาดและแนะนำการแก้ไขทันที"}
+              </div>
+
+              <div className="space-y-2.5 pt-2">
+                {(
+                  activeProgram.feature1Bullets || [
+                    "Real-time Validation for OP-CR, PPFS & Fund Rules",
+                    "Seamless HIS & Insurer Policy Integration",
+                    "Automated ICD-10 & ICD-9 Coding Check",
+                  ]
+                ).map((bullet, idx) => (
+                  <div key={idx} className="flex items-start gap-2.5">
+                    <CheckCircle2 className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
+                    <span className="text-xs sm:text-sm text-slate-700 font-medium">
+                      {bullet}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Right Column (6 cols): System Screenshot Card */}
+            <div className="lg:col-span-6">
+              <Card className="rounded-3xl border border-slate-200/90 shadow-lg shadow-slate-200/50 overflow-hidden bg-slate-50 p-2 group">
+                <div className="relative aspect-[16/10] w-full rounded-2xl overflow-hidden bg-white border border-slate-200/60">
+                  <Image
+                    src={activeProgram.feature1Image || activeProgram.coverImage || "/images/vitanix-dashboard-hd.png"}
+                    alt={activeProgram.feature1Title || activeProgram.name}
+                    fill
+                    className="object-cover object-top group-hover:scale-105 transition-transform duration-500"
+                    unoptimized
+                  />
+                </div>
+              </Card>
+            </div>
+          </div>
+
+          {/* Feature Block 2 (Image Left, Text Right) */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-center">
+            {/* Left Column (6 cols): System Analytics Chart Screenshot */}
+            <div className="lg:col-span-6 order-2 lg:order-1">
+              <Card className="rounded-3xl border border-slate-200/90 shadow-lg shadow-slate-200/50 overflow-hidden bg-slate-50 p-2 group">
+                <div className="relative aspect-[16/10] w-full rounded-2xl overflow-hidden bg-white border border-slate-200/60">
+                  <Image
+                    src={activeProgram.feature2Image || activeProgram.coverImage || "/images/vitanix-dashboard-hd.png"}
+                    alt={activeProgram.feature2Title || activeProgram.name}
+                    fill
+                    className="object-cover object-top group-hover:scale-105 transition-transform duration-500"
+                    unoptimized
+                  />
+                </div>
+              </Card>
+            </div>
+
+            {/* Right Column (6 cols): Text & Benefit Highlights */}
+            <div className="lg:col-span-6 space-y-4 order-1 lg:order-2">
+              <span className="text-[11px] font-bold text-blue-600 tracking-wider uppercase block">
+                {activeProgram.feature2Badge || "HOSPITAL FINANCIAL BENEFITS"}
+              </span>
+              <h3 className="text-xl sm:text-3xl font-extrabold text-slate-900 leading-snug">
+                {activeProgram.feature2Title || `Why Hospital Financial Teams Choose ${activeProgram.name}?`}
+              </h3>
+              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed whitespace-pre-line">
+                {activeProgram.feature2Desc ||
+                  "ลดความเสี่ยงในการสูญเสียรายได้จากการเบิกจ่ายไม่ทันเวลาหรือถูกตัดสิทธิ์ ช่วยให้ฝ่ายการเงินและเวชระเบียนมองเห็นสถานะการเคลมและลูกหนี้ค่ารักษาพยาบาลแบบ Real-time Dashboard ครอบคลุมสิทธิ สปสช., ประกันสังคม, ข้าราชการ และประกันเอกชน"}
+              </p>
+
+              <div className="space-y-3 pt-2">
+                {(
+                  activeProgram.feature2Highlights || [
+                    {
+                      title: "ลดความผิดพลาดก่อนส่งเบิก",
+                      desc: "ตัดปัญหาการถูกปฏิเสธเคลมหรือถูกตัดสิทธิ์ซ้ำซ้อนด้วยกฎ Pre-Audit",
+                    },
+                    {
+                      title: "อัตราความสำเร็จ Pre-Audit สูง",
+                      desc: "เพิ่มโอกาสรับเงินชดเชยค่ารักษาพยาบาลเต็มจำนวนอย่างแม่นยำ",
+                    },
+                    {
+                      title: "ลดรอบระยะเวลาการเบิกจ่าย",
+                      desc: "เพิ่มกระแสเงินสดหมุนเวียน (Cash Flow) ให้โรงพยาบาลได้รวดเร็วขึ้น",
+                    },
+                  ]
+                ).map((hl, idx) => (
+                  <div
+                    key={idx}
+                    className="p-3.5 rounded-2xl bg-blue-50/80 border border-blue-100 flex items-center gap-3"
+                  >
+                    <span className="w-8 h-8 rounded-xl bg-blue-600 text-white flex items-center justify-center shrink-0">
+                      {idx === 0 ? (
+                        <CheckCircle2 className="w-4 h-4" />
+                      ) : idx === 1 ? (
+                        <Award className="w-4 h-4" />
+                      ) : (
+                        <Zap className="w-4 h-4" />
+                      )}
+                    </span>
+                    <div>
+                      <p className="text-xs sm:text-sm font-bold text-slate-900">
+                        {hl.title}
+                      </p>
+                      <p className="text-[11px] sm:text-xs text-slate-500">
+                        {hl.desc}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Keyword tags */}
+              <div className="flex flex-wrap gap-2 pt-2">
+                {(
+                  activeProgram.feature2Tags || [
+                    "Fund Management",
+                    "E-Claim Validation",
+                    "Real-Time Analytics",
+                    "Financial Intelligence",
+                    "Fast Reimbursement",
+                  ]
+                ).map((tag) => (
+                  <span
+                    key={tag}
+                    className="text-[11px] font-medium text-slate-600 bg-slate-100/90 border border-slate-200 px-3 py-1 rounded-full shadow-2xs"
+                  >
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
+
+      {/* ========================================================================= */}
+      {/* 4. TECHNOLOGY GRID & CTA BANNER                                          */}
+      {/* ========================================================================= */}
+      <div className="w-[94%] max-w-[1720px] mx-auto px-2 sm:px-4 lg:px-6 space-y-12 sm:space-y-16">
+
+            {/* ========================================================================= */}
+            {/* 6. TECHNOLOGY GRID: 4 CAPABILITY CARDS                                   */}
+            {/* ========================================================================= */}
+            <div className="space-y-8 pt-4">
+              <div className="text-center max-w-2xl mx-auto space-y-2">
+                <span className="text-[11px] font-bold text-blue-600 tracking-wider uppercase">
+                  TECHNOLOGY & CAPABILITIES
+                </span>
+                <h3 className="text-2xl sm:text-3xl font-extrabold text-slate-900">
+                  Technology That Powers Smarter Hospital Claims
+                </h3>
+                <p className="text-xs sm:text-sm text-slate-500">
+                  เทคโนโลยีล้ำสมัยที่อยู่เบื้องหลังการประมวลผลและการตรวจสอบข้อมูลเคลมระดับ Enterprise
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+                {/* Card 1 */}
+                <Card className="p-6 rounded-3xl bg-white border border-slate-200/90 shadow-xs hover:shadow-md hover:border-blue-200 transition-all space-y-3">
+                  <div className="w-10 h-10 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center">
+                    <ShieldCheck className="w-5 h-5" />
+                  </div>
+                  <h4 className="text-sm font-bold text-slate-900">
+                    Clinical E-Claiming Accuracy
+                  </h4>
+                  <p className="text-xs text-slate-500 leading-relaxed">
+                    ตรวจสอบความสมบูรณ์ของรหัสโรค ICD-10, ICD-9-CM และเอกสารแนบตามเกณฑ์กองทุนอย่างแม่นยำ
+                  </p>
+                </Card>
+
+                {/* Card 2 */}
+                <Card className="p-6 rounded-3xl bg-white border border-slate-200/90 shadow-xs hover:shadow-md hover:border-blue-200 transition-all space-y-3">
+                  <div className="w-10 h-10 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center">
+                    <Cpu className="w-5 h-5" />
+                  </div>
+                  <h4 className="text-sm font-bold text-slate-900">
+                    Real-time Rule Engine
+                  </h4>
+                  <p className="text-xs text-slate-500 leading-relaxed">
+                    ประมวลผลกฎเกณฑ์ประกันสุขภาพและเงื่อนไขกองทุนแบบ Real-time ทันทีที่เจ้าหน้าที่ลงข้อมูล
+                  </p>
+                </Card>
+
+                {/* Card 3 */}
+                <Card className="p-6 rounded-3xl bg-white border border-slate-200/90 shadow-xs hover:shadow-md hover:border-blue-200 transition-all space-y-3">
+                  <div className="w-10 h-10 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center">
+                    <Zap className="w-5 h-5" />
+                  </div>
+                  <h4 className="text-sm font-bold text-slate-900">
+                    Faster Reimbursement
+                  </h4>
+                  <p className="text-xs text-slate-500 leading-relaxed">
+                    เร่งรอบการรับเงินชดเชยจาก สปสช., ประกันสังคม และบริษัทประกันให้เร็วขึ้นกว่าเดิม
+                  </p>
+                </Card>
+
+                {/* Card 4 */}
+                <Card className="p-6 rounded-3xl bg-white border border-slate-200/90 shadow-xs hover:shadow-md hover:border-blue-200 transition-all space-y-3">
+                  <div className="w-10 h-10 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center">
+                    <RefreshCw className="w-5 h-5" />
+                  </div>
+                  <h4 className="text-sm font-bold text-slate-900">
+                    Continuous Rule Updates
+                  </h4>
+                  <p className="text-xs text-slate-500 leading-relaxed">
+                    อัปเดตหลักเกณฑ์การเบิกจ่ายและประกาศใหม่จากกองทุนสุขภาพภาครัฐอย่างต่อเนื่อง
+                  </p>
+                </Card>
+              </div>
+            </div>
+
+            {/* ========================================================================= */}
+            {/* 7. CALL TO ACTION BANNER (Vibrant Blue Enterprise)                       */}
+            {/* ========================================================================= */}
+            <div className="rounded-[32px] sm:rounded-[36px] bg-gradient-to-r from-blue-700 via-blue-600 to-indigo-700 p-8 sm:p-12 text-white shadow-xl shadow-blue-600/20 relative overflow-hidden">
+              {/* Subtle Glow Circle Effect */}
+              <div className="absolute top-0 right-0 w-80 h-80 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
+
+              <div className="relative z-10 max-w-2xl space-y-3">
+                <span className="text-[11px] font-bold text-blue-200 uppercase tracking-wider bg-white/10 px-3 py-1 rounded-full inline-block backdrop-blur-xs">
+                  TOP PROVIDER ENTERPRISE
+                </span>
+                <h3 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight leading-snug">
+                  พร้อมยกระดับองค์กรของคุณด้วยเทคโนโลยีที่ใช่หรือยัง?
+                </h3>
+                <p className="text-xs sm:text-sm text-blue-100 leading-relaxed">
+                  ปรึกษาทีมผู้เชี่ยวชาญของ TOP PROVIDER เพื่อรับคำแนะนำ ออกแบบโซลูชัน หรือนัดหมายรับชมการสาธิตระบบ (Demo) ได้ทันที
+                </p>
+
+              <div className="pt-3">
+                <Button
+                  asChild
+                  className="rounded-full bg-white hover:bg-slate-100 text-[#0062FF] font-bold text-xs sm:text-sm px-7 py-3.5 shadow-md transition-all"
+                >
+                  <Link href="/#contact" className="flex items-center gap-2">
+                    <span>Contact Our Team</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </Link>
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
   );
 }
 

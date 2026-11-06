@@ -46,7 +46,7 @@ export function HospitalDashboard() {
 
   return (
     <section className="py-12 sm:py-16 bg-[#F8FAFC]">
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="w-[94%] max-w-[1680px] mx-auto px-2 sm:px-4 lg:px-6">
         {/* Section Header */}
         <div className="text-center mb-8 sm:mb-10">
           <p className="text-[10px] sm:text-[11px] font-bold uppercase tracking-[0.2em] text-[#0066FF] mb-2">
@@ -72,7 +72,7 @@ export function HospitalDashboard() {
           </button>
 
           {/* Main Rounded Video Player Container */}
-          <div className="w-full max-w-4xl rounded-[24px] sm:rounded-[32px] bg-slate-950 border border-slate-200/90 shadow-[0_25px_70px_rgba(0,102,255,0.12)] overflow-hidden relative aspect-video">
+          <div className="w-full max-w-5xl xl:max-w-6xl rounded-[24px] sm:rounded-[32px] bg-slate-950 border border-slate-200/90 shadow-[0_25px_70px_rgba(0,102,255,0.12)] overflow-hidden relative aspect-video">
             <AnimatePresence mode="wait">
               <motion.div
                 key={currentSlide.id}

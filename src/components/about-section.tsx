@@ -8,7 +8,7 @@ import { Shield, CheckCircle2 } from "lucide-react";
 export function AboutSection() {
   return (
     <section id="capabilities" className="py-16 sm:py-24 bg-white">
-      <div className="w-[92%] max-w-[1500px] mx-auto px-2 sm:px-4 lg:px-6">
+      <div className="w-[94%] max-w-[1680px] mx-auto px-2 sm:px-4 lg:px-6">
         {/* Header */}
         <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 mb-12 sm:mb-14">
           <div>

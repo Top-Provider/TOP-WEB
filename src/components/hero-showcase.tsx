@@ -7,7 +7,7 @@ import { motion } from "framer-motion";
 export function HeroShowcase() {
   return (
     <section id="overview" className="relative pt-6 pb-12 sm:pt-8 sm:pb-16 overflow-hidden">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="w-[94%] max-w-[1680px] mx-auto px-2 sm:px-4 lg:px-6">
         <motion.div
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
@@ -20,7 +20,7 @@ export function HeroShowcase() {
             width={2560}
             height={1490}
             priority
-            sizes="(max-width: 1280px) 100vw, 1280px"
+            sizes="(max-width: 1680px) 100vw, 1680px"
             className="w-full h-auto object-contain block"
           />
         </motion.div>

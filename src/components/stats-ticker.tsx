@@ -51,7 +51,7 @@ export function StatsTicker() {
     <section id="stats" className="bg-[#F8FAFC]">
       {/* Top Partner & Technology Strip */}
       <div className="bg-white border-y border-slate-200/80 py-6">
-        <div className="w-[92%] max-w-[1500px] mx-auto px-2 sm:px-4 lg:px-6">
+        <div className="w-[94%] max-w-[1680px] mx-auto px-2 sm:px-4 lg:px-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-5">
             <div className="flex items-center gap-2 text-xs font-semibold text-[#0066FF]">
               <span className="w-2 h-2 rounded-full bg-[#0066FF]" />
@@ -81,7 +81,7 @@ export function StatsTicker() {
 
       {/* Bottom 4-Column Stats Grid */}
       <div className="py-14 sm:py-18 border-b border-slate-200/80">
-        <div className="w-[92%] max-w-[1500px] mx-auto px-2 sm:px-4 lg:px-6">
+        <div className="w-[94%] max-w-[1680px] mx-auto px-2 sm:px-4 lg:px-6">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {stats.map((stat, idx) => {
               const Icon = stat.icon;

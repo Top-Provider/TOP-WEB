@@ -10,6 +10,9 @@ interface ModalProps {
   description?: string;
   children: React.ReactNode;
   maxWidth?: "sm" | "md" | "lg" | "xl" | "2xl" | "3xl" | "4xl";
+  closeOnBackdropClick?: boolean;
+  closeOnEsc?: boolean;
+  footer?: React.ReactNode;
 }
 
 const maxWidthClasses = {
@@ -29,10 +32,15 @@ export const Modal: React.FC<ModalProps> = ({
   description,
   children,
   maxWidth = "2xl",
+  closeOnBackdropClick = false,
+  closeOnEsc = false,
+  footer,
 }) => {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
+      if (e.key === "Escape" && closeOnEsc) {
+        onClose();
+      }
     };
     if (isOpen) {
       document.addEventListener("keydown", handleKeyDown);
@@ -42,13 +50,17 @@ export const Modal: React.FC<ModalProps> = ({
       document.removeEventListener("keydown", handleKeyDown);
       document.body.style.overflow = "";
     };
-  }, [isOpen, onClose]);
+  }, [isOpen, onClose, closeOnEsc]);
 
   if (!isOpen) return null;
 
   return (
     <div
-      onClick={onClose}
+      onClick={(e) => {
+        if (closeOnBackdropClick && e.target === e.currentTarget) {
+          onClose();
+        }
+      }}
       className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-6 overflow-y-auto"
     >
       <div
@@ -78,6 +90,13 @@ export const Modal: React.FC<ModalProps> = ({
         <div className="flex-1 overflow-y-auto p-6 sm:p-8">
           {children}
         </div>
+
+        {/* Modal Footer */}
+        {footer && (
+          <div className="px-6 py-4 bg-slate-50/80 border-t border-slate-100 flex items-center justify-end gap-3 shrink-0">
+            {footer}
+          </div>
+        )}
       </div>
     </div>
   );

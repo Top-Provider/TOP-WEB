@@ -43,6 +43,11 @@ export const metadata: Metadata = {
     description: "Enterprise Software Engineering, Cloud Platforms, and Modern Digital Systems.",
     images: ["/images/office_hq.jpg"],
   },
+  icons: {
+    icon: "/images/logo.png",
+    shortcut: "/images/logo.png",
+    apple: "/images/logo.png",
+  },
 };
 
 export default function RootLayout({

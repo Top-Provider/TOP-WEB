@@ -2,8 +2,6 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   /* config options here */
-  cacheComponents: true,
-  partialPrefetching: true,
   turbopack: {
     rules: {
       "*.css": {
@@ -11,6 +9,23 @@ const nextConfig: NextConfig = {
         as: "*.css",
       },
     },
+  },
+  webpack: (config, { dev }) => {
+    if (dev) {
+      config.module.rules.push({
+        test: /\.(tsx|jsx|ts|js)$/,
+        exclude: /node_modules/,
+        use: [
+          {
+            loader: "@locator/webpack-loader",
+            options: {
+              env: "development",
+            },
+          },
+        ],
+      });
+    }
+    return config;
   },
 };
 

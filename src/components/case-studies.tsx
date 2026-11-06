@@ -1,13 +1,17 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { ArrowUpRight, CheckCircle2, Play, Pause } from 'lucide-react';
 import { motion } from 'framer-motion';
 import type { Project } from '../types';
 import { ProjectModal } from './project-modal';
+import { fetchRecords } from '@/lib/crud';
 
 interface StickyProjectSectionProps {
   onSelectProject?: (project: Project) => void;
+  initialSoftwareRecords?: Record<string, unknown>[];
 }
 
 export interface SolutionCardItem {
@@ -201,36 +205,33 @@ const ALL_SOLUTION_CARDS: SolutionCardItem[] = [
     id: 'printing-supplies',
     tabCategory: 'printing',
     counterText: '02 / 02',
-    urlPath: 'Topprovider.co.th / Patient Wristbands & Barcode Supplies',
-    clientSubtitle: '2026 • Patient Identification & Consumables',
-    ctaText: 'ดูรายละเอียด',
+    urlPath: 'Topprovider.co.th / Printing & Supply Solution',
+    clientSubtitle: '2026 • Printing & Supply Solution',
+    ctaText: 'ดูสินค้าทั้งหมด',
     project: {
-      id: 'medical-wristbands-supplies',
-      name: 'Medical Wristbands & Supplies',
-      client: 'Hospital Supply Management',
+      id: 'printing-supplies',
+      name: 'Supply',
+      client: 'Printing & Supply Solution',
       year: '2026',
-      category: 'Printing & Supply',
-      subCategory: 'Medical Supplies',
-      shortDescription: 'สายรัดข้อมือระบุตัวตนผู้ป่วยเกรดการแพทย์ ทนทานต่อน้ำ สบู่ และแอลกอฮอล์ฆ่าเชื้อ บาร์โค้ดไม่เลือนราง ปลอดภัยต่อผิวบอบบางและทารกแรกเกิด',
-      fullDescription: 'สายรัดข้อมือผู้ป่วยมาตรฐานการแพทย์ระดับสากล ผ่านการทดสอบความทนทานต่อแอลกอฮอล์ 75% และสารทำความสะอาดในโรงพยาบาล หมึกพิมพ์คมชัดสูง อ่านค่าบาร์โค้ดได้ 100% แม้ผ่านการใช้งานหลายวัน ป้องกันข้อผิดพลาดในการให้ยาและการผ่าตัด',
-      challenge: 'สายรัดข้อมือทั่วไปมักฉีกขาดหรือหมึกเลือนหายเมื่อโดนแอลกอฮอล์ ทำให้พยาบาลสแกนยืนยันตัวตนคนไข้ไม่ได้',
-      solution: 'จัดหาสายรัดข้อมือวัสดุพิเศษเคลือบนาโน ทนทานต่อสารเคมีและแอลกอฮอล์ พร้อมขอบนุ่มอ่อนโยนต่อผิว',
+      category: 'Printing',
+      subCategory: 'Supply',
+      shortDescription: 'ศูนย์รวมวัสดุสิ้นเปลืองการพิมพ์ครบวงจร ทั้งตลับหมึกเลเซอร์ (Toner Cartridge), ผ้าหมึกพิมพ์ดอทเมทริกซ์ (Ribbon), หมึกอิงค์เจ็ท, ริบบอนบาร์โค้ด และสายรัดข้อมือผู้ป่วย (Wristband) คุณภาพสูง ได้มาตรฐาน ช่วยยืดอายุการใช้งานของเครื่องพิมพ์และให้งานพิมพ์คมชัดสม่ำเสมอ',
+      fullDescription: 'ศูนย์รวมวัสดุสิ้นเปลืองการพิมพ์ครบวงจร ทั้งตลับหมึกเลเซอร์ (Toner Cartridge), ผ้าหมึกพิมพ์ดอทเมทริกซ์ (Ribbon), หมึกอิงค์เจ็ท, ริบบอนบาร์โค้ด และสายรัดข้อมือผู้ป่วย (Wristband) คุณภาพสูง ได้มาตรฐาน ปลอดภัย มั่นใจได้ในความคมชัดและประสิทธิภาพสูงสุดในการทำงานร่วมกับเครื่องพิมพ์ทุกแบรนด์ชั้นนำ พร้อมบริการจัดส่งด่วนและการันตีคุณภาพทุกชิ้น',
+      challenge: 'การใช้วัสดุสิ้นเปลืองที่ไม่ได้มาตรฐานส่งผลให้เครื่องพิมพ์เสียหายง่าย และงานพิมพ์บาร์โค้ดเลือนราง สแกนติดยาก',
+      solution: 'จัดหาตลับหมึก ริบบอนบาร์โค้ด และวัสดุสิ้นเปลืองแท้และเกรดพรีเมียมที่ผ่านการทดสอบความเข้ากันได้ 100% พร้อมรับประกันเปลี่ยนคืนหากมีปัญหา',
       deliverables: [
-        'Alcohol & Chemical Resistant Surface',
-        'Hypoallergenic Material (Latex-free)',
-        'High-Density 1D/2D Barcode Support',
+        'Laser Toner Cartridge (ตลับหมึกเลเซอร์)',
+        'Ribbon & Barcode Label (ผ้าหมึกและริบบอน)',
+        'Medical Wristband (สายรัดข้อมือผู้ป่วย)',
       ],
-      metrics: [
-        { label: 'ความทนทานต่อแอลกอฮอล์และสารเคมี', value: '100%' },
-        { label: 'ความแม่นยำในการอ่านบาร์โค้ด', value: '99.9%' },
-      ],
-      technologies: ['Nano-coated Thermal Film', 'Direct Thermal', '2D Datamatrix'],
+      metrics: [],
+      technologies: ['High-Yield Toner', 'Thermal Transfer Ribbon', 'Medical-Grade Wristbands'],
       coverImage: 'https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?auto=format&fit=crop&w=1400&q=80',
       galleryImages: ['https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?auto=format&fit=crop&w=1200&q=80'],
       testimonial: {
-        quote: 'สายรัดข้อมือของ Top Provider ทนทานมาก โดนเจลแอลกอฮอล์วันละสิบรอบบาร์โค้ดยังคมชัด สแกนติดทันที',
-        author: 'หัวหน้างานความปลอดภัยผู้ป่วย',
-        role: 'โรงพยาบาลศูนย์',
+        quote: 'หมึกและริบบอนคุณภาพดีมาก พิมพ์บาร์โค้ดออกมาคมชัด สแกนผ่านง่าย ไม่ติดขัด',
+        author: 'ฝ่ายไอทีและสารสนเทศ',
+        role: 'โรงพยาบาลทั่วไป',
       },
       featured: true,
       accentColor: '#0066FF',
@@ -566,16 +567,191 @@ const ALL_SOLUTION_CARDS: SolutionCardItem[] = [
   },
 ];
 
-export const StickyProjectSection: React.FC<StickyProjectSectionProps> = ({ onSelectProject }) => {
+export interface SoftwareRecord {
+  id: number;
+  name: string;
+  category_id?: string;
+  program_code?: string;
+  client_subtitle?: string;
+  short_description?: string;
+  full_description?: string;
+  video_url?: string;
+  cover_image_url?: string;
+  key_features?: string[] | string;
+  metric_label?: string;
+  metric_value?: string;
+  is_active?: boolean;
+  feature_1_badge?: string;
+  feature_1_title?: string;
+  feature_1_desc?: string;
+  feature_1_bullets?: string[] | string;
+  feature_1_image?: string;
+  feature_2_badge?: string;
+  feature_2_title?: string;
+  feature_2_desc?: string;
+  feature_2_highlights?: string[] | string;
+  feature_2_tags?: string[] | string;
+  feature_2_image?: string;
+}
+
+export function mapSoftwareRecordToCardItem(
+  r: SoftwareRecord,
+  index: number,
+  total: number
+): SolutionCardItem {
+  const counterText = `${String(index + 1).padStart(2, '0')} / ${String(total).padStart(2, '0')}`;
+  const category =
+    r.program_code && r.program_code !== 'Software'
+      ? r.program_code
+      : r.category_id && r.category_id !== 'Software'
+      ? r.category_id
+      : 'Hospital Claim';
+  const subCategory = r.client_subtitle || 'Healthcare Solution';
+
+  let deliverables: string[] = [];
+  if (Array.isArray(r.key_features) && r.key_features.length > 0) {
+    deliverables = r.key_features;
+  } else if (typeof r.key_features === 'string' && r.key_features.trim()) {
+    deliverables = r.key_features.split('\n').map((s) => s.trim()).filter(Boolean);
+  }
+  if (deliverables.length === 0) {
+    deliverables = [
+      'Real-time Claim Tracking',
+      'Pre-audit & Error Detection',
+      'Automated e-Claim Processing',
+    ];
+  }
+
+  const metrics: { label: string; value: string }[] = [];
+  if (r.metric_value) {
+    metrics.push({
+      value: r.metric_value,
+      label: r.metric_label || 'ความแม่นยำในการทำงาน',
+    });
+  }
+  if (metrics.length === 0) {
+    metrics.push(
+      { label: 'ความแม่นยำในการส่งข้อมูลเคลม', value: '99.8%' },
+      { label: 'เจ้าหน้าที่จัดการงานเคลมได้เร็วขึ้น', value: '2.4x' }
+    );
+  } else if (metrics.length === 1) {
+    metrics.push({ label: 'เจ้าหน้าที่จัดการงานเคลมได้เร็วขึ้น', value: '2.4x' });
+  }
+
+  const coverImage = r.cover_image_url || '/images/vitanix-claim.png';
+
+  return {
+    id: `software-${r.id}`,
+    tabCategory: 'software',
+    counterText,
+    urlPath: `Topprovider.co.th / ${r.name}`,
+    clientSubtitle: `2026 • ${subCategory}`,
+    project: {
+      id: `vitanix-${r.id}`,
+      name: r.name,
+      client: subCategory,
+      year: '2026',
+      category: category,
+      subCategory: subCategory,
+      shortDescription: r.short_description || '',
+      fullDescription: r.full_description || r.short_description || '',
+      challenge: r.feature_1_desc || '',
+      solution: r.feature_2_desc || '',
+      deliverables,
+      metrics,
+      technologies: ['React', 'TypeScript', 'Tailwind CSS', 'PostgreSQL', 'HL7/FHIR'],
+      coverImage: coverImage,
+      videoUrl:
+        r.video_url ||
+        'https://www.youtube.com/embed/TNXBrlFZ5ps?autoplay=1&mute=1&playsinline=1&rel=0&start=1',
+      galleryImages: [coverImage],
+      featured: true,
+      accentColor: '#0066FF',
+    },
+  };
+}
+
+export const StickyProjectSection: React.FC<StickyProjectSectionProps> = ({
+  onSelectProject,
+  initialSoftwareRecords,
+}) => {
+  const router = useRouter();
+
+  useEffect(() => {
+    router.prefetch('/solutions/printing?type=printer');
+    router.prefetch('/solutions/printing?type=supply');
+    router.prefetch('/solutions/software');
+  }, [router]);
+
   // Default to 'software' tab (Software Solution) as shown in Reference Image 2
-  const [activeTab, setActiveTab] = useState<TabId>('software');
+  const [activeTab, setActiveTab] = useState<string>('software');
   const [playingVideoId, setPlayingVideoId] = useState<string | null>(null);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
 
-  // Filter cards for active tab
-  const currentCards = ALL_SOLUTION_CARDS.filter((item) => item.tabCategory === activeTab);
+  // Dynamic Solution Category Tabs from /api/admin/categories
+  const [solutionTabs, setSolutionTabs] = useState<{ id: string; label: string }[]>(
+    SOLUTION_TABS.map((t) => ({ id: t.id, label: t.label }))
+  );
 
-  const handleTabClick = (tabId: TabId) => {
+  useEffect(() => {
+    fetch('/api/admin/categories')
+      .then((res) => res.json())
+      .then((json) => {
+        if (json && json.success && Array.isArray(json.categories) && json.categories.length > 0) {
+          const dynamicTabs = json.categories
+            .filter((c: { is_active?: boolean }) => c.is_active !== false)
+            .map((c: { category_id: string; name: string }) => ({
+              id: (c.category_id || '').toLowerCase(),
+              label: c.name || c.category_id,
+            }));
+          if (dynamicTabs.length > 0) setSolutionTabs(dynamicTabs);
+        }
+      })
+      .catch((err) => console.log('Tabs API fallback:', err));
+  }, []);
+
+  // Dynamic software cards from Supabase TB_PRODUCT_SOFTWARE
+  const initialCards = useMemo(() => {
+    if (initialSoftwareRecords && initialSoftwareRecords.length > 0) {
+      return initialSoftwareRecords.map((r, i) =>
+        mapSoftwareRecordToCardItem(r as unknown as SoftwareRecord, i, initialSoftwareRecords.length)
+      );
+    }
+    return [];
+  }, [initialSoftwareRecords]);
+
+  const [dynamicSoftwareCards, setDynamicSoftwareCards] = useState<SolutionCardItem[]>(initialCards);
+
+  // Client-side fetch fallback
+  useEffect(() => {
+    if (initialCards.length > 0) return;
+
+    fetchRecords<SoftwareRecord>({
+      table: 'TB_PRODUCT_SOFTWARE',
+      orderBy: 'id',
+      orderDir: 'asc',
+    })
+      .then((records) => {
+        if (records && records.length > 0) {
+          const total = records.length;
+          setDynamicSoftwareCards(
+            records.map((r, i) => mapSoftwareRecordToCardItem(r, i, total))
+          );
+        }
+      })
+      .catch((err) => {
+        console.log('Could not load software programs dynamically (using fallback):', err);
+      });
+  }, [initialCards.length]);
+
+  // Filter cards for active tab
+  const staticCards = ALL_SOLUTION_CARDS.filter((item) => item.tabCategory === activeTab);
+  const currentCards =
+    activeTab === 'software' && dynamicSoftwareCards.length > 0
+      ? dynamicSoftwareCards
+      : staticCards;
+
+  const handleTabClick = (tabId: string) => {
     setActiveTab(tabId);
     setPlayingVideoId(null);
   };
@@ -593,9 +769,25 @@ export const StickyProjectSection: React.FC<StickyProjectSectionProps> = ({ onSe
     }
   };
 
+  const handleSelectCard = (cardItem: SolutionCardItem) => {
+    if (cardItem.tabCategory === 'printing') {
+      if (cardItem.id === 'printing-printer') {
+        router.push('/solutions/printing?type=printer');
+        return;
+      }
+      if (cardItem.id === 'printing-supplies') {
+        router.push('/solutions/printing?type=supply');
+        return;
+      }
+      router.push('/solutions/printing');
+      return;
+    }
+    handleSelectProject(cardItem.project);
+  };
+
   return (
     <section id="showcase" className="py-12 sm:py-16 lg:py-20 bg-[#F8FAFC] text-slate-900 relative z-20 border-b border-slate-200/80 select-none">
-      <div id="case-studies" className="w-[92%] max-w-[1500px] mx-auto px-2 sm:px-4 lg:px-6">
+      <div id="case-studies" className="w-[94%] max-w-[1680px] mx-auto px-2 sm:px-4 lg:px-6">
         {/* Section Header */}
         <div className="mb-6 sm:mb-8">
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-[#0F172A] leading-[1.2]">
@@ -609,7 +801,7 @@ export const StickyProjectSection: React.FC<StickyProjectSectionProps> = ({ onSe
         {/* Sticky Tab List / Pill Navigation Bar - Locked at Top while Scrolling (matching Reference Image) */}
         <div className="sticky top-0 z-30 py-2.5 sm:py-3 bg-[#F8FAFC]/95 backdrop-blur-md mb-6 sm:mb-8 -mx-2 px-2 sm:-mx-4 sm:px-4 transition-all">
           <div className="flex items-center gap-2 sm:gap-3 overflow-x-auto py-2 px-1.5 -mx-1.5 no-scrollbar">
-            {SOLUTION_TABS.map((tab) => {
+            {solutionTabs.map((tab) => {
               const isActive = tab.id === activeTab;
               return (
                 <button
@@ -744,69 +936,126 @@ export const StickyProjectSection: React.FC<StickyProjectSectionProps> = ({ onSe
                           )}
 
                           {/* Primary CTA in Electric Blue */}
-                          <button
-                            onClick={() => handleSelectProject(project)}
-                            className="w-full py-3.5 px-6 rounded-full bg-[#0066FF] hover:bg-[#0052CC] text-white font-medium text-xs sm:text-sm flex items-center justify-center gap-2 shadow-[0_8px_20px_rgba(0,102,255,0.3)] hover:shadow-[0_12px_28px_rgba(0,102,255,0.45)] transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] cursor-pointer group"
-                          >
-                            <span>{cardItem.ctaText || 'ดูรายละเอียด'}</span>
-                            <ArrowUpRight className="w-4 h-4 stroke-[2.5] transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-                          </button>
+                          {cardItem.tabCategory === 'printing' ? (
+                            <Link
+                              href={
+                                cardItem.id === 'printing-printer'
+                                  ? '/solutions/printing?type=printer'
+                                  : '/solutions/printing?type=supply'
+                              }
+                              prefetch={true}
+                              className="w-full py-3.5 px-6 rounded-full bg-[#0066FF] hover:bg-[#0052CC] text-white font-medium text-xs sm:text-sm flex items-center justify-center gap-2 shadow-[0_8px_20px_rgba(0,102,255,0.3)] hover:shadow-[0_12px_28px_rgba(0,102,255,0.45)] transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] cursor-pointer group"
+                            >
+                              <span>{cardItem.ctaText || 'ดูสินค้าทั้งหมด'}</span>
+                              <ArrowUpRight className="w-4 h-4 stroke-[2.5] transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                            </Link>
+                          ) : (
+                            <button
+                              onClick={() => handleSelectCard(cardItem)}
+                              className="w-full py-3.5 px-6 rounded-full bg-[#0066FF] hover:bg-[#0052CC] text-white font-medium text-xs sm:text-sm flex items-center justify-center gap-2 shadow-[0_8px_20px_rgba(0,102,255,0.3)] hover:shadow-[0_12px_28px_rgba(0,102,255,0.45)] transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] cursor-pointer group"
+                            >
+                              <span>{cardItem.ctaText || 'ดูรายละเอียด'}</span>
+                              <ArrowUpRight className="w-4 h-4 stroke-[2.5] transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                            </button>
+                          )}
                         </div>
                       </div>
 
                       {/* Right Column (62%): Centered Product Preview */}
-                      <div
-                        onClick={() => handleSelectProject(project)}
-                        className={`w-full lg:w-[62%] relative overflow-hidden group cursor-pointer flex items-center justify-center p-6 sm:p-8 lg:p-10 min-h-[360px] sm:min-h-[420px] lg:min-h-full ${
-                          cardItem.isProductPhoto
-                            ? 'bg-white'
-                            : 'bg-gradient-to-br from-slate-50/80 to-blue-50/20'
-                        }`}
-                      >
-                        {cardItem.isProductPhoto ? (
-                          <div className="relative w-full max-w-[740px] xl:max-w-[780px] my-auto flex items-center justify-center p-2 sm:p-4 lg:p-6">
-                            <img
-                              src={project.coverImage}
-                              alt={project.name}
-                              className="w-full max-w-[440px] sm:max-w-[560px] md:max-w-[640px] lg:max-w-[720px] max-h-[440px] sm:max-h-[480px] lg:max-h-[520px] h-auto object-contain transition-transform duration-500 ease-out group-hover:scale-[1.03] drop-shadow-[0_18px_35px_rgba(0,0,0,0.12)]"
-                              loading="lazy"
-                            />
-                          </div>
-                        ) : (
-                          /* Centered Laptop Mockup matching Reference Image 2 */
-                          <div className="relative w-full max-w-[760px] my-auto transition-transform duration-500 ease-out group-hover:scale-[1.015] flex flex-col items-center justify-center">
-                            {/* Laptop Screen Bezel */}
-                            <div className="relative w-full rounded-t-xl bg-[#0F172A] border-[6px] sm:border-[8px] border-slate-900 shadow-[0_20px_50px_rgba(0,102,255,0.12)] overflow-hidden aspect-[16/10] flex items-center justify-center">
+                      {cardItem.tabCategory === 'printing' ? (
+                        <Link
+                          href={
+                            cardItem.id === 'printing-printer'
+                              ? '/solutions/printing?type=printer'
+                              : '/solutions/printing?type=supply'
+                          }
+                          prefetch={true}
+                          className={`w-full lg:w-[62%] relative overflow-hidden group cursor-pointer flex items-center justify-center p-6 sm:p-8 lg:p-10 min-h-[360px] sm:min-h-[420px] lg:min-h-full ${
+                            cardItem.isProductPhoto
+                              ? 'bg-white'
+                              : 'bg-gradient-to-br from-slate-50/80 to-blue-50/20'
+                          }`}
+                        >
+                          {cardItem.isProductPhoto ? (
+                            <div className="relative w-full max-w-[740px] xl:max-w-[780px] my-auto flex items-center justify-center p-2 sm:p-4 lg:p-6">
                               <img
                                 src={project.coverImage}
                                 alt={project.name}
-                                className="w-full h-full object-cover"
+                                className="w-full max-w-[440px] sm:max-w-[560px] md:max-w-[640px] lg:max-w-[720px] max-h-[440px] sm:max-h-[480px] lg:max-h-[520px] h-auto object-contain transition-transform duration-500 ease-out group-hover:scale-[1.03] drop-shadow-[0_18px_35px_rgba(0,0,0,0.12)]"
                                 loading="lazy"
                               />
-
-                              {/* Video Popup Trigger Button if video is available */}
-                              {project.videoUrl && (
-                                <button
-                                  type="button"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleSelectProject(project);
-                                  }}
-                                  className="absolute bottom-3 right-3 px-3 py-1.5 rounded-full bg-black/60 hover:bg-black/80 backdrop-blur-md text-white text-[11px] font-medium flex items-center gap-1.5 transition-transform hover:scale-105 active:scale-95 shadow-lg border border-white/20 cursor-pointer"
-                                >
-                                  <Play className="w-3.5 h-3.5 fill-white" />
-                                  <span>ดูคลิปสาธิต</span>
-                                </button>
-                              )}
                             </div>
-
-                            {/* Laptop Bottom Base */}
-                            <div className="relative w-full h-3 sm:h-3.5 bg-gradient-to-b from-slate-200 to-slate-300 rounded-b-xl border-t border-slate-400/80 shadow-md flex justify-center items-start">
-                              <div className="w-20 h-1.5 rounded-b-sm bg-slate-400" />
+                          ) : (
+                            /* Centered Laptop Mockup matching Reference Image 2 */
+                            <div className="relative w-full max-w-[760px] my-auto transition-transform duration-500 ease-out group-hover:scale-[1.015] flex flex-col items-center justify-center">
+                              <div className="relative w-full rounded-t-xl bg-[#0F172A] border-[6px] sm:border-[8px] border-slate-900 shadow-[0_20px_50px_rgba(0,102,255,0.12)] overflow-hidden aspect-[16/10] flex items-center justify-center">
+                                <img
+                                  src={project.coverImage}
+                                  alt={project.name}
+                                  className="w-full h-full object-cover"
+                                  loading="lazy"
+                                />
+                              </div>
+                              <div className="relative w-full h-3 sm:h-3.5 bg-gradient-to-b from-slate-200 to-slate-300 rounded-b-xl border-t border-slate-400/80 shadow-md flex justify-center items-start">
+                                <div className="w-20 h-1.5 rounded-b-sm bg-slate-400" />
+                              </div>
                             </div>
-                          </div>
-                        )}
-                      </div>
+                          )}
+                        </Link>
+                      ) : (
+                        <div
+                          onClick={() => handleSelectCard(cardItem)}
+                          className={`w-full lg:w-[62%] relative overflow-hidden group cursor-pointer flex items-center justify-center p-6 sm:p-8 lg:p-10 min-h-[360px] sm:min-h-[420px] lg:min-h-full ${
+                            cardItem.isProductPhoto
+                              ? 'bg-white'
+                              : 'bg-gradient-to-br from-slate-50/80 to-blue-50/20'
+                          }`}
+                        >
+                          {cardItem.isProductPhoto ? (
+                            <div className="relative w-full max-w-[740px] xl:max-w-[780px] my-auto flex items-center justify-center p-2 sm:p-4 lg:p-6">
+                              <img
+                                src={project.coverImage}
+                                alt={project.name}
+                                className="w-full max-w-[440px] sm:max-w-[560px] md:max-w-[640px] lg:max-w-[720px] max-h-[440px] sm:max-h-[480px] lg:max-h-[520px] h-auto object-contain transition-transform duration-500 ease-out group-hover:scale-[1.03] drop-shadow-[0_18px_35px_rgba(0,0,0,0.12)]"
+                                loading="lazy"
+                              />
+                            </div>
+                          ) : (
+                            /* Centered Laptop Mockup matching Reference Image 2 */
+                            <div className="relative w-full max-w-[760px] my-auto transition-transform duration-500 ease-out group-hover:scale-[1.015] flex flex-col items-center justify-center">
+                              {/* Laptop Screen Bezel */}
+                              <div className="relative w-full rounded-t-xl bg-[#0F172A] border-[6px] sm:border-[8px] border-slate-900 shadow-[0_20px_50px_rgba(0,102,255,0.12)] overflow-hidden aspect-[16/10] flex items-center justify-center">
+                                <img
+                                  src={project.coverImage}
+                                  alt={project.name}
+                                  className="w-full h-full object-cover"
+                                  loading="lazy"
+                                />
+
+                                {/* Video Popup Trigger Button if video is available */}
+                                {project.videoUrl && (
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleSelectProject(project);
+                                    }}
+                                    className="absolute bottom-3 right-3 px-3 py-1.5 rounded-full bg-black/60 hover:bg-black/80 backdrop-blur-md text-white text-[11px] font-medium flex items-center gap-1.5 transition-transform hover:scale-105 active:scale-95 shadow-lg border border-white/20 cursor-pointer"
+                                  >
+                                    <Play className="w-3.5 h-3.5 fill-white" />
+                                    <span>ดูคลิปสาธิต</span>
+                                  </button>
+                                )}
+                              </div>
+
+                              {/* Laptop Bottom Base */}
+                              <div className="relative w-full h-3 sm:h-3.5 bg-gradient-to-b from-slate-200 to-slate-300 rounded-b-xl border-t border-slate-400/80 shadow-md flex justify-center items-start">
+                                <div className="w-20 h-1.5 rounded-b-sm bg-slate-400" />
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </div>
                   </motion.div>
                 );

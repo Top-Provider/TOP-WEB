@@ -27,13 +27,18 @@ const ALLOWED_TABLES = new Set([
   "tbm_product_programs",
   "tbm_product_categories",
   "tbm_product_compatible_supplies",
+  "tbm_program_options",
+  "tb_products",
+  "tb_product_hardware",
+  "tb_product_software",
+  "tb_product_supplies",
   "tbm_product_hardware",
   "tbm_product_software",
   "tbm_product_supplies",
 ]);
 
 interface SaveRequestBody {
-  table: string; // ชื่อตาราง เช่น "TBM_PRODUCT_SOFTWARE", "tbm_master_products"
+  table: string; // ชื่อตาราง เช่น "TB_PRODUCT_SOFTWARE", "tbm_master_products"
   action?: "insert" | "update" | "upsert" | "delete";
   data?: Record<string, unknown> | Record<string, unknown>[];
   id?: string | number;
@@ -42,7 +47,7 @@ interface SaveRequestBody {
 }
 
 /**
- * รักษา Case Sensitive ตามที่สร้างไว้ใน Supabase (เช่น TBM_PRODUCT_SOFTWARE)
+ * รักษา Case Sensitive ตามที่สร้างไว้ใน Supabase (เช่น TB_PRODUCT_SOFTWARE)
  */
 function normalizeTableName(table: string): string {
   const clean = table.trim();
@@ -75,7 +80,7 @@ export async function POST(req: NextRequest) {
     const lower = normalizedTable.toLowerCase();
 
     // 2. ตรวจสอบ Security Whitelist
-    if (!ALLOWED_TABLES.has(lower) && !lower.startsWith("tbm_")) {
+    if (!ALLOWED_TABLES.has(lower) && !lower.startsWith("tbm_") && !lower.startsWith("tb_")) {
       return NextResponse.json(
         {
           success: false,
@@ -186,7 +191,119 @@ export async function POST(req: NextRequest) {
         );
     }
 
-    // 5. ตรวจสอบ Error จาก Supabase
+    // 5. ตรวจสอบ Error จาก Supabase และ Auto-retry หากมีคอลัมน์ที่ DB ยังไม่ได้สร้าง (PGRST204)
+    if (queryResult.error && queryResult.error.code === "PGRST204") {
+      let colMatch = queryResult.error.message.match(/Could not find the '([^']+)' column/i);
+      let currentData = data;
+      let retryCount = 0;
+
+      while (queryResult.error && queryResult.error.code === "PGRST204" && colMatch && colMatch[1] && retryCount < 5) {
+        const missingCol = colMatch[1];
+        console.warn(`[Universal Save API] Column "${missingCol}" does not exist in "${normalizedTable}". Retrying without it...`);
+
+        if (Array.isArray(currentData)) {
+          currentData = currentData.map((item) => {
+            const copy = { ...item };
+            delete copy[missingCol];
+            return copy;
+          });
+        } else if (typeof currentData === "object" && currentData !== null) {
+          currentData = { ...(currentData as Record<string, unknown>) };
+          delete currentData[missingCol];
+        }
+
+        if (currentData) {
+          if (resolvedAction === "insert") {
+            queryResult = await supabase
+              .from(normalizedTable)
+              .insert(currentData as Record<string, unknown>)
+              .select();
+          } else if (resolvedAction === "update") {
+            let updateQuery = supabase
+              .from(normalizedTable)
+              .update(currentData as Record<string, unknown>);
+            if (id !== undefined) updateQuery = updateQuery.eq(idColumn, id);
+            else if (match) updateQuery = updateQuery.match(match);
+            queryResult = await updateQuery.select();
+          } else if (resolvedAction === "upsert") {
+            queryResult = await supabase
+              .from(normalizedTable)
+              .upsert(currentData as Record<string, unknown>, { onConflict: idColumn })
+              .select();
+          }
+        }
+
+        if (queryResult.error) {
+          colMatch = queryResult.error.message.match(/Could not find the '([^']+)' column/i);
+        }
+        retryCount++;
+      }
+    }
+
+    // 5.1 ตรวจสอบกรณีค่าข้อความยาวเกินขนาดคอลัมน์ใน DB (Postgres error 22001: value too long for type character varying)
+    if (
+      queryResult.error &&
+      (queryResult.error.code === "22001" ||
+        queryResult.error.message.toLowerCase().includes("value too long"))
+    ) {
+      console.warn(
+        `[Universal Save API] Value too long in "${normalizedTable}". Auto-truncating strings and retrying...`
+      );
+
+      const truncateValues = (val: unknown): unknown => {
+        if (typeof val === "string") {
+          return val.length > 100 ? val.slice(0, 100) : val;
+        }
+        if (Array.isArray(val)) {
+          return val.map(truncateValues);
+        }
+        if (typeof val === "object" && val !== null) {
+          const res: Record<string, unknown> = {};
+          for (const [k, v] of Object.entries(val as Record<string, unknown>)) {
+            // ไม่ตัดรูปภาพ base64 หรือฟิลด์ข้อความยาวพิเศษ
+            if (
+              k === "cover_image_url" ||
+              k === "gallery_images" ||
+              k === "specifications" ||
+              k === "full_description" ||
+              k === "short_description"
+            ) {
+              res[k] = v;
+            } else if (typeof v === "string" && v.length > 100) {
+              res[k] = v.slice(0, 100);
+            } else {
+              res[k] = v;
+            }
+          }
+          return res;
+        }
+        return val;
+      };
+
+      const safeData = truncateValues(data);
+
+      if (safeData) {
+        if (resolvedAction === "insert") {
+          queryResult = await supabase
+            .from(normalizedTable)
+            .insert(safeData as Record<string, unknown>)
+            .select();
+        } else if (resolvedAction === "update") {
+          let updateQuery = supabase
+            .from(normalizedTable)
+            .update(safeData as Record<string, unknown>);
+          if (id !== undefined) updateQuery = updateQuery.eq(idColumn, id);
+          else if (match) updateQuery = updateQuery.match(match);
+          queryResult = await updateQuery.select();
+        } else if (resolvedAction === "upsert") {
+          queryResult = await supabase
+            .from(normalizedTable)
+            .upsert(safeData as Record<string, unknown>, { onConflict: idColumn })
+            .select();
+        }
+      }
+    }
+
     if (queryResult.error) {
       console.error(
         `[Universal Save API Error] Table: ${normalizedTable}, Action: ${resolvedAction}`,
@@ -194,8 +311,20 @@ export async function POST(req: NextRequest) {
       );
 
       let customMsg = queryResult.error.message;
-      if (customMsg.includes("schema cache") || customMsg.includes("Could not find the table")) {
-        customMsg = `ยังไม่พบตาราง "${normalizedTable}" ในฐานข้อมูล Supabase (กรุณานำโค้ด SQL จาก supabase/schema_master_products.sql ไปกด Run ในเมนู SQL Editor บน Supabase Dashboard ก่อนครับ)`;
+      const lowerMsg = customMsg.toLowerCase();
+
+      if (queryResult.error.code === "PGRST205" || lowerMsg.includes("could not find the table")) {
+        customMsg = `ยังไม่พบตาราง "${normalizedTable}" ในฐานข้อมูล Supabase`;
+      } else if (queryResult.error.code === "22001" || lowerMsg.includes("value too long")) {
+        customMsg = "ข้อมูลที่กรอกมีความยาวเกินกำหนด กรุณาตรวจสอบหรือลดขนาดข้อความ";
+      } else if (queryResult.error.code === "23505" || lowerMsg.includes("duplicate key")) {
+        customMsg = "มีข้อมูลนี้อยู่ในระบบแล้ว (ข้อมูลซ้ำ)";
+      } else if (queryResult.error.code === "23503" || lowerMsg.includes("foreign key")) {
+        customMsg = "ข้อมูลนี้เชื่อมโยงกับส่วนอื่นของระบบ ไม่สามารถดำเนินการได้";
+      } else if (queryResult.error.code === "23502" || lowerMsg.includes("not-null")) {
+        customMsg = "กรุณากรอกข้อมูลที่จำเป็นให้ครบถ้วน";
+      } else if (/^[a-zA-Z0-9_\s:,()."'{}\[\]-]+$/.test(customMsg) && customMsg.length > 20) {
+        customMsg = "เกิดข้อผิดพลาดในการบันทึกข้อมูล กรุณาลองใหม่อีกครั้ง";
       }
 
       return NextResponse.json(
@@ -249,14 +378,15 @@ export async function GET(req: NextRequest) {
 
     const normalizedTable = normalizeTableName(table);
     const lower = normalizedTable.toLowerCase();
-    if (!ALLOWED_TABLES.has(lower) && !lower.startsWith("tbm_")) {
+    if (!ALLOWED_TABLES.has(lower) && !lower.startsWith("tbm_") && !lower.startsWith("tb_")) {
       return NextResponse.json(
         { success: false, error: `ตาราง "${table}" ไม่ได้รับอนุญาต` },
         { status: 403 }
       );
     }
 
-    let query = supabase.from(normalizedTable).select("*");
+    let selectFields = searchParams.get("select") || "*";
+    let query = supabase.from(normalizedTable).select(selectFields);
 
     const id = searchParams.get("id");
     const idColumn = searchParams.get("idColumn") || "id";
