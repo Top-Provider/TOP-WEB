@@ -206,7 +206,6 @@ export function mapProductRecordToCardItem(
         Array.isArray(p.gallery_images) && p.gallery_images.length > 0
           ? p.gallery_images
           : [coverImage],
-      datasheetUrl: p.datasheet_en_url,
       featured: true,
       accentColor: '#0066FF',
     },

@@ -144,7 +144,7 @@ export function PrintingSolutionView({
             const hasMatch = dbProducts.some((p) => p.sub_category === prev);
             if (!hasMatch) {
               const firstWithCat = dbProducts.find((p) => p.sub_category && p.sub_category.trim());
-              return firstWithCat ? firstWithCat.sub_category : prev;
+              return firstWithCat?.sub_category ? firstWithCat.sub_category : prev;
             }
             return prev;
           });
