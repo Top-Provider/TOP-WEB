@@ -21,42 +21,25 @@ function sanitizeCoverImage(url: unknown, fallback: string): string {
 
 export default async function Home() {
   let initialSoftwareRecords: Record<string, unknown>[] = [];
-  let initialProducts: Record<string, unknown>[] = [];
 
   try {
-    const [softRes, prodRes] = await Promise.all([
-      supabase
-        .from("TB_PRODUCT_SOFTWARE")
-        .select(
-          "id, name, program_code, category_id, client_subtitle, short_description, full_description, cover_image_url, video_url, key_features, metric_label, metric_value, is_active"
-        )
-        .eq("is_active", true)
-        .order("id", { ascending: true })
-        .limit(12),
-      supabase
-        .from("TB_PRODUCTS")
-        .select(
-          "id, name, sku, slug, category_id, sub_category, brand, product_type, short_description, cover_image_url, bullet_points, is_active"
-        )
-        .eq("is_active", true)
-        .order("id", { ascending: true })
-        .limit(24),
-    ]);
+    const { data, error } = await supabase
+      .from("TB_PRODUCT_SOFTWARE")
+      .select(
+        "id, name, program_code, category_id, client_subtitle, short_description, full_description, cover_image_url, video_url, key_features, metric_label, metric_value, is_active"
+      )
+      .eq("is_active", true)
+      .order("id", { ascending: true })
+      .limit(12);
 
-    if (!softRes.error && softRes.data) {
-      initialSoftwareRecords = softRes.data.map((item) => ({
+    if (!error && data) {
+      initialSoftwareRecords = data.map((item) => ({
         ...item,
         cover_image_url: sanitizeCoverImage(item.cover_image_url, "/images/vitanix-dashboard-hd.png"),
       }));
     }
-    if (!prodRes.error && prodRes.data) {
-      initialProducts = prodRes.data.map((item) => ({
-        ...item,
-        cover_image_url: sanitizeCoverImage(item.cover_image_url, "/images/printer-product.png"),
-      }));
-    }
   } catch (err) {
-    console.error("Error loading data from database on home page:", err);
+    console.error("Error loading software data on home page:", err);
   }
 
   return (
@@ -73,10 +56,7 @@ export default async function Home() {
         <HospitalDashboard />
 
         {/* 3. IT Solution & Product (Sticky Stacked Cards) */}
-        <CaseStudies
-          initialSoftwareRecords={initialSoftwareRecords}
-          initialProducts={initialProducts}
-        />
+        <CaseStudies initialSoftwareRecords={initialSoftwareRecords} />
 
         {/* 4. Core Leadership & Specialist Team */}
         <TeamSection />

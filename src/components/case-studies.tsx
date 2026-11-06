@@ -12,7 +12,6 @@ import { fetchRecords } from '@/lib/crud';
 interface StickyProjectSectionProps {
   onSelectProject?: (project: Project) => void;
   initialSoftwareRecords?: Record<string, unknown>[];
-  initialProducts?: Record<string, unknown>[];
 }
 
 export interface SolutionCardItem {
@@ -37,8 +36,453 @@ export const SOLUTION_TABS = [
 
 export type TabId = typeof SOLUTION_TABS[number]['id'];
 
-// ค่าเริ่มต้นเป็น Array ว่าง ไม่ใช้ข้อมูล mock
-export const ALL_SOLUTION_CARDS: SolutionCardItem[] = [];
+const BASE_URL = '/';
+
+// =========================================================================
+// Overview โซลูชันหลักของแต่ละด้าน (Printing, Hardware, Network, Medical, IoT)
+// =========================================================================
+export const ALL_SOLUTION_CARDS: SolutionCardItem[] = [
+  // =================== 1. PRINTING & SUPPLY SOLUTION (Overview) ===================
+  {
+    id: 'printing-printer',
+    tabCategory: 'printing',
+    counterText: '01 / 02',
+    urlPath: 'Topprovider.co.th / Printing & Supply Solution',
+    clientSubtitle: '2026 • Printing & Supply Solution',
+    ctaText: 'ดูสินค้า Printer ทั้งหมด',
+    isProductPhoto: true,
+    project: {
+      id: 'printing-printer',
+      name: 'Printer',
+      client: 'Printing & Supply Solution',
+      year: '2026',
+      category: 'Printing',
+      subCategory: 'Printer Overview',
+      shortDescription:
+        'ศูนย์รวมเครื่องพิมพ์คุณภาพสูงครบวงจรสำหรับองค์กรและสถานพยาบาล รองรับตั้งแต่การพิมพ์เอกสารสำนักงานความเร็วสูง ฉลากยา บาร์โค้ด ไปจนถึงสายรัดข้อมือผู้ป่วย (Wristband) ช่วยเพิ่มความแม่นยำในการระบุตัวตน ลดต้นทุนการพิมพ์ และรองรับการทำงานร่วมกับระบบสารสนเทศได้อย่างไร้รอยต่อ',
+      fullDescription:
+        'ศูนย์รวมเครื่องพิมพ์คุณภาพสูงครบวงจรสำหรับองค์กรและสถานพยาบาล รองรับตั้งแต่การพิมพ์เอกสารสำนักงานความเร็วสูง ฉลากยา บาร์โค้ด ไปจนถึงสายรัดข้อมือผู้ป่วย (Wristband) ช่วยเพิ่มความแม่นยำในการระบุตัวตน ลดต้นทุนการพิมพ์ และรองรับการทำงานร่วมกับระบบสารสนเทศได้อย่างไร้รอยต่อ พร้อมบริการติดตั้ง ดูแลบำรุงรักษา และจัดจำหน่ายวัสดุสิ้นเปลืองครบวงจร',
+      challenge:
+        'องค์กรและสถานพยาบาลต้องการเครื่องพิมพ์หลากหลายประเภท ทั้งงานพิมพ์เอกสารทั่วไป งานพิมพ์ฉลากยาความเร็วสูง และสายรัดข้อมือผู้ป่วยที่ต้องเชื่อมต่อกับระบบเครือข่ายโรงพยาบาลได้เสถียร',
+      solution:
+        'จัดหาโซลูชันเครื่องพิมพ์ครบทุกประเภท Laser, Inkjet, Thermal, Wristband, Dot Matrix พร้อมบริการติดตั้ง เชื่อมต่อกับระบบ HIS และดูแลแบบ Onsite ทั่วประเทศ',
+      deliverables: [
+        'Laser & Inkjet Printer',
+        'Thermal & Wristband Printer',
+        'Large Format & Dot Matrix',
+      ],
+      metrics: [],
+      technologies: ['Laser Printing', 'Thermal Wristband', 'High-Speed Inkjet', 'Network Fleet'],
+      coverImage: `${BASE_URL}images/printer-product.png`,
+      galleryImages: [`${BASE_URL}images/printer-product.png`],
+      testimonial: {
+        quote:
+          'เครื่องพิมพ์ของ Top Provider มีครบทุกประเภทที่โรงพยาบาลต้องการ ใช้งานทนทานและมีทีมช่างคอยดูแลรวดเร็วมาก',
+        author: 'หัวหน้างานพัสดุและจัดซื้อ',
+        role: 'โรงพยาบาลทั่วไป',
+      },
+      featured: true,
+      accentColor: '#0066FF',
+    },
+  },
+  {
+    id: 'printing-supplies',
+    tabCategory: 'printing',
+    counterText: '02 / 02',
+    urlPath: 'Topprovider.co.th / Printing & Supply Solution',
+    clientSubtitle: '2026 • Printing & Supply Solution',
+    ctaText: 'ดูสินค้า Supply ทั้งหมด',
+    isProductPhoto: true,
+    project: {
+      id: 'printing-supplies',
+      name: 'Supply',
+      client: 'Printing & Supply Solution',
+      year: '2026',
+      category: 'Printing',
+      subCategory: 'Supply Overview',
+      shortDescription:
+        'ศูนย์รวมวัสดุสิ้นเปลืองการพิมพ์ครบวงจร ทั้งตลับหมึกเลเซอร์ (Toner Cartridge), ผ้าหมึกพิมพ์ดอทเมทริกซ์ (Ribbon), หมึกอิงค์เจ็ท, ริบบอนบาร์โค้ด และสายรัดข้อมือผู้ป่วย (Wristband) คุณภาพสูง ได้มาตรฐาน ช่วยยืดอายุการใช้งานของเครื่องพิมพ์และให้งานพิมพ์คมชัดสม่ำเสมอ',
+      fullDescription:
+        'ศูนย์รวมวัสดุสิ้นเปลืองการพิมพ์ครบวงจร ทั้งตลับหมึกเลเซอร์ (Toner Cartridge), ผ้าหมึกพิมพ์ดอทเมทริกซ์ (Ribbon), หมึกอิงค์เจ็ท, ริบบอนบาร์โค้ด และสายรัดข้อมือผู้ป่วย (Wristband) คุณภาพสูง ได้มาตรฐาน ปลอดภัย มั่นใจได้ในความคมชัดและประสิทธิภาพสูงสุดในการทำงานร่วมกับเครื่องพิมพ์ทุกแบรนด์ชั้นนำ พร้อมบริการจัดส่งด่วนและการันตีคุณภาพทุกชิ้น',
+      challenge:
+        'การใช้วัสดุสิ้นเปลืองที่ไม่ได้มาตรฐานส่งผลให้เครื่องพิมพ์เสียหายง่าย และงานพิมพ์บาร์โค้ดเลือนราง สแกนติดยาก',
+      solution:
+        'จัดหาตลับหมึก ริบบอนบาร์โค้ด และวัสดุสิ้นเปลืองแท้และเกรดพรีเมียมที่ผ่านการทดสอบความเข้ากันได้ 100% พร้อมรับประกันเปลี่ยนคืนหากมีปัญหา',
+      deliverables: [
+        'Laser Toner Cartridge (ตลับหมึกเลเซอร์)',
+        'Ribbon & Barcode Label (ผ้าหมึกและริบบอน)',
+        'Medical Wristband (สายรัดข้อมือผู้ป่วย)',
+      ],
+      metrics: [],
+      technologies: ['High-Yield Toner', 'Thermal Transfer Ribbon', 'Medical-Grade Wristbands'],
+      coverImage: 'https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?auto=format&fit=crop&w=1400&q=80',
+      galleryImages: ['https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?auto=format&fit=crop&w=1200&q=80'],
+      testimonial: {
+        quote: 'หมึกและริบบอนคุณภาพดีมาก พิมพ์บาร์โค้ดออกมาคมชัด สแกนผ่านง่าย ไม่ติดขัด',
+        author: 'ฝ่ายไอทีและสารสนเทศ',
+        role: 'โรงพยาบาลทั่วไป',
+      },
+      featured: true,
+      accentColor: '#0066FF',
+    },
+  },
+
+  // =================== 2. HARDWARE SOLUTION (Overview) ===================
+  {
+    id: 'hardware-aio-pc',
+    tabCategory: 'hardware',
+    counterText: '01 / 02',
+    urlPath: 'Topprovider.co.th / Medical All-in-One PC',
+    clientSubtitle: '2026 • Medical Grade Hardware',
+    ctaText: 'ดูสินค้า Hardware ทั้งหมด',
+    isProductPhoto: true,
+    project: {
+      id: 'medical-aio-pc',
+      name: 'Medical-Grade All-in-One PC Workstations',
+      client: 'Hospital Hardware Infrastructure',
+      year: '2026',
+      category: 'Hardware Solution',
+      subCategory: 'Medical PC',
+      shortDescription:
+        'จัดจำหน่ายและติดตั้งเครื่องคอมพิวเตอร์ประสิทธิภาพสูง All-in-One PC เกรดการแพทย์ ตัวเครื่องป้องกันน้ำและฝุ่น ทนทานต่อน้ำยาฆ่าเชื้อ รองรับการทำงานต่อเนื่อง 24 ชั่วโมง',
+      fullDescription:
+        'คอมพิวเตอร์ระดับอุตสาหกรรมการแพทย์สำหรับเคาน์เตอร์พยาบาล ห้องตรวจ และห้องผ่าตัด ออกแบบไร้พัดลม (Fanless) ลดการสะสมของเชื้อโรค ตัวเครื่องเคลือบสารต้านจุลชีพและมีมาตรฐานกันน้ำ IP65 ที่แผงหน้าจอ ทนทานต่อการเช็ดทำความสะอาดตลอดเวลา',
+      challenge:
+        'คอมพิวเตอร์สำนักงานทั่วไปมีช่องพัดลมดูดฝุ่นและเชื้อโรคเข้ามาสะสม และพังง่ายเมื่อโดนน้ำยาฆ่าเชื้อเช็ดหน้าจอ',
+      solution:
+        'นำเข้าคอมพิวเตอร์เกรดการแพทย์แบบ Fanless หน้าจอป้องกันรอยขีดข่วนและของเหลว พร้อมการรับประกัน Onsite แบบเปลี่ยนเครื่องทันที',
+      deliverables: [
+        'Fanless Antimicrobial Medical PC',
+        'IP65 Waterproof Front Bezel',
+        'High-Brightness Anti-Glare Medical Display',
+        'Hot-Swappable UPS Battery Backup',
+        'Onsite Hardware Maintenance SLA',
+      ],
+      metrics: [
+        { label: 'รองรับการทำงานต่อเนื่องแบบ Non-stop', value: '24/7' },
+        { label: 'มาตรฐานป้องกันน้ำและฝุ่นละออง', value: 'IP65' },
+      ],
+      technologies: ['Fanless Cooling', 'Antimicrobial Chassis', 'Medical Touchscreen'],
+      coverImage: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1400&q=80',
+      galleryImages: ['https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1200&q=80'],
+      testimonial: {
+        quote: 'เครื่องคอมพิวเตอร์ทนทานมาก เช็ดน้ำยาฆ่าเชื้อได้ทั้งวันไม่มีปัญหา และเครื่องเงียบสนิทเหมาะกับห้องผู้ป่วย',
+        author: 'ผู้จัดการฝ่ายวิศวกรรมการแพทย์',
+        role: 'โรงพยาบาลกรุงเทพและปริมณฑล',
+      },
+      featured: true,
+      accentColor: '#0066FF',
+    },
+  },
+  {
+    id: 'hardware-scanners',
+    tabCategory: 'hardware',
+    counterText: '02 / 02',
+    urlPath: 'Topprovider.co.th / 2D Medical Scanners',
+    clientSubtitle: '2026 • High-Speed Barcode Readers',
+    ctaText: 'ดูสินค้า Hardware ทั้งหมด',
+    isProductPhoto: true,
+    project: {
+      id: 'medical-scanners',
+      name: 'High-Speed 2D Medical Barcode Scanners',
+      client: 'Clinical Devices',
+      year: '2026',
+      category: 'Hardware Solution',
+      subCategory: 'Barcode Readers',
+      shortDescription:
+        'เครื่องอ่านบาร์โค้ด 2 มิติเกรดการแพทย์ สแกนสายรัดข้อมือและฉลากยาได้ในเสี้ยววินาที รองรับการอ่านบาร์โค้ดที่ยับหรือเปียกน้ำ พร้อมระบบเสียงและแสงยืนยันการอ่านสำเร็จ',
+      fullDescription:
+        'เครื่องอ่านบาร์โค้ดแบบไร้สายและมีสาย ออกแบบสำหรับโรงพยาบาลโดยเฉพาะ ตัวเครื่องทนต่อสารเคมีทำความสะอาด มีระบบเล็งและสแกนความเร็วสูง อ่านโค้ดบนพื้นผิวโค้งของขวดยาหรือสายรัดข้อมือได้อย่างแม่นยำในครั้งเดียว',
+      challenge: 'พยาบาลเสียเวลาในการสแกนบาร์โค้ดบนสายรัดข้อมือที่ไม่ค่อยติด หรือบาร์โค้ดยับบนซองยา',
+      solution: 'ใช้เซนเซอร์ออปติคอลความไวสูง จับภาพได้ 360 องศา อ่านโค้ดที่มีความเปรียบต่างต่ำหรือยับได้อย่างแม่นยำ',
+      deliverables: [
+        'Healthcare Disinfectant-Ready Housing',
+        'Omnidirectional 1D/2D High-Speed Scanning',
+        'Night-Mode Vibration & LED Feedback',
+        'Long-Range Wireless Bluetooth Base',
+        '1.8m Drop Resistance Rating',
+      ],
+      metrics: [
+        { label: 'ความเร็วในการอ่านบาร์โค้ด', value: '< 0.1 วินาที' },
+        { label: 'ความแม่นยำในการระบุตัวยา', value: '100%' },
+      ],
+      technologies: ['2D Area Imager', 'Bluetooth LE', 'Antimicrobial Enclosure'],
+      coverImage: 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&w=1400&q=80',
+      galleryImages: ['https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&w=1200&q=80'],
+      testimonial: {
+        quote: 'สแกนไวมาก แม้คนไข้จะขยับมือหรือบาร์โค้ดเปียกน้ำ ก็อ่านได้ในครั้งเดียว พยาบาลทำงานได้เร็วขึ้นเยอะ',
+        author: 'หัวหน้าพยาบาลแผนกผู้ป่วยนอก',
+        role: 'ศูนย์การแพทย์เฉพาะทาง',
+      },
+      featured: true,
+      accentColor: '#0066FF',
+    },
+  },
+
+  // =================== 3. NETWORK SOLUTION (Overview) ===================
+  {
+    id: 'network-datacenter',
+    tabCategory: 'network',
+    counterText: '01 / 02',
+    urlPath: 'Topprovider.co.th / Network & Server Infrastructure',
+    clientSubtitle: '2026 • Core Hospital Infrastructure',
+    ctaText: 'ดูสินค้า Network ทั้งหมด',
+    project: {
+      id: 'network-datacenter',
+      name: 'Hospital Core Server & SAN Storage Cluster',
+      client: 'Healthcare Infrastructure',
+      year: '2026',
+      category: 'Network Solution',
+      subCategory: 'Core Server & Storage',
+      shortDescription:
+        'วางระบบโครงสร้างพื้นฐานเครือข่ายและศูนย์ข้อมูลสำหรับโรงพยาบาล ออกแบบระบบ Server, Storage, Firewall ความปลอดภัยขั้นสูง เพื่อการส่งผ่านข้อมูลเวชระเบียนและภาพ PACS ไร้รอยต่อ',
+      fullDescription:
+        'การออกแบบและวางระบบโครงสร้างพื้นฐานเครือข่ายระดับ Mission-Critical รองรับการส่งถ่ายข้อมูลภาพทางการแพทย์ (PACS) ขนาดใหญ่ และฐานข้อมูลคนไข้ที่เติบโตอย่างต่อเนื่อง มั่นใจได้ด้วยระบบ Server Cluster สำรองข้อมูลแบบ Real-time และโครงข่ายไฟเบอร์ 10Gbps ทั่วทั้งโรงพยาบาล',
+      challenge: 'ระบบเครือข่ายเดิมแบนด์วิดท์ไม่พอ ทำให้การเปิดดูภาพเอกซเรย์ CT/MRI ช้า และมีความเสี่ยงต่อระบบล่ม',
+      solution: 'อัปเกรดเป็น Core Fiber 10Gbps พร้อม SAN All-Flash Storage และระบบกระจายภาระงาน (Load Balancing)',
+      deliverables: [
+        'High-Availability Server & Storage Cluster',
+        '10Gbps Core Fiber Optic Backbone',
+        'Sub-millisecond PACS Storage Access',
+        'Automated Disaster Recovery Replication',
+        '24/7 Network Operations Center (NOC)',
+      ],
+      metrics: [
+        { label: 'Uptime เสถียรภาพเครือข่าย', value: '99.99%' },
+        { label: 'ความเร็วเชื่อมต่อ Core Backbone', value: '10 Gbps' },
+      ],
+      technologies: ['Cisco/Aruba', 'SAN All-Flash', 'Fiber Optic 10G', 'VMware HA'],
+      coverImage: 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=1400&q=80',
+      galleryImages: ['https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=1200&q=80'],
+      testimonial: {
+        quote: 'การเปิดดูภาพสแกน MRI ทำได้เร็วขึ้นแบบทันทีทันใด แพทย์รังสีวินิจฉัยทำงานได้ราบรื่นมาก',
+        author: 'ผู้อำนวยการฝ่ายสารสนเทศ',
+        role: 'ศูนย์รังสีวิทยาและโรงพยาบาล',
+      },
+      featured: true,
+      accentColor: '#0066FF',
+    },
+  },
+  {
+    id: 'network-firewall-wifi',
+    tabCategory: 'network',
+    counterText: '02 / 02',
+    urlPath: 'Topprovider.co.th / Next-Gen Firewall & Wi-Fi 6',
+    clientSubtitle: '2026 • Security & Wireless Connectivity',
+    ctaText: 'ดูสินค้า Network ทั้งหมด',
+    project: {
+      id: 'network-firewall-wifi',
+      name: 'Next-Gen Firewall & Healthcare Wi-Fi 6',
+      client: 'Cyber Security & Network',
+      year: '2026',
+      category: 'Network Solution',
+      subCategory: 'Firewall & Wi-Fi 6',
+      shortDescription:
+        'ระบบไฟร์วอลล์ความปลอดภัยสูงป้องกัน Ransomware ตามมาตรฐาน PDPA พร้อมระบบ Wi-Fi 6 เกรดการแพทย์ รองรับอุปกรณ์แท็บเล็ตและเครื่องมือแพทย์นับหมื่นเครื่องพร้อมกัน',
+      fullDescription:
+        'การสร้างเครือข่ายไร้สายความหนาแน่นสูง (High-Density Wi-Fi 6) ครอบคลุมทุกอาคารและห้องผ่าตัด สัญญาณเสถียรไม่มีจุดอับสัญญาณ รองรับการโรมมิ่งของรถเข็นพยาบาลและแท็บเล็ตตรวจรักษาโดยไม่หลุดการเชื่อมต่อ พร้อมไฟร์วอลล์ระดับ Enterprise ป้องกันภัยไซเบอร์',
+      challenge: 'สัญญาณ Wi-Fi หลุดบ่อยเมื่อแพทย์เดินตรวจข้ามตึก และมีความเสี่ยงต่อการถูกโจมตีทางไซเบอร์เพื่อเรียกค่าไถ่ข้อมูลคนไข้',
+      solution: 'ติดตั้ง Wi-Fi 6 Access Points พร้อม Fast Roaming และระบบ Network Segmentation แยกเครือข่ายข้อมูลคนไข้กับผู้รับบริการเด็ดขาด',
+      deliverables: [
+        'Campus-Wide Medical Grade Wi-Fi 6',
+        'Zero-Loss Seamless Client Roaming',
+        'Next-Gen Firewall with Intrusion Prevention',
+        'VLAN Segmentation for Medical IoT',
+        'PDPA & Cybersecurity Compliance Log',
+      ],
+      metrics: [
+        { label: 'อัตราการตรวจจับภัยคุกคามไซเบอร์', value: '100%' },
+        { label: 'ความครอบคลุมสัญญาณ Wi-Fi ทั่วอาคาร', value: '99.9%' },
+      ],
+      technologies: ['Wi-Fi 6', 'Next-Gen Firewall', 'Zero Trust', 'WPA3 Enterprise'],
+      coverImage: 'https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&w=1400&q=80',
+      galleryImages: ['https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&w=1200&q=80'],
+      testimonial: {
+        quote: 'สัญญาณ Wi-Fi นิ่งและเร็วมาก เข็นรถพยาบาลข้ามตึกแท็บเล็ตไม่มีหลุด และมั่นใจในความปลอดภัยข้อมูลคนไข้',
+        author: 'หัวหน้างานความมั่นคงปลอดภัยไซเบอร์',
+        role: 'เครือโรงพยาบาลชั้นนำ',
+      },
+      featured: true,
+      accentColor: '#0066FF',
+    },
+  },
+
+  // =================== 4. MEDICAL EQUIPMENT (Overview) ===================
+  {
+    id: 'medical-kiosk',
+    tabCategory: 'medical',
+    counterText: '01 / 02',
+    urlPath: 'Topprovider.co.th / Smart Kiosk',
+    clientSubtitle: '2026 • Patient Self-Service Systems',
+    ctaText: 'ดูรายละเอียดโซลูชัน',
+    project: {
+      id: 'smart-kiosk',
+      name: 'Smart Self-Registration & Payment Kiosk',
+      client: 'Smart Hospital Kiosk',
+      year: '2026',
+      category: 'Medical Equipment',
+      subCategory: 'Self-Service Kiosk',
+      shortDescription:
+        'นวัตกรรมตู้บริการตนเองอัจฉริยะ (Self-Service Kiosk) สำหรับลงทะเบียนผู้ป่วย ตรวจสอบสิทธิ ชำระเงินค่ารักษาพยาบาล ลดความแออัดและลดเวลารอคอยของผู้รับบริการ',
+      fullDescription:
+        'ตู้บริการอัตโนมัติอัจฉริยะที่ช่วยยกระดับประสบการณ์ผู้ป่วย ผู้รับบริการสามารถเสียบบัตรประชาชนเพื่อเช็คสิทธิการรักษา จองคิว หรือชำระเงินผ่าน QR Code และบัตรเครดิตได้ด้วยตนเอง มีเสียงและคำแนะนำภาษาไทยและภาษาอังกฤษ ใช้งานง่ายและสะดวกรวดเร็วใน 1 นาที',
+      challenge: 'ผู้ป่วยต้องต่อแถวรอคิวยาวที่เคาน์เตอร์เวชระเบียนและห้องการเงิน ทำให้เกิดความแออัดบริเวณทางเข้าโรงพยาบาล',
+      solution: 'ติดตั้งตู้ Smart Kiosk กระจายตามจุดสำคัญ เชื่อมต่อกับระบบ HIS ของโรงพยาบาลแบบ Real-time',
+      deliverables: [
+        'Thai National ID Smart Card Reader',
+        'Automatic Health Rights & Eligibility Check',
+        'Cashless QR Code & Credit Card Payment',
+        'Thermal Queue & Navigation Ticket Printer',
+        'Voice Guidance for Elderly & Disabled Access',
+      ],
+      metrics: [
+        { label: 'ลดระยะเวลารอคอยของผู้ป่วย', value: '60%' },
+        { label: 'ความพึงพอใจของผู้รับบริการ', value: '98.5%' },
+      ],
+      technologies: ['Smart Kiosk', 'Thai ID Reader', 'Payment Gateway', 'HIS Integration'],
+      coverImage: 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=1400&q=80',
+      galleryImages: ['https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=1200&q=80'],
+      testimonial: {
+        quote: 'ตู้ Kiosk ช่วยลดความแออัดหน้าเคาน์เตอร์เวชระเบียนได้เกินครึ่ง คนไข้กดทำรายการเองได้สะดวกและรวดเร็วมาก',
+        author: 'หัวหน้าแผนกบริการผู้ป่วยนอก',
+        role: 'โรงพยาบาลศูนย์การแพทย์',
+      },
+      featured: true,
+      accentColor: '#0066FF',
+    },
+  },
+  {
+    id: 'medical-vital-signs',
+    tabCategory: 'medical',
+    counterText: '02 / 02',
+    urlPath: 'Topprovider.co.th / Vital Signs Station',
+    clientSubtitle: '2026 • Automated Clinical Measurement',
+    ctaText: 'ดูรายละเอียดโซลูชัน',
+    project: {
+      id: 'vital-signs-station',
+      name: 'Direct HIS-Synced Vital Signs Station',
+      client: 'Clinical Vitals Integration',
+      year: '2026',
+      category: 'Medical Equipment',
+      subCategory: 'Vital Signs',
+      shortDescription:
+        'สถานีตรวจวัดสัญญาณชีพและเครื่องวัดความดันอัตโนมัติที่ซิงค์ข้อมูลผลตรวจ (ความดัน, ชีพจร, น้ำหนัก, ส่วนสูง, BMI) ตรงเข้าสู่ระบบ HIS ทันที พยาบาลไม่ต้องจดหรือคีย์ข้อมูลซ้ำ',
+      fullDescription:
+        'การผสานเครื่องวัดความดันโลหิต เครื่องวัดค่าออกซิเจนในเลือด และเครื่องชั่งน้ำหนัก-วัดส่วนสูงเข้ากับระบบ HIS โดยตรง เมื่อผู้ป่วยสแกนสายรัดข้อมือหรือบัตรประชาชน ข้อมูลสัญญาณชีพจะถูกบันทึกลงเวชระเบียนอิเล็กทรอนิกส์ของแพทย์ทันที ป้องกันความผิดพลาดจากการจดบันทึกด้วยมือ',
+      challenge: 'พยาบาลจุดคัดกรองต้องจดค่าความดันและคีย์ลงคอมพิวเตอร์ทีละราย เสี่ยงต่อการพิมพ์ตัวเลขผิดพลาดและทำให้คิวยาว',
+      solution: 'ติดตั้งสถานีวัดสัญญาณชีพอัตโนมัติที่เชื่อมต่อผ่านระบบบลูทูธและเครือข่าย ส่งผลตรวจเข้าหน้าจอแพทย์ทันทีที่วัดเสร็จ',
+      deliverables: [
+        'Automated Blood Pressure & Pulse Monitor',
+        'Digital Height, Weight & BMI Calculation',
+        'Direct Integration to Hospital HIS',
+        'Thai/English Audio Guidance System',
+        'Thermal Result Slip for Patient Reference',
+      ],
+      metrics: [
+        { label: 'ความแม่นยำในการซิงค์ข้อมูลเข้า HIS', value: '100%' },
+        { label: 'ลดเวลาการคีย์ข้อมูลของพยาบาล', value: '50%' },
+      ],
+      technologies: ['Medical Vital Sensor', 'Bluetooth/LAN Bridge', 'HIS HL7 API'],
+      coverImage: 'https://images.unsplash.com/photo-1505751172876-fa1923c5c528?auto=format&fit=crop&w=1400&q=80',
+      galleryImages: ['https://images.unsplash.com/photo-1505751172876-fa1923c5c528?auto=format&fit=crop&w=1200&q=80'],
+      testimonial: {
+        quote: 'วัดเสร็จปุ๊บ ข้อมูลความดันและน้ำหนักเด้งเข้าหน้าจอหมอทันที พยาบาลไม่ต้องนั่งพิมพ์ตัวเลขซ้ำ ลดข้อผิดพลาดได้ 100%',
+        author: 'พยาบาลหัวหน้าจุดคัดกรอง',
+        role: 'โรงพยาบาลทั่วไป',
+      },
+      featured: true,
+      accentColor: '#0066FF',
+    },
+  },
+
+  // =================== 5. SMART SOLUTION (IoT) (Overview) ===================
+  {
+    id: 'iot-facial-security',
+    tabCategory: 'iot',
+    counterText: '01 / 02',
+    urlPath: 'Topprovider.co.th / AI Facial Recognition',
+    clientSubtitle: '2026 • AI Computer Vision Security',
+    ctaText: 'ดูรายละเอียดโซลูชัน',
+    project: {
+      id: 'ai-facial-security',
+      name: 'AI Facial Recognition & CCTV Surveillance',
+      client: 'Smart Hospital IoT & AI',
+      year: '2026',
+      category: 'Smart Solution (IoT)',
+      subCategory: 'AI Surveillance',
+      shortDescription:
+        'ระบบกล้องโทรทัศน์วงจรปิดอัจฉริยะวิเคราะห์ใบหน้า ตรวจจับบุคคลต้องสงสัย แจ้งเตือนเมื่อมีผู้ป่วยพลัดหลง และควบคุมการเข้าออกพื้นที่หวงห้ามได้อย่างแม่นยำ',
+      fullDescription:
+        'การยกระดับความปลอดภัยในโรงพยาบาลด้วยเทคโนโลยี AI คอมพิวเตอร์วิทัศน์ สามารถตรวจจับใบหน้าในระยะไกล ค้นหาเส้นทางการเคลื่อนที่ของผู้ป่วยกลุ่มเสี่ยงหรือเด็กแรกเกิด พร้อมระบบแจ้งเตือนแบบเรียลไทม์ไปยังห้องควบคุมความปลอดภัยเมื่อมีเหตุผิดปกติ',
+      challenge: 'การดูแลความปลอดภัยในโรงพยาบาลขนาดใหญ่ที่มีคนเข้าออกหลักพันต่อวัน และการติดตามผู้ป่วยสมองเสื่อมที่อาจพลัดหลง',
+      solution: 'ติดตั้งกล้อง AI CCTV พร้อมระบบประมวลผลใบหน้าอัจฉริยะ ค้นหาตำแหน่งบุคคลได้ใน 1 วินาทีจากภาพถ่าย',
+      deliverables: [
+        'Real-Time Face Match (<0.2s Response)',
+        'Wandering Patient & Missing Person Search',
+        'Cleanroom & Operating Theater Access Control',
+        'Emergency Exit & Perimeter Breach Alarm',
+        'Centralized Security Control Room Software',
+      ],
+      metrics: [
+        { label: 'ความเร็วในการตรวจจับและระบุตัวตน', value: '0.2 วินาที' },
+        { label: 'ความแม่นยำในการเปรียบเทียบใบหน้า', value: '99.7%' },
+      ],
+      technologies: ['AI Deep Learning', 'Facial Recognition', 'Edge Computing', 'IP CCTV'],
+      coverImage: 'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&w=1400&q=80',
+      galleryImages: ['https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&w=1200&q=80'],
+      testimonial: {
+        quote: 'ระบบกล้อง AI ช่วยให้เจ้าหน้าที่รักษาความปลอดภัยค้นหาคนไข้ที่พลัดหลงได้ทันทีในไม่กี่วินาที สร้างความอุ่นใจให้กับญาติผู้ป่วยมาก',
+        author: 'ผู้จัดการฝ่ายรักษาความปลอดภัย',
+        role: 'ศูนย์การแพทย์ชั้นนำ',
+      },
+      featured: true,
+      accentColor: '#0066FF',
+    },
+  },
+  {
+    id: 'iot-rtls-tracking',
+    tabCategory: 'iot',
+    counterText: '02 / 02',
+    urlPath: 'Topprovider.co.th / RTLS Asset Tracking',
+    clientSubtitle: '2026 • Real-Time Location Systems',
+    ctaText: 'ดูรายละเอียดโซลูชัน',
+    project: {
+      id: 'rtls-asset-tracking',
+      name: 'Real-Time Asset & Patient Tracking (RTLS)',
+      client: 'Healthcare IoT Logistics',
+      year: '2026',
+      category: 'Smart Solution (IoT)',
+      subCategory: 'RTLS Tracking',
+      shortDescription:
+        'ระบบติดตามพิกัดตำแหน่งอุปกรณ์ทางการแพทย์ (เครื่องกระตุกหัวใจ, เครื่องช่วยหายใจ, รถเข็น) และผู้ป่วยกลุ่มเสี่ยงด้วยสัญญาณ BLE/RFID แสดงผลบนแผนผังดิจิทัลแบบเรียลไทม์',
+      fullDescription:
+        'โซลูชัน IoT แท็กอัจฉริยะติดเครื่องมือแพทย์ ช่วยให้แพทย์และพยาบาลสามารถค้นหาตำแหน่งเครื่องมือกู้ชีพที่ใกล้ที่สุดได้ทันทีในเวลาฉุกเฉิน พร้อมระบบแจ้งเตือนการบำรุงรักษาเครื่องมือตามรอบระยะเวลา และระบบเตือนเมื่ออุปกรณ์ถูกเคลื่อนย้ายออกนอกแผนก',
+      challenge: 'ในเวลาฉุกเฉิน พยาบาลต้องเสียเวลาวิ่งตามหาเครื่องกระตุกหัวใจหรือเครื่องวัดสัญญาณชีพเคลื่อนที่ที่ถูกยืมไปแผนกอื่น',
+      solution: 'ติดแท็ก BLE ขนาดจิ๋วบนอุปกรณ์การแพทย์ทุกชิ้น และแสดงผลพิกัดตำแหน่งบนแผนผังอาคารผ่านหน้าจอคอมพิวเตอร์และมือถือ',
+      deliverables: [
+        'Sub-Meter Indoor BLE Beacon Positioning',
+        'Digital Floorplan Real-Time Asset Map',
+        'Geofence Alarm When Device Leaves Ward',
+        'Preventive Maintenance Usage Tracking',
+        'High-Risk Patient Fall & Wandering Tag',
+      ],
+      metrics: [
+        { label: 'ระยะเวลาค้นหาอุปกรณ์ในภาวะฉุกเฉิน', value: '< 10 วินาที' },
+        { label: 'ลดการสูญหายของเครื่องมือแพทย์', value: '100%' },
+      ],
+      technologies: ['BLE 5.0 Beacon', 'Indoor Positioning', 'RFID', 'IoT Dashboard'],
+      coverImage: 'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1400&q=80',
+      galleryImages: ['https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1200&q=80'],
+      testimonial: {
+        quote: 'เวลาคนไข้ฉุกเฉิน เปิดดูหน้าจอรู้ทันทีว่าเครื่องกระตุกหัวใจอยู่ห้องไหน ประหยัดเวลาชีวิตได้จริง มีประโยชน์มาก',
+        author: 'พยาบาลวิชาชีพ แผนกอุบัติเหตุและฉุกเฉิน (ER)',
+        role: 'โรงพยาบาลทั่วไป',
+      },
+      featured: true,
+      accentColor: '#0066FF',
+    },
+  },
+];
 
 export interface SoftwareRecord {
   id: number;
@@ -65,27 +509,6 @@ export interface SoftwareRecord {
   feature_2_highlights?: string[] | string;
   feature_2_tags?: string[] | string;
   feature_2_image?: string;
-}
-
-export interface DbProductRecord {
-  id: number;
-  name: string;
-  sku?: string;
-  slug?: string;
-  category_id?: string;
-  sub_category?: string;
-  brand?: string;
-  product_type?: string;
-  short_description?: string;
-  full_description?: string;
-  specifications?: { label: string; value: string }[] | Record<string, unknown>[];
-  bullet_points?: string[];
-  cover_image_url?: string;
-  gallery_images?: string[];
-  compatible_products?: string[];
-  datasheet_en_url?: string;
-  tor_th_url?: string;
-  is_active?: boolean;
 }
 
 export function mapSoftwareRecordToCardItem(
@@ -125,6 +548,7 @@ export function mapSoftwareRecordToCardItem(
     counterText,
     urlPath: `Topprovider.co.th / ${r.name}`,
     clientSubtitle: `2026 • ${subCategory}`,
+    ctaText: 'ดูรายละเอียดระบบ',
     project: {
       id: `vitanix-${r.id}`,
       name: r.name,
@@ -148,74 +572,9 @@ export function mapSoftwareRecordToCardItem(
   };
 }
 
-export function mapProductRecordToCardItem(
-  p: DbProductRecord,
-  index: number,
-  total: number
-): SolutionCardItem {
-  const counterText = `${String(index + 1).padStart(2, '0')} / ${String(total).padStart(2, '0')}`;
-  const rawCat = (p.category_id || '').toLowerCase();
-
-  let tabCategory: SolutionCardItem['tabCategory'] = 'printing';
-  if (rawCat.includes('hardware')) tabCategory = 'hardware';
-  else if (rawCat.includes('software')) tabCategory = 'software';
-  else if (rawCat.includes('network')) tabCategory = 'network';
-  else if (rawCat.includes('medical')) tabCategory = 'medical';
-  else if (rawCat.includes('iot') || rawCat.includes('smart')) tabCategory = 'iot';
-  else tabCategory = 'printing';
-
-  const subCategory = p.sub_category || p.brand || 'Product Item';
-  const coverImage = p.cover_image_url || '/images/printer-product.png';
-
-  let deliverables: string[] = [];
-  if (Array.isArray(p.bullet_points) && p.bullet_points.length > 0) {
-    deliverables = p.bullet_points;
-  } else if (Array.isArray(p.compatible_products) && p.compatible_products.length > 0) {
-    deliverables = p.compatible_products;
-  } else if (Array.isArray(p.specifications) && p.specifications.length > 0) {
-    deliverables = (p.specifications as { label?: string; value?: string }[])
-      .slice(0, 5)
-      .map((s) => `${s.label || ''}: ${s.value || ''}`.trim())
-      .filter(Boolean);
-  }
-
-  return {
-    id: `product-${p.id}`,
-    tabCategory,
-    counterText,
-    urlPath: `Topprovider.co.th / ${p.name}`,
-    clientSubtitle: `2026 • ${subCategory}`,
-    isProductPhoto: true,
-    ctaText: 'ดูรายละเอียดสินค้า',
-    project: {
-      id: `prod-${p.id}`,
-      name: p.name,
-      client: subCategory,
-      year: '2026',
-      category: p.category_id || 'Printing',
-      subCategory: subCategory,
-      shortDescription: p.short_description || p.full_description || '',
-      fullDescription: p.full_description || p.short_description || '',
-      challenge: '',
-      solution: '',
-      deliverables,
-      metrics: [],
-      technologies: [p.brand || 'Enterprise Hardware'],
-      coverImage: coverImage,
-      galleryImages:
-        Array.isArray(p.gallery_images) && p.gallery_images.length > 0
-          ? p.gallery_images
-          : [coverImage],
-      featured: true,
-      accentColor: '#0066FF',
-    },
-  };
-}
-
 export const StickyProjectSection: React.FC<StickyProjectSectionProps> = ({
   onSelectProject,
   initialSoftwareRecords,
-  initialProducts,
 }) => {
   const router = useRouter();
 
@@ -226,7 +585,8 @@ export const StickyProjectSection: React.FC<StickyProjectSectionProps> = ({
     router.prefetch('/products');
   }, [router]);
 
-  const [activeTab, setActiveTab] = useState<string>('software');
+  // แท็บเริ่มต้น: Printing & Supply Solution ตามที่ผู้ใช้ต้องการ
+  const [activeTab, setActiveTab] = useState<string>('printing');
   const [playingVideoId, setPlayingVideoId] = useState<string | null>(null);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
 
@@ -252,7 +612,7 @@ export const StickyProjectSection: React.FC<StickyProjectSectionProps> = ({
       .catch((err) => console.log('Tabs API fallback:', err));
   }, []);
 
-  // Cards from DB (Software)
+  // Cards from DB (Software Solution)
   const initialSoftwareCards = useMemo(() => {
     if (initialSoftwareRecords && initialSoftwareRecords.length > 0) {
       return initialSoftwareRecords.map((r, i) =>
@@ -262,20 +622,9 @@ export const StickyProjectSection: React.FC<StickyProjectSectionProps> = ({
     return [];
   }, [initialSoftwareRecords]);
 
-  // Cards from DB (Products)
-  const initialProductCards = useMemo(() => {
-    if (initialProducts && initialProducts.length > 0) {
-      return initialProducts.map((p, i) =>
-        mapProductRecordToCardItem(p as unknown as DbProductRecord, i, initialProducts.length)
-      );
-    }
-    return [];
-  }, [initialProducts]);
-
   const [dynamicSoftwareCards, setDynamicSoftwareCards] = useState<SolutionCardItem[]>(initialSoftwareCards);
-  const [dynamicProductCards, setDynamicProductCards] = useState<SolutionCardItem[]>(initialProductCards);
 
-  // Client-side fetch fallback if server didn't provide
+  // Client-side fetch fallback for software from DB
   useEffect(() => {
     if (dynamicSoftwareCards.length === 0) {
       fetchRecords<SoftwareRecord>({
@@ -292,31 +641,15 @@ export const StickyProjectSection: React.FC<StickyProjectSectionProps> = ({
         })
         .catch((err) => console.error('Error loading software from DB:', err));
     }
+  }, [dynamicSoftwareCards.length]);
 
-    if (dynamicProductCards.length === 0) {
-      fetchRecords<DbProductRecord>({
-        table: 'TB_PRODUCTS',
-        orderBy: 'id',
-        orderDir: 'asc',
-      })
-        .then((records) => {
-          if (records && records.length > 0) {
-            setDynamicProductCards(
-              records.map((p, i) => mapProductRecordToCardItem(p, i, records.length))
-            );
-          }
-        })
-        .catch((err) => console.error('Error loading products from DB:', err));
-    }
-  }, [dynamicSoftwareCards.length, dynamicProductCards.length]);
-
-  // Filter cards for active tab (DB ONLY)
+  // Current cards: ถ้าเป็น software ใช้ข้อมูลจาก DB, หมวดหมู่อื่นๆ ใช้ Overview Cards
   const currentCards = useMemo(() => {
     if (activeTab === 'software') {
       return dynamicSoftwareCards;
     }
-    return dynamicProductCards.filter((item) => item.tabCategory === activeTab);
-  }, [activeTab, dynamicSoftwareCards, dynamicProductCards]);
+    return ALL_SOLUTION_CARDS.filter((item) => item.tabCategory === activeTab);
+  }, [activeTab, dynamicSoftwareCards]);
 
   const handleTabClick = (tabId: string) => {
     setActiveTab(tabId);
@@ -349,6 +682,18 @@ export const StickyProjectSection: React.FC<StickyProjectSectionProps> = ({
       router.push('/solutions/printing');
       return;
     }
+    if (cardItem.tabCategory === 'hardware') {
+      router.push('/products?type=hardware');
+      return;
+    }
+    if (cardItem.tabCategory === 'network') {
+      router.push('/products?type=network');
+      return;
+    }
+    if (cardItem.tabCategory === 'software') {
+      router.push('/solutions/software');
+      return;
+    }
     handleSelectProject(cardItem.project);
   };
 
@@ -361,7 +706,7 @@ export const StickyProjectSection: React.FC<StickyProjectSectionProps> = ({
             IT Solution & Product
           </h2>
           <p className="text-xs sm:text-sm text-slate-500 mt-2 font-normal">
-            เลือกดูโซลูชันและผลิตภัณฑ์ตามหมวดหมู่การใช้งานที่ครอบคลุมทุกระบบโรงพยาบาลและองค์กร
+            เลือกดูภาพรวมโซลูชันและผลิตภัณฑ์ตามหมวดหมู่การใช้งานที่ครอบคลุมทุกระบบโรงพยาบาลและองค์กร
           </p>
         </div>
 
@@ -395,7 +740,7 @@ export const StickyProjectSection: React.FC<StickyProjectSectionProps> = ({
             </div>
             <h3 className="text-lg font-bold text-slate-800 mb-1">ยังไม่มีข้อมูลในหมวดหมู่นี้</h3>
             <p className="text-sm text-slate-500 max-w-md mx-auto">
-              ขณะนี้ยังไม่มีข้อมูลโซลูชันหรือสินค้าในหมวดหมู่นี้ในระบบฐานข้อมูล คุณสามารถเลือกดูหมวดหมู่อื่นๆ หรือติดต่อทีมงานเพื่อสอบถามรายละเอียด
+              ขณะนี้ยังไม่มีข้อมูลโซลูชันในหมวดหมู่นี้ คุณสามารถเลือกดูหมวดหมู่อื่นๆ หรือติดต่อทีมงานเพื่อสอบถามรายละเอียด
             </p>
           </div>
         ) : (
@@ -521,13 +866,36 @@ export const StickyProjectSection: React.FC<StickyProjectSectionProps> = ({
                           </div>
                         )}
 
+                        {/* CTA Button ลิงก์ตรงไปหน้า Product เสมอ */}
                         {cardItem.tabCategory === 'printing' ? (
                           <Link
-                            href="/solutions/printing"
+                            href={
+                              cardItem.id === 'printing-printer'
+                                ? '/solutions/printing?type=printer'
+                                : '/solutions/printing?type=supply'
+                            }
                             prefetch={true}
                             className="w-full py-3.5 px-6 rounded-full bg-[#0066FF] hover:bg-[#0052CC] text-white font-medium text-xs sm:text-sm flex items-center justify-center gap-2 shadow-[0_8px_20px_rgba(0,102,255,0.3)] hover:shadow-[0_12px_28px_rgba(0,102,255,0.45)] transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] cursor-pointer group"
                           >
                             <span>{cardItem.ctaText || 'ดูสินค้าทั้งหมด'}</span>
+                            <ArrowUpRight className="w-4 h-4 stroke-[2.5] transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                          </Link>
+                        ) : cardItem.tabCategory === 'hardware' || cardItem.tabCategory === 'network' ? (
+                          <Link
+                            href={cardItem.tabCategory === 'hardware' ? '/products?type=hardware' : '/products?type=network'}
+                            prefetch={true}
+                            className="w-full py-3.5 px-6 rounded-full bg-[#0066FF] hover:bg-[#0052CC] text-white font-medium text-xs sm:text-sm flex items-center justify-center gap-2 shadow-[0_8px_20px_rgba(0,102,255,0.3)] hover:shadow-[0_12px_28px_rgba(0,102,255,0.45)] transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] cursor-pointer group"
+                          >
+                            <span>{cardItem.ctaText || 'ดูสินค้าทั้งหมด'}</span>
+                            <ArrowUpRight className="w-4 h-4 stroke-[2.5] transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                          </Link>
+                        ) : cardItem.tabCategory === 'software' ? (
+                          <Link
+                            href="/solutions/software"
+                            prefetch={true}
+                            className="w-full py-3.5 px-6 rounded-full bg-[#0066FF] hover:bg-[#0052CC] text-white font-medium text-xs sm:text-sm flex items-center justify-center gap-2 shadow-[0_8px_20px_rgba(0,102,255,0.3)] hover:shadow-[0_12px_28px_rgba(0,102,255,0.45)] transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] cursor-pointer group"
+                          >
+                            <span>{cardItem.ctaText || 'ดูรายละเอียดระบบ'}</span>
                             <ArrowUpRight className="w-4 h-4 stroke-[2.5] transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
                           </Link>
                         ) : (
