@@ -10,6 +10,15 @@ import { Footer } from "@/components/footer";
 
 export const revalidate = 60;
 
+function sanitizeCoverImage(url: unknown, fallback: string): string {
+  if (typeof url !== "string" || !url) return fallback;
+  // ป้องกัน Base64 ขนาดยักษ์ทำให้ Next.js ISR Payload บวมเกิน 20MB (Vercel FALLBACK_BODY_TOO_LARGE)
+  if (url.startsWith("data:") && url.length > 25000) {
+    return fallback;
+  }
+  return url;
+}
+
 export default async function Home() {
   let initialSoftwareRecords: Record<string, unknown>[] = [];
   let initialProducts: Record<string, unknown>[] = [];
@@ -18,21 +27,33 @@ export default async function Home() {
     const [softRes, prodRes] = await Promise.all([
       supabase
         .from("TB_PRODUCT_SOFTWARE")
-        .select("*")
+        .select(
+          "id, name, program_code, category_id, client_subtitle, short_description, full_description, cover_image_url, video_url, key_features, metric_label, metric_value, is_active"
+        )
         .eq("is_active", true)
-        .order("id", { ascending: true }),
+        .order("id", { ascending: true })
+        .limit(12),
       supabase
         .from("TB_PRODUCTS")
-        .select("*")
+        .select(
+          "id, name, sku, slug, category_id, sub_category, brand, product_type, short_description, cover_image_url, bullet_points, is_active"
+        )
         .eq("is_active", true)
-        .order("id", { ascending: true }),
+        .order("id", { ascending: true })
+        .limit(24),
     ]);
 
     if (!softRes.error && softRes.data) {
-      initialSoftwareRecords = softRes.data as Record<string, unknown>[];
+      initialSoftwareRecords = softRes.data.map((item) => ({
+        ...item,
+        cover_image_url: sanitizeCoverImage(item.cover_image_url, "/images/vitanix-dashboard-hd.png"),
+      }));
     }
     if (!prodRes.error && prodRes.data) {
-      initialProducts = prodRes.data as Record<string, unknown>[];
+      initialProducts = prodRes.data.map((item) => ({
+        ...item,
+        cover_image_url: sanitizeCoverImage(item.cover_image_url, "/images/printer-product.png"),
+      }));
     }
   } catch (err) {
     console.error("Error loading data from database on home page:", err);

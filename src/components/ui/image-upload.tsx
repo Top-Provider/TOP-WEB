@@ -27,11 +27,51 @@ export function ImageUpload({
       return;
     }
 
+    // หากเป็น SVG ให้อ่านเป็น Data URL ตรงๆ
+    if (file.type === "image/svg+xml") {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        if (event.target?.result) {
+          onChange(event.target.result as string);
+        }
+      };
+      reader.readAsDataURL(file);
+      return;
+    }
+
+    // บีบอัดรูปภาพผ่าน Canvas ก่อนส่งค่า ป้องกันขนาด Payload บวมเกิน Limit ของ Vercel
     const reader = new FileReader();
     reader.onload = (event) => {
-      if (event.target?.result) {
-        onChange(event.target.result as string);
-      }
+      const img = document.createElement("img");
+      img.onload = () => {
+        const maxWidth = 1200;
+        const maxHeight = 1200;
+        let width = img.width;
+        let height = img.height;
+
+        if (width > maxWidth || height > maxHeight) {
+          if (width > height) {
+            height = Math.round((height * maxWidth) / width);
+            width = maxWidth;
+          } else {
+            width = Math.round((width * maxHeight) / height);
+            height = maxHeight;
+          }
+        }
+
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        if (ctx) {
+          ctx.drawImage(img, 0, 0, width, height);
+          const compressedDataUrl = canvas.toDataURL("image/webp", 0.82);
+          onChange(compressedDataUrl);
+        } else {
+          onChange(event.target?.result as string);
+        }
+      };
+      img.src = event.target?.result as string;
     };
     reader.readAsDataURL(file);
   };

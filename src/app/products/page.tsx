@@ -14,14 +14,25 @@ export const metadata: Metadata = {
     "ศูนย์รวมเครื่องพิมพ์คุณภาพสูง หมึกพิมพ์ ริบบอนบาร์โค้ด และวัสดุสิ้นเปลืองทางการแพทย์สำหรับโรงพยาบาลและองค์กร พร้อมสเปกและเอกสาร Datasheet / TOR",
 };
 
+function sanitizeImageUrl(url: unknown, fallback: string): string {
+  if (typeof url !== "string" || !url) return fallback;
+  if (url.startsWith("data:") && url.length > 35000) {
+    return fallback;
+  }
+  return url;
+}
+
 export default async function ProductsPage() {
   let initialProducts: ProductItemResponse[] = [];
   try {
     const { data: records, error } = await supabase
       .from("TB_PRODUCTS")
-      .select("*")
+      .select(
+        "id, name, sku, slug, category_id, sub_category, brand, product_type, short_description, full_description, specifications, cover_image_url, gallery_images, compatible_products, datasheet_en_url, tor_th_url, is_active"
+      )
       .eq("is_active", true)
-      .order("id", { ascending: false });
+      .order("id", { ascending: false })
+      .limit(60);
 
     if (!error && records && Array.isArray(records)) {
       initialProducts = records.map((item) => ({
@@ -36,8 +47,10 @@ export default async function ProductsPage() {
         short_description: String(item.short_description || ""),
         full_description: String(item.full_description || ""),
         specifications: Array.isArray(item.specifications) ? item.specifications : [],
-        cover_image_url: String(item.cover_image_url || "/images/printer-product.png"),
-        gallery_images: Array.isArray(item.gallery_images) ? item.gallery_images : [],
+        cover_image_url: sanitizeImageUrl(item.cover_image_url, "/images/printer-product.png"),
+        gallery_images: Array.isArray(item.gallery_images)
+          ? item.gallery_images.filter((img) => typeof img === "string" && (!img.startsWith("data:") || img.length <= 35000))
+          : [],
         compatible_products: Array.isArray(item.compatible_products) ? item.compatible_products : [],
         datasheet_en_url: String(item.datasheet_en_url || ""),
         tor_th_url: String(item.tor_th_url || ""),

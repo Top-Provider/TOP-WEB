@@ -12,6 +12,14 @@ export const metadata: Metadata = {
     "โซลูชันซอฟต์แวร์บริหารจัดการโรงพยาบาลและระบบเบิกจ่ายค่ารักษาพยาบาลอัจฉริยะ (Vitanix Claim, Panacea Plus HIS, Smart Queue, EMR)",
 };
 
+function sanitizeImageUrl(url: unknown, fallback: string): string {
+  if (typeof url !== "string" || !url) return fallback;
+  if (url.startsWith("data:") && url.length > 35000) {
+    return fallback;
+  }
+  return url;
+}
+
 export default async function SoftwareSolutionPage() {
   let initialRecords: Record<string, unknown>[] = [];
   try {
@@ -19,10 +27,16 @@ export default async function SoftwareSolutionPage() {
       .from("TB_PRODUCT_SOFTWARE")
       .select("*")
       .eq("is_active", true)
-      .order("id", { ascending: true });
+      .order("id", { ascending: true })
+      .limit(30);
 
     if (!error && records && records.length > 0) {
-      initialRecords = records as Record<string, unknown>[];
+      initialRecords = records.map((item) => ({
+        ...item,
+        cover_image_url: sanitizeImageUrl(item.cover_image_url, "/images/vitanix-dashboard-hd.png"),
+        feature_1_image: sanitizeImageUrl(item.feature_1_image, "/images/vitanix-dashboard-hd.png"),
+        feature_2_image: sanitizeImageUrl(item.feature_2_image, "/images/vitanix-dashboard-hd.png"),
+      })) as Record<string, unknown>[];
     }
   } catch (err) {
     console.error("Error loading software programs on server:", err);
