@@ -12,10 +12,10 @@ export const metadata: Metadata = {
     "โซลูชันซอฟต์แวร์บริหารจัดการโรงพยาบาลและระบบเบิกจ่ายค่ารักษาพยาบาลอัจฉริยะ (Vitanix Claim, Panacea Plus HIS, Smart Queue, EMR)",
 };
 
-function sanitizeImageUrl(url: unknown, fallback: string): string {
+function resolveSoftwareImageUrl(id: unknown, url: unknown, fallback: string, field = "cover_image_url"): string {
   if (typeof url !== "string" || !url) return fallback;
-  if (url.startsWith("data:") && url.length > 35000) {
-    return fallback;
+  if (url.startsWith("data:")) {
+    return `/api/software-image/${id}${field !== "cover_image_url" ? `?field=${field}` : ""}`;
   }
   return url;
 }
@@ -33,9 +33,9 @@ export default async function SoftwareSolutionPage() {
     if (!error && records && records.length > 0) {
       initialRecords = records.map((item) => ({
         ...item,
-        cover_image_url: sanitizeImageUrl(item.cover_image_url, "/images/vitanix-dashboard-hd.png"),
-        feature_1_image: sanitizeImageUrl(item.feature_1_image, "/images/vitanix-dashboard-hd.png"),
-        feature_2_image: sanitizeImageUrl(item.feature_2_image, "/images/vitanix-dashboard-hd.png"),
+        cover_image_url: resolveSoftwareImageUrl(item.id, item.cover_image_url, "/images/vitanix-dashboard-hd.png", "cover_image_url"),
+        feature_1_image: resolveSoftwareImageUrl(item.id, item.feature_1_image, "/images/vitanix-dashboard-hd.png", "feature_1_image"),
+        feature_2_image: resolveSoftwareImageUrl(item.id, item.feature_2_image, "/images/vitanix-dashboard-hd.png", "feature_2_image"),
       })) as Record<string, unknown>[];
     }
   } catch (err) {

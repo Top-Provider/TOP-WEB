@@ -540,7 +540,10 @@ export function mapSoftwareRecordToCardItem(
     });
   }
 
-  const coverImage = r.cover_image_url || '/images/vitanix-dashboard-hd.png';
+  const rawCover = r.cover_image_url || '';
+  const coverImage = rawCover.startsWith('data:')
+    ? `/api/software-image/${r.id}`
+    : rawCover || '/images/vitanix-dashboard-hd.png';
 
   return {
     id: `software-${r.id}`,
@@ -556,7 +559,7 @@ export function mapSoftwareRecordToCardItem(
       year: '2026',
       category: category,
       subCategory: subCategory,
-      shortDescription: r.short_description || '',
+      shortDescription: r.short_description || r.full_description || '',
       fullDescription: r.full_description || r.short_description || '',
       challenge: r.feature_1_desc || '',
       solution: r.feature_2_desc || '',
@@ -856,8 +859,8 @@ export const StickyProjectSection: React.FC<StickyProjectSectionProps> = ({
                           {project.name}
                         </h3>
 
-                        <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-normal">
-                          {project.shortDescription}
+                        <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-normal whitespace-pre-line">
+                          {project.shortDescription || project.fullDescription}
                         </p>
 
                         {project.deliverables && project.deliverables.length > 0 && (

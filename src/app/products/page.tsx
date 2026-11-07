@@ -14,10 +14,10 @@ export const metadata: Metadata = {
     "ศูนย์รวมเครื่องพิมพ์คุณภาพสูง หมึกพิมพ์ ริบบอนบาร์โค้ด และวัสดุสิ้นเปลืองทางการแพทย์สำหรับโรงพยาบาลและองค์กร พร้อมสเปกและเอกสาร Datasheet / TOR",
 };
 
-function sanitizeImageUrl(url: unknown, fallback: string): string {
+function resolveProductImageUrl(id: unknown, url: unknown, fallback: string): string {
   if (typeof url !== "string" || !url) return fallback;
-  if (url.startsWith("data:") && url.length > 35000) {
-    return fallback;
+  if (url.startsWith("data:")) {
+    return `/api/product-image/${id}`;
   }
   return url;
 }
@@ -47,7 +47,7 @@ export default async function ProductsPage() {
         short_description: String(item.short_description || ""),
         full_description: String(item.full_description || ""),
         specifications: Array.isArray(item.specifications) ? item.specifications : [],
-        cover_image_url: sanitizeImageUrl(item.cover_image_url, "/images/printer-product.png"),
+        cover_image_url: resolveProductImageUrl(item.id, item.cover_image_url, "/images/printer-product.png"),
         gallery_images: Array.isArray(item.gallery_images)
           ? item.gallery_images.filter((img) => typeof img === "string" && (!img.startsWith("data:") || img.length <= 35000))
           : [],

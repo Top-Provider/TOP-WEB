@@ -130,7 +130,10 @@ export function mapSoftwareRecordToProgram(
       : "Healthcare Software";
 
   const subCategory = r.client_subtitle || category;
-  const coverImage = r.cover_image_url || "/images/vitanix-dashboard-hd.png";
+  const rawCover = r.cover_image_url || "";
+  const coverImage = rawCover.startsWith("data:")
+    ? `/api/software-image/${r.id}`
+    : rawCover || "/images/vitanix-dashboard-hd.png";
 
   const metrics: { label: string; value: string }[] = [];
   if (r.metric_value) {
@@ -529,9 +532,9 @@ export function SoftwareSolutionView({ initialRecords, initialPrograms }: Softwa
                 <h2 className="text-2xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
                   {activeProgram.name}
                 </h2>
-                {activeProgram.fullDesc && (
-                  <p className="text-xs sm:text-sm text-slate-500 mt-1 max-w-2xl leading-relaxed">
-                    {activeProgram.fullDesc}
+                {(activeProgram.fullDesc || activeProgram.shortDesc) && (
+                  <p className="text-xs sm:text-sm text-slate-500 mt-1 max-w-2xl leading-relaxed whitespace-pre-line">
+                    {activeProgram.fullDesc || activeProgram.shortDesc}
                   </p>
                 )}
               </div>

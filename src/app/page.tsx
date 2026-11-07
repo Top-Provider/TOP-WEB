@@ -10,11 +10,11 @@ import { Footer } from "@/components/footer";
 
 export const revalidate = 60;
 
-function sanitizeCoverImage(url: unknown, fallback: string): string {
+function resolveSoftwareImageUrl(id: unknown, url: unknown, fallback: string): string {
   if (typeof url !== "string" || !url) return fallback;
-  // ป้องกัน Base64 ขนาดยักษ์ทำให้ Next.js ISR Payload บวมเกิน 20MB (Vercel FALLBACK_BODY_TOO_LARGE)
-  if (url.startsWith("data:") && url.length > 25000) {
-    return fallback;
+  // ดึงรูปจริงจาก DB ผ่าน image endpoint เพื่อให้ Payload HTML เบา (~40KB) ไม่เกินลิมิต 20MB ของ Vercel
+  if (url.startsWith("data:")) {
+    return `/api/software-image/${id}`;
   }
   return url;
 }
@@ -35,7 +35,7 @@ export default async function Home() {
     if (!error && data) {
       initialSoftwareRecords = data.map((item) => ({
         ...item,
-        cover_image_url: sanitizeCoverImage(item.cover_image_url, "/images/vitanix-dashboard-hd.png"),
+        cover_image_url: resolveSoftwareImageUrl(item.id, item.cover_image_url, "/images/vitanix-dashboard-hd.png"),
       }));
     }
   } catch (err) {
