@@ -645,7 +645,7 @@ export default function AdminProgramsPage() {
                           alt={item.name}
                           fill
                           unoptimized
-                          className="object-cover"
+                          className="object-cover object-top"
                         />
                       </div>
                     </td>

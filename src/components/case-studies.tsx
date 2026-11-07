@@ -986,7 +986,7 @@ export const StickyProjectSection: React.FC<StickyProjectSectionProps> = ({
                             <img
                               src={project.coverImage}
                               alt={project.name}
-                              className="w-full h-full object-cover"
+                              className="w-full h-full object-cover object-top"
                               loading="lazy"
                             />
 
