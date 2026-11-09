@@ -84,8 +84,6 @@ export const SOLUTION_CATEGORY_TABS = [
   { id: "hardware", label: "Hardware Solution", href: "/#case-studies" },
   { id: "software", label: "Software Solution", href: "/solutions/software", active: true },
   { id: "network", label: "Network Solution", href: "/solutions/network" },
-  { id: "medical", label: "Medical Equipment", href: "/#case-studies" },
-  { id: "iot", label: "Smart Solution (IoT)", href: "/#case-studies" },
 ];
 
 export function mapSoftwareRecordToProgram(

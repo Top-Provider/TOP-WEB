@@ -11,7 +11,9 @@ import { fetchRecords } from '@/lib/crud';
 
 interface StickyProjectSectionProps {
   onSelectProject?: (project: Project) => void;
+  initialCategories?: { id?: number; category_id: string; name: string }[];
   initialSoftwareRecords?: Record<string, unknown>[];
+  initialProducts?: Record<string, unknown>[];
 }
 
 export interface SolutionCardItem {
@@ -30,8 +32,6 @@ export const SOLUTION_TABS = [
   { id: 'hardware', label: 'Hardware Solution' },
   { id: 'software', label: 'Software Solution' },
   { id: 'network', label: 'Network Solution' },
-  { id: 'medical', label: 'Medical Equipment' },
-  { id: 'iot', label: 'Smart Solution (IoT)' },
 ] as const;
 
 export type TabId = typeof SOLUTION_TABS[number]['id'];
@@ -591,9 +591,95 @@ export function mapSoftwareRecordToCardItem(
   };
 }
 
+export interface ProductRecord {
+  id: number;
+  name: string;
+  sku?: string;
+  slug?: string;
+  category_id?: string;
+  sub_category?: string;
+  brand?: string;
+  product_type?: string;
+  short_description?: string;
+  full_description?: string;
+  specifications?: { label?: string; value: string }[] | string;
+  cover_image_url?: string;
+  is_active?: boolean;
+}
+
+export function mapProductRecordToCardItem(
+  p: ProductRecord,
+  index: number,
+  total: number
+): SolutionCardItem {
+  const counterText = `${String(index + 1).padStart(2, '0')} / ${String(total).padStart(2, '0')}`;
+  const rawCat = (p.category_id || '').toLowerCase();
+  const tabCategory: SolutionCardItem['tabCategory'] =
+    rawCat.includes('network') ? 'network'
+    : rawCat.includes('print') ? 'printing'
+    : rawCat.includes('hard') ? 'hardware'
+    : 'printing';
+
+  let deliverables: string[] = [];
+  if (Array.isArray(p.specifications)) {
+    deliverables = p.specifications
+      .slice(0, 3)
+      .map((s) => s.value || s.label || '')
+      .filter(Boolean);
+  }
+
+  const rawCover = p.cover_image_url || '';
+  const coverImage = rawCover.startsWith('data:')
+    ? `/api/product-image/${p.id}`
+    : rawCover || '/images/printer-product.png';
+
+  const subCategory = p.sub_category || p.brand || 'Product Item';
+  const urlPath = `Topprovider.co.th / ${p.brand ? `${p.brand} ` : ''}${p.name}`;
+
+  let ctaText = 'ดูรายละเอียดสินค้า';
+  if (tabCategory === 'printing') {
+    ctaText = p.product_type === 'supply' ? 'ดูสินค้า Supply ทั้งหมด' : 'ดูสินค้า Printer ทั้งหมด';
+  } else if (tabCategory === 'network') {
+    ctaText = 'ดูสินค้า Network ทั้งหมด';
+  } else if (tabCategory === 'hardware') {
+    ctaText = 'ดูสินค้า Hardware ทั้งหมด';
+  }
+
+  return {
+    id: `product-${p.id}`,
+    tabCategory,
+    counterText,
+    urlPath,
+    clientSubtitle: `2026 • ${subCategory}`,
+    ctaText,
+    isProductPhoto: true,
+    project: {
+      id: `prod-${p.id}`,
+      name: p.name,
+      client: subCategory,
+      year: '2026',
+      category: p.category_id || 'Product',
+      subCategory: subCategory,
+      shortDescription: p.short_description || p.full_description || '',
+      fullDescription: p.full_description || p.short_description || '',
+      challenge: '',
+      solution: '',
+      deliverables,
+      metrics: [],
+      technologies: [p.brand, p.sub_category].filter(Boolean) as string[],
+      coverImage,
+      galleryImages: [coverImage],
+      featured: true,
+      accentColor: '#0066FF',
+    },
+  };
+}
+
 export const StickyProjectSection: React.FC<StickyProjectSectionProps> = ({
   onSelectProject,
+  initialCategories,
   initialSoftwareRecords,
+  initialProducts,
 }) => {
   const router = useRouter();
 
@@ -610,10 +696,16 @@ export const StickyProjectSection: React.FC<StickyProjectSectionProps> = ({
   const [playingVideoId, setPlayingVideoId] = useState<string | null>(null);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
 
-  // Dynamic Solution Category Tabs from /api/admin/categories
-  const [solutionTabs, setSolutionTabs] = useState<{ id: string; label: string }[]>(
-    SOLUTION_TABS.map((t) => ({ id: t.id, label: t.label }))
-  );
+  // Dynamic Solution Category Tabs from DB / props / fallback
+  const [solutionTabs, setSolutionTabs] = useState<{ id: string; label: string }[]>(() => {
+    if (initialCategories && initialCategories.length > 0) {
+      return initialCategories.map((c) => ({
+        id: (c.category_id || '').toLowerCase(),
+        label: c.name || c.category_id,
+      }));
+    }
+    return SOLUTION_TABS.map((t) => ({ id: t.id, label: t.label }));
+  });
 
   useEffect(() => {
     fetch('/api/admin/categories')
@@ -632,33 +724,70 @@ export const StickyProjectSection: React.FC<StickyProjectSectionProps> = ({
       .catch((err) => console.log('Tabs API fallback:', err));
   }, []);
 
-  // Cards from DB (Software & Network Solutions)
+  // Cards from DB (Software, Printing, Hardware, Network)
   const initialCards = useMemo(() => {
+    const cards: SolutionCardItem[] = [];
+
+    // 1. Software records from DB
     if (initialSoftwareRecords && initialSoftwareRecords.length > 0) {
-      return initialSoftwareRecords.map((r, i) =>
+      const mappedSw = initialSoftwareRecords.map((r, i) =>
         mapSoftwareRecordToCardItem(r as unknown as SoftwareRecord, i, initialSoftwareRecords.length)
       );
+      cards.push(...mappedSw);
     }
-    return [];
-  }, [initialSoftwareRecords]);
+
+    // 2. Product records from DB (Printing, Hardware, Network)
+    if (initialProducts && initialProducts.length > 0) {
+      const mappedProd = initialProducts.map((p, i) =>
+        mapProductRecordToCardItem(p as unknown as ProductRecord, i, initialProducts.length)
+      );
+      cards.push(...mappedProd);
+    }
+
+    return cards;
+  }, [initialSoftwareRecords, initialProducts]);
 
   const [dynamicRecords, setDynamicRecords] = useState<SolutionCardItem[]>(initialCards);
   const [dbLoading, setDbLoading] = useState<boolean>(initialCards.length === 0);
 
-  // Client-side fetch fallback from DB
+  useEffect(() => {
+    if (initialCards.length > 0) {
+      setDynamicRecords(initialCards);
+      setDbLoading(false);
+    }
+  }, [initialCards]);
+
+  // Client-side fetch fallback from DB if no SSR cards provided
   useEffect(() => {
     if (dynamicRecords.length === 0) {
       setDbLoading(true);
-      fetchRecords<SoftwareRecord>({
-        table: 'TB_PRODUCT_SOFTWARE',
-        orderBy: 'id',
-        orderDir: 'asc',
-      })
-        .then((records) => {
-          if (records && records.length > 0) {
-            setDynamicRecords(
-              records.map((r, i) => mapSoftwareRecordToCardItem(r, i, records.length))
+      Promise.all([
+        fetchRecords<SoftwareRecord>({
+          table: 'TB_PRODUCT_SOFTWARE',
+          orderBy: 'id',
+          orderDir: 'asc',
+        }),
+        fetch('/api/products')
+          .then((res) => res.json())
+          .then((json) => (json && json.success && Array.isArray(json.products) ? json.products : []))
+          .catch(() => []),
+      ])
+        .then(([softRecords, prodRecords]) => {
+          const cards: SolutionCardItem[] = [];
+          if (softRecords && softRecords.length > 0) {
+            cards.push(
+              ...softRecords.map((r, i) => mapSoftwareRecordToCardItem(r, i, softRecords.length))
             );
+          }
+          if (prodRecords && prodRecords.length > 0) {
+            cards.push(
+              ...prodRecords.map((p: ProductRecord, i: number) =>
+                mapProductRecordToCardItem(p, i, prodRecords.length)
+              )
+            );
+          }
+          if (cards.length > 0) {
+            setDynamicRecords(cards);
           }
         })
         .catch((err) => console.error('Error loading solution records from DB:', err))
@@ -668,7 +797,7 @@ export const StickyProjectSection: React.FC<StickyProjectSectionProps> = ({
     }
   }, [dynamicRecords.length]);
 
-  // Current cards: ดึงจาก DB ตาม activeTab ถ้ามีข้อมูล (ถ้ากำลังโหลดให้เป็น [] เพื่อแสดง loading skeleton แทนข้อมูล mock)
+  // Current cards: ดึงจาก DB ตาม activeTab (ห้ามใช้ mock เด็ดขาด เพื่อไม่ให้กระพริบข้อมูล mock บนหน้าเว็บ)
   const currentCards = useMemo(() => {
     if (dbLoading) return [];
     const matched = dynamicRecords.filter((item) => item.tabCategory === activeTab);
@@ -678,11 +807,7 @@ export const StickyProjectSection: React.FC<StickyProjectSectionProps> = ({
         counterText: `${String(idx + 1).padStart(2, '0')} / ${String(matched.length).padStart(2, '0')}`,
       }));
     }
-    // สำหรับ Software และ Network ต้องดึงจากฐานข้อมูลจริงเท่านั้น ไม่ใช้ข้อมูล mock
-    if (activeTab === 'software' || activeTab === 'network') {
-      return [];
-    }
-    return ALL_SOLUTION_CARDS.filter((item) => item.tabCategory === activeTab);
+    return [];
   }, [activeTab, dynamicRecords, dbLoading]);
 
   const handleTabClick = (tabId: string) => {
@@ -754,7 +879,7 @@ export const StickyProjectSection: React.FC<StickyProjectSectionProps> = ({
 
         {/* Sticky Tab List / Pill Navigation Bar */}
         <div className="sticky top-0 z-30 py-2.5 sm:py-3 bg-[#F8FAFC]/95 backdrop-blur-md mb-6 sm:mb-8 -mx-2 px-2 sm:-mx-4 sm:px-4 transition-all">
-          <div className="flex items-center gap-2 sm:gap-3 overflow-x-auto py-2 px-1.5 -mx-1.5 no-scrollbar">
+          <div className="flex items-center justify-start sm:justify-center gap-2 sm:gap-3 overflow-x-auto py-2 px-1.5 -mx-1.5 no-scrollbar">
             {solutionTabs.map((tab) => {
               const isActive = tab.id === activeTab;
               return (
@@ -776,37 +901,13 @@ export const StickyProjectSection: React.FC<StickyProjectSectionProps> = ({
 
         {/* Dynamic Cards Stage or Loading / Empty State */}
         {dbLoading ? (
-          <div className="rounded-[24px] sm:rounded-[32px] bg-white border border-blue-100/90 shadow-sm p-6 sm:p-10 space-y-6 animate-pulse my-6">
-            <div className="flex items-center justify-between pb-4 border-b border-slate-100">
-              <div className="flex items-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-full bg-slate-300" />
-                <span className="w-2.5 h-2.5 rounded-full bg-slate-300" />
-                <span className="w-2.5 h-2.5 rounded-full bg-slate-300" />
-                <div className="h-3 w-48 bg-slate-200 rounded ml-2" />
-              </div>
-              <div className="flex items-center gap-2 text-xs font-medium text-blue-600">
-                <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                <span>กำลังโหลดข้อมูลโซลูชันจากฐานข้อมูล...</span>
-              </div>
+          <div className="min-h-[420px] rounded-[32px] sm:rounded-[36px] bg-white border border-slate-200/90 shadow-sm p-8 sm:p-16 flex flex-col items-center justify-center text-center my-6 space-y-4">
+            <div className="w-14 h-14 rounded-2xl bg-blue-50 border border-blue-100 flex items-center justify-center text-[#0066FF] shadow-xs">
+              <Loader2 className="w-7 h-7 animate-spin stroke-[2.5]" />
             </div>
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-              <div className="lg:col-span-6 space-y-4">
-                <div className="h-4 w-28 bg-blue-100 rounded" />
-                <div className="h-8 w-4/5 bg-slate-200 rounded-lg" />
-                <div className="space-y-2">
-                  <div className="h-3 w-full bg-slate-100 rounded" />
-                  <div className="h-3 w-3/4 bg-slate-100 rounded" />
-                </div>
-                <div className="pt-4 flex gap-3">
-                  <div className="h-10 w-36 bg-blue-600/20 rounded-full" />
-                  <div className="h-10 w-28 bg-slate-100 rounded-full" />
-                </div>
-              </div>
-              <div className="lg:col-span-6">
-                <div className="aspect-[16/10] bg-slate-100 rounded-2xl flex items-center justify-center">
-                  <Loader2 className="w-8 h-8 animate-spin text-slate-300" />
-                </div>
-              </div>
+            <div className="space-y-1">
+              <h4 className="text-base font-bold text-slate-800">กำลังโหลดข้อมูลโซลูชัน...</h4>
+              <p className="text-xs sm:text-sm text-slate-400">กำลังดึงข้อมูลล่าสุดจากฐานข้อมูล กรุณารอสักครู่</p>
             </div>
           </div>
         ) : currentCards.length === 0 ? (

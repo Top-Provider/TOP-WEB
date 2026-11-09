@@ -24,8 +24,8 @@ export const DEFAULT_CATEGORIES = [
   { id: 2, category_id: "Hardware", name: "Hardware Solution", is_active: true },
   { id: 3, category_id: "Software", name: "Software Solution", is_active: true },
   { id: 4, category_id: "Network", name: "Network Solution", is_active: true },
-  { id: 5, category_id: "Medical", name: "Medical Equipment", is_active: true },
-  { id: 6, category_id: "IoT", name: "Smart Solution (IoT)", is_active: true },
+  { id: 5, category_id: "Medical", name: "Medical Equipment", is_active: false },
+  { id: 6, category_id: "IoT", name: "Smart Solution (IoT)", is_active: false },
 ];
 
 /**
