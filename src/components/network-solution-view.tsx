@@ -284,19 +284,6 @@ export function NetworkSolutionView({
               </h4>
 
               <div className="space-y-1">
-                {/* All Products */}
-                <button
-                  type="button"
-                  onClick={() => setSelectedSubCategory("all")}
-                  className={`w-full text-left px-3 py-2 rounded-lg text-xs sm:text-[13px] font-medium transition-all cursor-pointer block ${
-                    selectedSubCategory === "all"
-                      ? "bg-[#EEF4FF] text-[#0062FF] font-semibold"
-                      : "text-slate-600 hover:text-blue-600 hover:bg-slate-50"
-                  }`}
-                >
-                  สินค้าทั้งหมด (All)
-                </button>
-
                 {/* Server */}
                 <button
                   type="button"
