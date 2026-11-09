@@ -931,11 +931,13 @@ export const StickyProjectSection: React.FC<StickyProjectSectionProps> = ({
 
         {/* Dynamic Cards Stage or Loading / Empty State */}
         {dbLoading ? (
-          <div className="min-h-[420px] rounded-[32px] sm:rounded-[36px] bg-white border border-slate-200/90 shadow-sm p-8 sm:p-16 flex flex-col items-center justify-center text-center my-6">
+          <div className="min-h-[460px] rounded-[32px] sm:rounded-[36px] bg-white border border-slate-200/90 shadow-sm p-8 sm:p-14 flex flex-col items-center justify-center text-center my-6">
             <MedicalCrossLoader
               size="md"
+              showLogo={true}
+              logoSize="lg"
               text="กำลังโหลดข้อมูลโซลูชัน..."
-              subtext="TOP PROVIDER HEALTHCARE & IT SOLUTIONS"
+              subtext="บริษัท ท็อป โปรไวเดอร์ ซิสเต็ม กรุ๊ป จำกัด"
             />
           </div>
         ) : currentCards.length === 0 ? (
