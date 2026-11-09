@@ -73,7 +73,7 @@ export const VITANIX_FALLBACK = {
     "Cash Flow Optimization",
     "Direct Billing Reconciliation",
   ],
-  feature2Image: "/images/vitanix-claim.png",
+  feature2Image: "/images/vitanix-claim-analytics.png",
 };
 
 // ค่าเริ่มต้นเป็น Array ว่าง ไม่ใช้ข้อมูล mock
@@ -200,7 +200,12 @@ export function mapSoftwareRecordToProgram(
   const feature2Badge = r.feature_2_badge || (isVitanix ? VITANIX_FALLBACK.feature2Badge : "");
   const feature2Title = r.feature_2_title || (isVitanix ? VITANIX_FALLBACK.feature2Title : "");
   const feature2Desc = r.feature_2_desc || (isVitanix ? VITANIX_FALLBACK.feature2Desc : "");
-  const feature2Image = r.feature_2_image || (isVitanix ? VITANIX_FALLBACK.feature2Image : coverImage);
+  const feature2Image =
+    r.feature_2_image && r.feature_2_image !== "/images/vitanix-claim.png"
+      ? r.feature_2_image
+      : isVitanix
+      ? VITANIX_FALLBACK.feature2Image
+      : coverImage;
 
   return {
     id: `software-${r.id}`,
