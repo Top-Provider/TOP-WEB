@@ -10,22 +10,7 @@ import {
   FileText,
   X,
   ArrowRight,
-  ExternalLink,
   Loader2,
-  Monitor,
-  HardDrive,
-  Cpu,
-  Layers,
-  CheckCircle2,
-  Activity,
-  Download,
-  ScanBarcode,
-  Laptop,
-  Tv,
-  BatteryCharging,
-  Projector as ProjectorIcon,
-  Smartphone,
-  ShieldCheck,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { ProductItemResponse } from "@/app/api/products/route";
@@ -42,16 +27,31 @@ export interface ExtendedProductItem extends ProductItemResponse {
   bullet_specs?: string[];
 }
 
-export const SIDEBAR_HARDWARE_CATEGORIES = [
-  { value: "ALL", label: "สินค้าฮาร์ดแวร์ทั้งหมด (All)" },
-  { value: "Handheld Barcode Scanner", label: "Handheld Barcode Scanner" },
-  { value: "Barcode Scanner", label: "Barcode Scanner" },
-  { value: "Computer", label: "Computer (All In One PC / Workstation)" },
-  { value: "Display", label: "Display (จอภาพ)" },
-  { value: "Scanner", label: "Scanner (เครื่องสแกนเนอร์ความเร็วสูง)" },
-  { value: "UPS", label: "UPS (เครื่องสำรองไฟฟ้า)" },
-  { value: "Projector", label: "Projector (เครื่องฉายภาพ)" },
-  { value: "Mobile", label: "Mobile & Camera" },
+export const HARDWARE_GROUPS = [
+  {
+    title: "BARCODE & SCANNER",
+    categories: [
+      { value: "Handheld Barcode Scanner", label: "Handheld Barcode Scanner" },
+      { value: "Barcode Scanner", label: "Barcode Scanner" },
+      { value: "Scanner", label: "Scanner" },
+    ],
+  },
+  {
+    title: "COMPUTER & DISPLAY",
+    categories: [
+      { value: "Computer", label: "Computer" },
+      { value: "Display", label: "Display" },
+    ],
+  },
+  {
+    title: "EQUIPMENT & POWER",
+    categories: [
+      { value: "UPS", label: "UPS" },
+      { value: "Projector", label: "Projector" },
+      { value: "Camera", label: "Camera" },
+      { value: "Mobile", label: "Mobile" },
+    ],
+  },
 ];
 
 interface HardwareSolutionViewProps {
@@ -83,51 +83,12 @@ export function HardwareSolutionView({
 
   // Active Category state
   const [loading, setLoading] = useState<boolean>(initialProducts.length === 0);
-  const [selectedSubCategory, setSelectedSubCategory] = useState<string>("ALL");
+  const [selectedSubCategory, setSelectedSubCategory] = useState<string>("Handheld Barcode Scanner");
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [detailProduct, setDetailProduct] = useState<ExtendedProductItem | null>(null);
 
   // Dynamic Solution Category Tabs from /api/admin/categories
   const [categoryTabs, setCategoryTabs] = useState(SOLUTION_CATEGORY_TABS);
-
-  // Sub-categories list
-  const [hardwareCategories, setHardwareCategories] = useState<{ value: string; label: string }[]>(
-    SIDEBAR_HARDWARE_CATEGORIES
-  );
-
-  // Dynamic additional sub-categories if user adds any new in DB
-  const dynamicOtherCategories = useMemo(() => {
-    const defaultVals = new Set(
-      SIDEBAR_HARDWARE_CATEGORIES.map((c) => c.value.toLowerCase())
-    );
-    const list: string[] = [];
-    allProducts.forEach((p) => {
-      const sub = p.sub_category?.trim();
-      if (sub && !defaultVals.has(sub.toLowerCase()) && !list.includes(sub)) {
-        list.push(sub);
-      }
-    });
-    return list;
-  }, [allProducts]);
-
-  // Fetch program options for Hardware categories
-  useEffect(() => {
-    fetch("/api/admin/program-options")
-      .then((res) => res.json())
-      .then((json) => {
-        if (json && json.success && Array.isArray(json.hardwareCategories) && json.hardwareCategories.length > 0) {
-          const formatted = [
-            { value: "ALL", label: "สินค้าฮาร์ดแวร์ทั้งหมด (All)" },
-            ...json.hardwareCategories.map((c: { value: string; label: string }) => ({
-              value: c.value,
-              label: c.label || c.value,
-            })),
-          ];
-          setHardwareCategories(formatted);
-        }
-      })
-      .catch((err) => console.log("Program options fetch error:", err));
-  }, []);
 
   // Fetch live products from /api/products?category=Hardware
   useEffect(() => {
@@ -189,27 +150,31 @@ export function HardwareSolutionView({
   useEffect(() => {
     const subParam = searchParams.get("sub") || searchParams.get("type");
     if (subParam) {
-      const match = hardwareCategories.find(
+      const allCats = HARDWARE_GROUPS.flatMap((g) => g.categories);
+      const match = allCats.find(
         (c) => c.value.toLowerCase() === subParam.toLowerCase()
       );
       if (match) {
         setSelectedSubCategory(match.value);
       }
     }
-  }, [searchParams, hardwareCategories]);
+  }, [searchParams]);
 
   // Filter products based on subCategory & search query
   const filteredProducts = useMemo(() => {
     let list = allProducts;
 
     // Filter by sub_category
-    if (selectedSubCategory && selectedSubCategory !== "ALL") {
+    if (selectedSubCategory) {
       const target = selectedSubCategory.trim().toLowerCase();
       list = list.filter((p) => {
         if (!p.sub_category) return false;
         const sub = p.sub_category.trim().toLowerCase();
         if (target === "mobile") {
-          return sub.includes("mobile") || sub.includes("camera");
+          return sub.includes("mobile");
+        }
+        if (target === "camera") {
+          return sub.includes("camera");
         }
         return sub === target || sub.includes(target);
       });
@@ -231,18 +196,6 @@ export function HardwareSolutionView({
 
     return list;
   }, [allProducts, selectedSubCategory, searchQuery]);
-
-  // Helper icon for sub-categories
-  const getSubCategoryIcon = (sub: string) => {
-    const s = sub.toLowerCase();
-    if (s.includes("handheld") || s.includes("barcode")) return <ScanBarcode className="w-4 h-4 text-blue-600" />;
-    if (s.includes("computer")) return <Laptop className="w-4 h-4 text-blue-600" />;
-    if (s.includes("display")) return <Tv className="w-4 h-4 text-blue-600" />;
-    if (s.includes("ups")) return <BatteryCharging className="w-4 h-4 text-blue-600" />;
-    if (s.includes("projector")) return <ProjectorIcon className="w-4 h-4 text-blue-600" />;
-    if (s.includes("mobile") || s.includes("camera")) return <Smartphone className="w-4 h-4 text-blue-600" />;
-    return <Monitor className="w-4 h-4 text-blue-600" />;
-  };
 
   return (
     <div className="w-full bg-[#F8FAFC] text-slate-900 pb-20 select-none">
@@ -283,132 +236,63 @@ export function HardwareSolutionView({
           {/* LEFT SIDEBAR: HARDWARE SUB-CATEGORIES LIST                            */}
           {/* ===================================================================== */}
           <div className="lg:col-span-3 bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs space-y-6">
-            
-            <div className="space-y-2">
-              <h4 className="text-[11px] font-extrabold text-[#0062FF] uppercase tracking-wider px-2 flex items-center justify-between">
-                <span>HARDWARE SOLUTIONS</span>
-                <span className="text-[10px] text-slate-500 font-semibold bg-blue-50 px-2 py-0.5 rounded-full">
-                  {allProducts.length} รายการ
-                </span>
-              </h4>
-
-              <div className="space-y-1">
-                {hardwareCategories.map((cat) => {
-                  const isSelected = selectedSubCategory === cat.value;
-                  const count =
-                    cat.value === "ALL"
-                      ? allProducts.length
-                      : allProducts.filter((p) => {
-                          if (!p.sub_category) return false;
-                          const sub = p.sub_category.toLowerCase();
-                          const val = cat.value.toLowerCase();
-                          if (val === "mobile") return sub.includes("mobile") || sub.includes("camera");
-                          return sub === val || sub.includes(val);
-                        }).length;
-
-                  return (
-                    <button
-                      key={cat.value}
-                      type="button"
-                      onClick={() => setSelectedSubCategory(cat.value)}
-                      className={`w-full text-left px-3 py-2 rounded-lg text-xs sm:text-[13px] font-medium transition-all cursor-pointer flex items-center justify-between ${
-                        isSelected
-                          ? "bg-[#EEF4FF] text-[#0062FF] font-semibold"
-                          : "text-slate-600 hover:text-blue-600 hover:bg-slate-50"
-                      }`}
-                    >
-                      <span className="truncate pr-2">{cat.label}</span>
-                      <span
-                        className={`text-[10px] px-1.5 py-0.5 rounded-md font-medium shrink-0 ${
+            {HARDWARE_GROUPS.map((group, groupIdx) => (
+              <div
+                key={group.title}
+                className={`space-y-2 ${groupIdx > 0 ? "pt-2 border-t border-slate-100" : ""}`}
+              >
+                <h4 className="text-[11px] font-extrabold text-[#0062FF] uppercase tracking-wider px-2">
+                  {group.title}
+                </h4>
+                <div className="space-y-1">
+                  {group.categories.map((cat) => {
+                    const isSelected = selectedSubCategory === cat.value;
+                    return (
+                      <button
+                        key={cat.value}
+                        type="button"
+                        onClick={() => setSelectedSubCategory(cat.value)}
+                        className={`w-full text-left px-3 py-2 rounded-lg text-xs sm:text-[13px] font-medium transition-all cursor-pointer block ${
                           isSelected
-                            ? "bg-blue-600 text-white"
-                            : "bg-slate-100 text-slate-500"
+                            ? "bg-[#EEF4FF] text-[#0062FF] font-semibold"
+                            : "text-slate-600 hover:text-blue-600 hover:bg-slate-50"
                         }`}
                       >
-                        {count}
-                      </span>
-                    </button>
-                  );
-                })}
-
-                {/* Dynamic categories from DB if any */}
-                {dynamicOtherCategories.map((cat) => {
-                  const isSelected = selectedSubCategory === cat;
-                  const count = allProducts.filter(
-                    (p) => p.sub_category?.trim().toLowerCase() === cat.toLowerCase()
-                  ).length;
-                  return (
-                    <button
-                      key={cat}
-                      type="button"
-                      onClick={() => setSelectedSubCategory(cat)}
-                      className={`w-full text-left px-3 py-2 rounded-lg text-xs sm:text-[13px] font-medium transition-all cursor-pointer flex items-center justify-between ${
-                        isSelected
-                          ? "bg-[#EEF4FF] text-[#0062FF] font-semibold"
-                          : "text-slate-600 hover:text-blue-600 hover:bg-slate-50"
-                      }`}
-                    >
-                      <span className="truncate pr-2">{cat}</span>
-                      <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-slate-100 text-slate-500 font-medium shrink-0">
-                        {count}
-                      </span>
-                    </button>
-                  );
-                })}
+                        {cat.label}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
-            </div>
-
-            {/* Quality & Hospital Assurance Card */}
-            <div className="p-4 rounded-xl bg-gradient-to-br from-blue-50/70 via-indigo-50/40 to-white border border-blue-100/80 space-y-2">
-              <div className="flex items-center gap-2 text-blue-700">
-                <ShieldCheck className="w-4 h-4 shrink-0 text-blue-600" />
-                <span className="text-xs font-semibold">มาตรฐานโรงพยาบาล & องค์กร</span>
-              </div>
-              <p className="text-[11px] text-slate-600 leading-relaxed">
-                อุปกรณ์ฮาร์ดแวร์ไอทีระดับองค์กร รองรับการทำงาน 24/7 ทนทาน มีเอกสาร Datasheet และ TOR ครบถ้วน
-              </p>
-              <div className="pt-2 border-t border-blue-100/60 flex items-center justify-between text-[11px]">
-                <span className="text-slate-500">ติดต่อฝ่ายขาย</span>
-                <a
-                  href="tel:021234567"
-                  className="font-bold text-blue-600 hover:underline flex items-center gap-1"
-                >
-                  <PhoneCall className="w-3 h-3" />
-                  <span>ปรึกษาสเปก</span>
-                </a>
-              </div>
-            </div>
+            ))}
           </div>
 
           {/* ===================================================================== */}
-          {/* RIGHT COLUMN: SEARCH + 3-COLUMN PRODUCT GRID                          */}
+          {/* RIGHT PRODUCT DISPLAY AREA (3-COLUMN PRODUCT CARDS GRID)              */}
           {/* ===================================================================== */}
           <div className="lg:col-span-9 space-y-6">
             
-            {/* Search Bar + Header Filter Indicator */}
-            <div className="bg-white rounded-2xl border border-slate-200/80 p-4 sm:p-5 shadow-xs flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
+            {/* Header: Title, Product Count, and Search Bar */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-slate-200/70">
               <div>
-                <h2 className="text-lg sm:text-xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
-                  <span>Hardware Solution Catalog</span>
-                  <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-blue-100 text-blue-700">
-                    {filteredProducts.length} รายการ
-                  </span>
+                <h2 className="text-xl sm:text-2xl font-bold text-slate-900">
+                  {selectedSubCategory}
                 </h2>
-                <p className="text-xs text-slate-500 mt-1">
-                  หมวดหมู่: <span className="font-semibold text-slate-700">{selectedSubCategory === "ALL" ? "ทั้งหมด" : selectedSubCategory}</span>
+                <p className="text-xs text-slate-400 mt-0.5">
+                  Showing {filteredProducts.length} products
                 </p>
               </div>
 
-              {/* Search Input Box */}
-              <div className="relative w-full sm:w-72 md:w-80">
-                <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+              {/* Search Box */}
+              <div className="relative w-full sm:w-64">
                 <input
                   type="text"
-                  placeholder="ค้นหาชื่อรุ่น, ยี่ห้อ, สเปก..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-9 pr-8 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all bg-slate-50/50"
+                  placeholder="ค้นหาสินค้า"
+                  className="w-full pl-9 pr-4 py-2 rounded-xl bg-white border border-slate-200 text-xs sm:text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all shadow-2xs"
                 />
+                <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
                 {searchQuery && (
                   <button
                     type="button"
@@ -421,283 +305,475 @@ export function HardwareSolutionView({
               </div>
             </div>
 
-            {/* Product Loading State */}
+            {/* Product Cards Grid: 1 แถวแสดง 3 การ์ด */}
             {loading ? (
-              <div className="bg-white rounded-2xl border border-slate-200/80 p-12 text-center shadow-xs flex flex-col items-center justify-center space-y-3">
-                <Loader2 className="w-8 h-8 text-[#0062FF] animate-spin" />
-                <p className="text-xs font-medium text-slate-500">กำลังโหลดรายการสินค้าฮาร์ดแวร์...</p>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <div
+                    key={i}
+                    className="bg-white rounded-2xl sm:rounded-3xl border border-slate-200/80 p-5 space-y-4 animate-pulse shadow-2xs"
+                  >
+                    <div className="w-full aspect-[4/3] bg-slate-100 rounded-2xl flex items-center justify-center">
+                      <Loader2 className="w-6 h-6 animate-spin text-slate-300" />
+                    </div>
+                    <div className="h-4 bg-slate-200 rounded w-3/4" />
+                    <div className="h-3 bg-slate-100 rounded w-1/2" />
+                    <div className="space-y-1.5 pt-2">
+                      <div className="h-2.5 bg-slate-100 rounded w-full" />
+                      <div className="h-2.5 bg-slate-100 rounded w-4/5" />
+                    </div>
+                    <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
+                      <div className="h-8 w-24 bg-slate-100 rounded-lg" />
+                      <div className="h-8 w-16 bg-slate-100 rounded-lg" />
+                    </div>
+                  </div>
+                ))}
               </div>
-            ) : filteredProducts.length === 0 ? (
-              <div className="bg-white rounded-2xl border border-slate-200/80 p-12 text-center shadow-xs flex flex-col items-center justify-center space-y-3">
-                <Monitor className="w-12 h-12 text-slate-300 stroke-[1.5]" />
-                <h3 className="text-sm font-bold text-slate-800">ไม่พบสินค้าในหมวดหมู่นี้</h3>
-                <p className="text-xs text-slate-500 max-w-sm">
-                  ไม่พบรายการสินค้าที่ตรงกับคำค้นหาหรือตัวกรองที่เลือก ลองเลือกหมวดหมู่อื่น หรือล้างคำค้นหา
-                </p>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    setSelectedSubCategory("ALL");
-                    setSearchQuery("");
-                  }}
-                  className="mt-2 text-xs"
-                >
-                  ดูสินค้าฮาร์ดแวร์ทั้งหมด
-                </Button>
+            ) : filteredProducts.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
+                {filteredProducts.map((prod) => (
+                  <CatalogProductCard
+                    key={prod.id}
+                    product={prod}
+                    onViewProduct={(p) => setDetailProduct(p)}
+                  />
+                ))}
               </div>
             ) : (
-              /* ===================================================================== */
-              /* 3-COLUMN PRODUCT GRID                                                 */
-              /* ===================================================================== */
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                {filteredProducts.map((product) => {
-                  const fallbackImg = "https://images.unsplash.com/photo-1587829741301-dc798b83add3?auto=format&fit=crop&w=800&q=80";
-                  const coverImg = product.cover_image_url || fallbackImg;
-
-                  return (
-                    <div
-                      key={product.id}
-                      className="group bg-white rounded-2xl border border-slate-200/80 hover:border-blue-400 hover:shadow-lg transition-all duration-300 flex flex-col overflow-hidden relative"
-                    >
-                      {/* Product Image Area */}
-                      <div className="relative aspect-[4/3] bg-gradient-to-b from-slate-50 to-white flex items-center justify-center p-6 border-b border-slate-100 overflow-hidden">
-                        <Image
-                          src={coverImg}
-                          alt={product.name}
-                          fill
-                          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                          className="object-contain p-4 group-hover:scale-105 transition-transform duration-300"
-                          unoptimized={coverImg.startsWith("/api/")}
-                        />
-
-                        {/* Top Category Badge */}
-                        <div className="absolute top-3 left-3 flex items-center gap-1.5">
-                          <span className="text-[10px] font-semibold tracking-wide uppercase px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 border border-blue-200/60 shadow-2xs">
-                            {product.sub_category || "Hardware"}
-                          </span>
-                        </div>
-
-                        {/* Brand Badge */}
-                        {product.brand && (
-                          <div className="absolute top-3 right-3">
-                            <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-md bg-slate-900/80 text-white shadow-2xs">
-                              {product.brand}
-                            </span>
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Product Content */}
-                      <div className="p-4 sm:p-5 flex-1 flex flex-col justify-between space-y-3">
-                        <div className="space-y-2">
-                          <h3
-                            className="text-xs sm:text-[13px] font-bold text-slate-900 leading-snug line-clamp-2 group-hover:text-blue-600 transition-colors"
-                            title={product.name}
-                          >
-                            {product.name}
-                          </h3>
-
-                          {product.sku && (
-                            <p className="text-[11px] text-slate-500 font-mono">
-                              SKU: {product.sku}
-                            </p>
-                          )}
-
-                          {/* Bullet Specifications */}
-                          {product.bullet_specs && product.bullet_specs.length > 0 ? (
-                            <ul className="space-y-1 pt-1 border-t border-slate-100">
-                              {product.bullet_specs.slice(0, 3).map((spec, idx) => (
-                                <li
-                                  key={idx}
-                                  className="text-[11px] text-slate-600 flex items-start gap-1.5 leading-tight"
-                                >
-                                  <span className="text-blue-500 font-bold shrink-0">•</span>
-                                  <span className="line-clamp-1">{spec}</span>
-                                </li>
-                              ))}
-                            </ul>
-                          ) : product.short_description ? (
-                            <p className="text-[11px] text-slate-600 line-clamp-2 pt-1 border-t border-slate-100">
-                              {product.short_description}
-                            </p>
-                          ) : null}
-                        </div>
-
-                        {/* Action Buttons */}
-                        <div className="pt-3 border-t border-slate-100 flex items-center gap-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setDetailProduct(product)}
-                            className="flex-1 text-[11px] font-medium h-8 border-slate-200 hover:border-blue-500 hover:text-blue-600"
-                          >
-                            <span>ดูสเปกและรายละเอียด</span>
-                          </Button>
-                          <a
-                            href="https://lin.ee/xyz"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="h-8 px-2.5 rounded-lg bg-[#0062FF] hover:bg-[#0052CC] text-white text-[11px] font-medium flex items-center justify-center gap-1 transition-colors shrink-0 shadow-xs"
-                            title="ขอใบเสนอราคา"
-                          >
-                            <span>ขอราคา</span>
-                            <ArrowRight className="w-3 h-3" />
-                          </a>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
+              <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center space-y-3">
+                <p className="text-slate-500 text-sm">
+                  ไม่พบสินค้าในหมวดหมู่นี้ หรือคำค้นหา &ldquo;{searchQuery}&rdquo;
+                </p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSearchQuery("");
+                    setSelectedSubCategory("Handheld Barcode Scanner");
+                  }}
+                  className="text-xs font-semibold text-blue-600 hover:underline"
+                >
+                  ล้างตัวกรองและแสดงสินค้าทั้งหมด
+                </button>
               </div>
             )}
+
           </div>
         </div>
       </div>
 
       {/* ========================================================================= */}
-      {/* 3. PRODUCT DETAIL MODAL DIALOG                                            */}
+      {/* 3. CALL TO ACTION BANNER (Vibrant Blue Enterprise matching mockup)        */}
+      {/* ========================================================================= */}
+      <div className="w-[94%] max-w-[1720px] mx-auto px-2 sm:px-4 lg:px-6 pt-14 sm:pt-16">
+        <div className="rounded-[28px] sm:rounded-[34px] bg-[#0062FF] p-8 sm:p-12 text-white shadow-xl shadow-blue-600/20 relative overflow-hidden">
+          {/* Subtle Glow */}
+          <div className="absolute top-0 right-0 w-80 h-80 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
+
+          <div className="relative z-10 max-w-2xl space-y-3.5">
+            <span className="text-[11px] font-bold text-blue-100 uppercase tracking-wider bg-white/15 px-3 py-1 rounded-full inline-block backdrop-blur-xs">
+              TOP PROVIDER SYSTEM GROUP
+            </span>
+            <h3 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight leading-snug">
+              พร้อมยกระดับองค์กรของคุณด้วยเทคโนโลยีที่ใช่หรือยัง?
+            </h3>
+            <p className="text-xs sm:text-sm text-blue-100/90 leading-relaxed font-light">
+              เราพร้อมเป็นส่วนหนึ่งในการขับเคลื่อนองค์กรของคุณ ด้วยโซลูชันเทคโนโลยีที่ตอบโจทย์ทุกความต้องการ ไม่ว่าจะเป็นการพัฒนาระบบ การออกแบบซอฟต์แวร์ หรือระบบบริหารจัดการองค์กร ให้ทีมงานผู้เชี่ยวชาญของเราช่วยแนะนำแนวทางที่เหมาะสมกับคุณ
+            </p>
+
+            <div className="pt-2">
+              <Button
+                asChild
+                className="rounded-full bg-white hover:bg-slate-100 text-[#0062FF] font-bold text-xs sm:text-sm px-7 py-3.5 shadow-md transition-all cursor-pointer"
+              >
+                <Link href="/#contact" className="flex items-center gap-2">
+                  <span>Contact Our Team</span>
+                  <ArrowRight className="w-4 h-4" />
+                </Link>
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ========================================================================= */}
+      {/* 4. PRODUCT DETAIL MODAL (Triggered by "View Product")                      */}
       {/* ========================================================================= */}
       {detailProduct && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
-          <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col shadow-2xl animate-in fade-in-50 zoom-in-95 duration-200">
+        <div
+          onClick={() => setDetailProduct(null)}
+          className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="bg-white rounded-3xl w-full max-w-5xl lg:max-w-6xl xl:max-w-7xl overflow-hidden shadow-2xl border border-slate-200 my-auto animate-in fade-in zoom-in-95 duration-200"
+          >
             {/* Modal Header */}
-            <div className="p-4 sm:p-5 border-b border-slate-100 flex items-start justify-between gap-4">
-              <div>
-                <span className="text-[10px] font-bold text-blue-600 uppercase tracking-wider bg-blue-50 px-2 py-0.5 rounded-md">
-                  {detailProduct.sub_category || "Hardware Solution"}
-                </span>
-                <h3 className="text-base sm:text-lg font-bold text-slate-900 mt-1 leading-snug">
+            <div className="px-6 sm:px-8 py-4 sm:py-5 bg-slate-50 border-b border-slate-100 flex items-center justify-between gap-4">
+              <div className="flex flex-wrap items-center gap-2.5 sm:gap-3 min-w-0 pr-2">
+                <h3 className="text-lg sm:text-xl font-bold text-slate-900 truncate">
                   {detailProduct.name}
                 </h3>
-                {detailProduct.sku && (
-                  <p className="text-xs text-slate-500 font-mono mt-0.5">SKU: {detailProduct.sku}</p>
+                {detailProduct.sub_category && (
+                  <span className="text-xs sm:text-sm font-semibold text-blue-700 bg-blue-50 px-3 py-1 rounded-full border border-blue-100 shrink-0">
+                    {detailProduct.sub_category}
+                  </span>
                 )}
               </div>
               <button
                 type="button"
                 onClick={() => setDetailProduct(null)}
-                className="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100 transition-colors"
+                className="w-9 h-9 rounded-full bg-slate-200/70 hover:bg-slate-300 text-slate-600 flex items-center justify-center transition-colors cursor-pointer shrink-0"
               >
-                <X className="w-5 h-5" />
+                <X className="w-4 h-4" />
               </button>
             </div>
 
-            {/* Modal Body */}
-            <div className="p-5 sm:p-6 overflow-y-auto space-y-6">
-              {/* Product Cover Image */}
-              <div className="relative aspect-[16/9] bg-slate-50 rounded-xl overflow-hidden border border-slate-100 flex items-center justify-center">
-                <Image
-                  src={
-                    detailProduct.cover_image_url ||
-                    "https://images.unsplash.com/photo-1587829741301-dc798b83add3?auto=format&fit=crop&w=800&q=80"
-                  }
-                  alt={detailProduct.name}
-                  fill
-                  className="object-contain p-4"
-                  unoptimized={Boolean(detailProduct.cover_image_url?.startsWith("/api/"))}
-                />
+            {/* Modal Content: 2 Columns */}
+            <div className="p-6 md:p-8 lg:p-10 max-h-[85vh] overflow-y-auto">
+              <div className="grid grid-cols-1 md:grid-cols-12 gap-8 lg:gap-10 items-start">
+                
+                {/* ฝั่งซ้าย: รูปสินค้าหลัก และเอกสารดาวน์โหลด */}
+                <div className="md:col-span-6 lg:col-span-5 xl:col-span-5 space-y-5 md:sticky md:top-0">
+                  <div className="w-full aspect-square max-h-[460px] lg:max-h-[520px] rounded-3xl bg-slate-50/60 border border-slate-200/90 flex items-center justify-center p-6 sm:p-8 lg:p-10 shadow-xs">
+                    <img
+                      src={
+                        detailProduct.cover_image_url &&
+                        detailProduct.cover_image_url.trim() !== ""
+                          ? detailProduct.cover_image_url
+                          : "/images/logo.png"
+                      }
+                      alt={detailProduct.name}
+                      className="max-h-full max-w-full object-contain transition-transform duration-300 hover:scale-105"
+                      onError={(e) => {
+                        (e.currentTarget as HTMLImageElement).src = "/images/logo.png";
+                      }}
+                    />
+                  </div>
+
+                  {/* Gallery Thumbnails (ถ้ามี) */}
+                  {detailProduct.gallery_images && detailProduct.gallery_images.length > 0 && (
+                    <div className="flex gap-3 overflow-x-auto pb-1">
+                      {detailProduct.gallery_images.map((gImg, gIdx) => (
+                        <div
+                          key={gIdx}
+                          className="w-20 h-20 rounded-2xl border border-slate-200 bg-white p-1.5 shrink-0 overflow-hidden shadow-xs hover:border-blue-400 transition-colors"
+                        >
+                          <img
+                            src={gImg}
+                            alt=""
+                            className="w-full h-full object-contain"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Download Documents */}
+                  {(detailProduct.datasheet_en_url || detailProduct.tor_th_url) && (
+                    <div className="space-y-2 pt-2">
+                      <h4 className="text-xs sm:text-sm font-bold text-slate-600 uppercase tracking-wider">
+                        เอกสารดาวน์โหลด (PDF)
+                      </h4>
+                      <div className="flex flex-col gap-2">
+                        {detailProduct.datasheet_en_url ? (
+                          <a
+                            href={detailProduct.datasheet_en_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="py-3 px-4 rounded-xl bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 border border-slate-200 hover:border-blue-200 text-xs sm:text-sm font-medium flex items-center justify-center gap-2.5 transition-all"
+                          >
+                            <FileText className="w-4 h-4 text-blue-600 shrink-0" />
+                            <span>Datasheet (EN)</span>
+                          </a>
+                        ) : null}
+
+                        {detailProduct.tor_th_url ? (
+                          <a
+                            href={detailProduct.tor_th_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="py-3 px-4 rounded-xl bg-slate-100 hover:bg-emerald-50 text-slate-700 hover:text-emerald-700 border border-slate-200 hover:border-emerald-200 text-xs sm:text-sm font-medium flex items-center justify-center gap-2.5 transition-all"
+                          >
+                            <FileText className="w-4 h-4 text-emerald-600 shrink-0" />
+                            <span>คุณสมบัติเฉพาะ TOR (TH)</span>
+                          </a>
+                        ) : null}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* ฝั่งขวา: รายละเอียด สเปก */}
+                <div className="md:col-span-6 lg:col-span-7 xl:col-span-7 space-y-6">
+                  {/* Descriptions */}
+                  {(detailProduct.short_description || detailProduct.full_description) && (
+                    <div className="space-y-2">
+                      {detailProduct.short_description && (
+                        <p className="text-sm sm:text-base text-slate-600 leading-relaxed">
+                          {detailProduct.short_description}
+                        </p>
+                      )}
+                      {detailProduct.full_description && (
+                        <p className="text-sm sm:text-base text-slate-500 leading-relaxed">
+                          {detailProduct.full_description}
+                        </p>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Specifications */}
+                  {detailProduct.specifications && detailProduct.specifications.length > 0 && (
+                    <div className="bg-slate-50 rounded-2xl p-5 sm:p-6 border border-slate-100">
+                      <h4 className="text-sm sm:text-base font-bold text-slate-900 uppercase tracking-wider mb-3">
+                        คุณสมบัติและสเปก (SPECIFICATIONS)
+                      </h4>
+                      <div className="space-y-1">
+                        {detailProduct.specifications.map((s, i) => {
+                          const hasLabel = Boolean(s.label && s.label.trim());
+                          const hasValue = Boolean(s.value && s.value.trim());
+
+                          if (!hasLabel && !hasValue) return null;
+
+                          const isMultiLineValue = hasValue && s.value.includes("\n");
+
+                          if (hasLabel && isMultiLineValue) {
+                            const lines = s.value
+                              .split("\n")
+                              .map((line) => line.trim())
+                              .filter(Boolean);
+
+                            return (
+                              <div
+                                key={i}
+                                className="py-2.5 border-b border-slate-200/60 last:border-0 space-y-2 text-left"
+                              >
+                                <div className="font-bold text-slate-800 text-sm sm:text-[15px]">
+                                  {s.label} :
+                                </div>
+                                <div className="pl-3 sm:pl-4 space-y-1.5">
+                                  {lines.map((line, lineIdx) => {
+                                    const cleanLine = line
+                                      .replace(/^[\s•\-\*·●\u2022\u25CF]+/, "")
+                                      .trim();
+                                    return (
+                                      <div
+                                        key={lineIdx}
+                                        className="text-sm sm:text-[14.5px] flex items-start gap-2.5 text-slate-700 leading-relaxed"
+                                      >
+                                        <svg
+                                          className="w-2 h-2 text-[#0062FF] shrink-0 mt-2"
+                                          viewBox="0 0 16 16"
+                                          fill="currentColor"
+                                          aria-hidden="true"
+                                        >
+                                          <circle cx="8" cy="8" r="4.5" />
+                                        </svg>
+                                        <span className="flex-1 break-words">
+                                          {cleanLine}
+                                        </span>
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              </div>
+                            );
+                          }
+
+                          if (!hasLabel && isMultiLineValue) {
+                            const lines = s.value
+                              .split("\n")
+                              .map((line) => line.trim())
+                              .filter(Boolean);
+
+                            return (
+                              <div
+                                key={i}
+                                className="py-1 border-b border-slate-200/60 last:border-0 space-y-1 text-left"
+                              >
+                                {lines.map((line, lineIdx) => {
+                                  const cleanLine = line
+                                    .replace(/^[\s•\-\*·●\u2022\u25CF]+/, "")
+                                    .trim();
+                                  return (
+                                    <div
+                                      key={lineIdx}
+                                      className="text-sm sm:text-[15px] flex items-start gap-3 py-1.5 text-slate-700 leading-relaxed"
+                                    >
+                                      <svg
+                                        className="w-2.5 h-2.5 text-[#0062FF] shrink-0 mt-1.5"
+                                        viewBox="0 0 16 16"
+                                        fill="currentColor"
+                                        aria-hidden="true"
+                                      >
+                                        <circle cx="8" cy="8" r="4.5" />
+                                      </svg>
+                                      <span className="flex-1 break-words font-medium">
+                                        {cleanLine}
+                                      </span>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            );
+                          }
+
+                          if (!hasLabel || !hasValue) {
+                            const rawText = hasValue ? s.value : s.label;
+                            const singleText = rawText
+                              .replace(/^[\s•\-\*·●\u2022\u25CF]+/, "")
+                              .trim();
+                            return (
+                              <div
+                                key={i}
+                                className="text-sm sm:text-[15px] flex items-start gap-3 py-2 border-b border-slate-200/60 last:border-0 text-left"
+                              >
+                                <svg
+                                  className="w-2.5 h-2.5 text-[#0062FF] shrink-0 mt-1.5"
+                                  viewBox="0 0 16 16"
+                                  fill="currentColor"
+                                  aria-hidden="true"
+                                >
+                                  <circle cx="8" cy="8" r="4.5" />
+                                </svg>
+                                <span className="text-slate-700 leading-relaxed font-medium text-left flex-1 break-words">
+                                  {singleText}
+                                </span>
+                              </div>
+                            );
+                          }
+
+                          return (
+                            <div
+                              key={i}
+                              className="text-sm sm:text-[15px] flex items-start justify-between gap-6 py-2.5 border-b border-slate-200/60 last:border-0"
+                            >
+                              <span className="text-slate-600 font-medium text-left shrink-0">
+                                {s.label}:
+                              </span>
+                              <span className="text-slate-900 font-semibold text-right">
+                                {s.value}
+                              </span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
-
-              {/* Description */}
-              {(detailProduct.full_description || detailProduct.short_description) && (
-                <div className="space-y-2">
-                  <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
-                    คำอธิบายสินค้า
-                  </h4>
-                  <p className="text-xs sm:text-[13px] text-slate-600 leading-relaxed whitespace-pre-line">
-                    {detailProduct.full_description || detailProduct.short_description}
-                  </p>
-                </div>
-              )}
-
-              {/* Specifications Table */}
-              {Array.isArray(detailProduct.specifications) && detailProduct.specifications.length > 0 && (
-                <div className="space-y-2">
-                  <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
-                    คุณสมบัติและสเปกทางเทคนิค
-                  </h4>
-                  <div className="border border-slate-200 rounded-xl overflow-hidden">
-                    <table className="w-full text-xs text-left">
-                      <tbody className="divide-y divide-slate-100">
-                        {detailProduct.specifications.map((spec, i) => (
-                          <tr key={i} className={i % 2 === 0 ? "bg-white" : "bg-slate-50/60"}>
-                            <td className="py-2.5 px-3.5 font-semibold text-slate-700 w-1/3 border-r border-slate-100">
-                              {spec.label}
-                            </td>
-                            <td className="py-2.5 px-3.5 text-slate-600 whitespace-pre-line">
-                              {spec.value}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              )}
-
-              {/* Documents & Downloads */}
-              {(detailProduct.datasheet_en_url || detailProduct.tor_th_url) && (
-                <div className="space-y-2">
-                  <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
-                    เอกสารประกอบ (Datasheet / TOR)
-                  </h4>
-                  <div className="flex flex-wrap gap-2">
-                    {detailProduct.datasheet_en_url && (
-                      <a
-                        href={detailProduct.datasheet_en_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100 text-xs font-medium transition-colors"
-                      >
-                        <Download className="w-3.5 h-3.5" />
-                        <span>ดาวน์โหลด Datasheet (EN)</span>
-                      </a>
-                    )}
-                    {detailProduct.tor_th_url && (
-                      <a
-                        href={detailProduct.tor_th_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 text-xs font-medium transition-colors"
-                      >
-                        <FileText className="w-3.5 h-3.5" />
-                        <span>ดาวน์โหลด TOR สเปกราชการ (TH)</span>
-                      </a>
-                    )}
-                  </div>
-                </div>
-              )}
             </div>
 
             {/* Modal Footer */}
-            <div className="p-4 border-t border-slate-100 bg-slate-50 flex items-center justify-between gap-3">
-              <span className="text-xs text-slate-500">
-                ต้องการข้อมูลเพิ่มเติมหรือเสนอราคาโครงการ
-              </span>
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setDetailProduct(null)}
-                  className="text-xs"
-                >
-                  ปิด
-                </Button>
-                <a
-                  href={`https://lin.ee/xyz?text=${encodeURIComponent("สนใจสินค้า " + detailProduct.name)}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="px-4 py-2 rounded-lg bg-[#0062FF] hover:bg-[#0052CC] text-white text-xs font-medium flex items-center gap-1.5 shadow-sm"
-                >
-                  <PhoneCall className="w-3.5 h-3.5" />
-                  <span>ติดต่อฝ่ายขาย</span>
-                </a>
-              </div>
+            <div className="px-6 py-4 bg-slate-50 border-t border-slate-100 flex items-center justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setDetailProduct(null)}
+                className="px-4 py-2.5 rounded-xl text-xs font-medium text-slate-600 hover:bg-slate-200/70 transition-colors cursor-pointer"
+              >
+                ปิดหน้าต่าง
+              </button>
+              <Link
+                href={`/#contact?subject=${encodeURIComponent(detailProduct.name)}`}
+                onClick={() => setDetailProduct(null)}
+                className="px-5 py-2.5 rounded-xl bg-[#0062FF] hover:bg-[#0052CC] text-white text-xs font-medium flex items-center gap-2 shadow-sm transition-all"
+              >
+                <PhoneCall className="w-3.5 h-3.5" />
+                <span>ขอใบเสนอราคา</span>
+              </Link>
             </div>
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+/**
+ * CatalogProductCard: Exactly matches user's design in Image 1
+ * - Clean white card with subtle border and padding
+ * - Centered product image in bg-slate-50/50 rounded-xl
+ * - Product Title
+ * - Model / Subtitle (รุ่น: ...)
+ * - Bullet specs list with round dot icons
+ * - Full-width blue "View Product" button
+ */
+function CatalogProductCard({
+  product,
+  onViewProduct,
+}: {
+  product: ExtendedProductItem;
+  onViewProduct: (product: ExtendedProductItem) => void;
+}) {
+  const modelText =
+    product.sku && product.sku.trim() !== "" && product.sku.trim() !== "-"
+      ? (product.sku.toLowerCase().startsWith("รุ่น") ? product.sku : `รุ่น: ${product.sku}`)
+      : (product.short_description || "");
+
+  return (
+    <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs hover:shadow-md hover:border-slate-300 transition-all duration-300 flex flex-col justify-between relative group">
+      
+      {/* Top Section: Product Image & Info */}
+      <div>
+        {/* Product Image (Centered on clean background) */}
+        {(() => {
+          const hasValidImage = Boolean(
+            product.cover_image_url &&
+              product.cover_image_url.trim() !== "" &&
+              !product.cover_image_url.includes("placeholder")
+          );
+          const displayImage = hasValidImage ? product.cover_image_url : "/images/logo.png";
+          return (
+            <div className="w-full h-44 sm:h-48 flex items-center justify-center p-3 mb-2 overflow-hidden bg-slate-50/50 rounded-xl">
+              <img
+                src={displayImage}
+                alt={product.name}
+                className={`max-h-full max-w-full object-contain group-hover:scale-105 transition-transform duration-300 ${
+                  !hasValidImage ? "p-4 opacity-75" : ""
+                }`}
+                onError={(e) => {
+                  (e.currentTarget as HTMLImageElement).src = "/images/logo.png";
+                }}
+                loading="lazy"
+              />
+            </div>
+          );
+        })()}
+
+        {/* Product Name */}
+        <h3 className="text-sm sm:text-base font-bold text-slate-900 group-hover:text-blue-600 transition-colors line-clamp-1 mt-1">
+          {product.name}
+        </h3>
+
+        {/* Model (รุ่น) */}
+        {modelText && (
+          <p className="text-xs text-slate-500 font-medium line-clamp-1 mt-1">
+            {modelText}
+          </p>
+        )}
+
+        {/* Bullet Specs (แสดงเฉพาะเมื่อมีข้อมูลสเปกเท่านั้น) */}
+        {product.bullet_specs && product.bullet_specs.length > 0 && (
+          <ul className="text-xs text-slate-500 space-y-1 mt-2.5 mb-4">
+            {product.bullet_specs.map((spec, idx) => (
+              <li key={idx} className="flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-slate-400 shrink-0" />
+                <span className="truncate">{spec}</span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+
+      {/* Bottom Section: View Product Button */}
+      <div className="pt-2">
+        <button
+          type="button"
+          onClick={() => onViewProduct(product)}
+          className="w-full py-2.5 px-4 rounded-xl bg-[#0062FF] hover:bg-[#0052CC] text-white text-xs sm:text-sm font-medium tracking-wide text-center transition-all duration-200 shadow-sm hover:shadow-md cursor-pointer"
+        >
+          View Product
+        </button>
+      </div>
     </div>
   );
 }
