@@ -729,24 +729,15 @@ function NetworkProductCard({
         )}
       </div>
 
-      {/* Bottom Section: Actions */}
-      <div className="mt-4 pt-3 border-t border-slate-100 flex items-center gap-2">
+      {/* Bottom Section: View Product Button */}
+      <div className="pt-2">
         <button
           type="button"
           onClick={() => onViewProduct(product)}
-          className="flex-1 py-2 sm:py-2.5 px-3 rounded-xl bg-slate-100 hover:bg-[#EEF4FF] text-slate-700 hover:text-[#0062FF] font-semibold text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+          className="w-full py-2.5 px-4 rounded-xl bg-[#0062FF] hover:bg-[#0052CC] text-white text-xs sm:text-sm font-medium tracking-wide text-center transition-all duration-200 shadow-sm hover:shadow-md cursor-pointer"
         >
-          <span>ดูรายละเอียด</span>
-          <ArrowRight className="w-3.5 h-3.5" />
+          View Product
         </button>
-
-        <Link
-          href={`/#contact?subject=${encodeURIComponent(product.name)}`}
-          className="py-2 sm:py-2.5 px-3.5 rounded-xl bg-[#0062FF] hover:bg-[#0052CC] text-white text-xs font-medium flex items-center justify-center gap-1.5 transition-colors shadow-2xs shadow-blue-500/20"
-        >
-          <PhoneCall className="w-3.5 h-3.5" />
-          <span className="hidden sm:inline">ขอใบเสนอราคา</span>
-        </Link>
       </div>
 
     </div>
