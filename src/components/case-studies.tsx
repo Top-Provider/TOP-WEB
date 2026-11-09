@@ -754,28 +754,15 @@ export const StickyProjectSection: React.FC<StickyProjectSectionProps> = ({
       .catch((err) => console.log('Tabs API fallback:', err));
   }, []);
 
-  // Cards from DB (Software, Printing, Hardware, Network)
+  // Cards from DB (Software)
   const initialCards = useMemo(() => {
-    const cards: SolutionCardItem[] = [];
-
-    // 1. Software records from DB
     if (initialSoftwareRecords && initialSoftwareRecords.length > 0) {
-      const mappedSw = initialSoftwareRecords.map((r, i) =>
+      return initialSoftwareRecords.map((r, i) =>
         mapSoftwareRecordToCardItem(r as unknown as SoftwareRecord, i, initialSoftwareRecords.length)
       );
-      cards.push(...mappedSw);
     }
-
-    // 2. Product records from DB (Printing, Hardware, Network)
-    if (initialProducts && initialProducts.length > 0) {
-      const mappedProd = initialProducts.map((p, i) =>
-        mapProductRecordToCardItem(p as unknown as ProductRecord, i, initialProducts.length)
-      );
-      cards.push(...mappedProd);
-    }
-
-    return cards;
-  }, [initialSoftwareRecords, initialProducts]);
+    return [];
+  }, [initialSoftwareRecords]);
 
   const [dynamicRecords, setDynamicRecords] = useState<SolutionCardItem[]>(initialCards);
   const [dbLoading, setDbLoading] = useState<boolean>(initialCards.length === 0);
@@ -787,57 +774,47 @@ export const StickyProjectSection: React.FC<StickyProjectSectionProps> = ({
     }
   }, [initialCards]);
 
-  // Client-side fetch fallback from DB if no SSR cards provided
+  // Client-side fetch fallback from DB for Software
   useEffect(() => {
     if (dynamicRecords.length === 0) {
       setDbLoading(true);
-      Promise.all([
-        fetchRecords<SoftwareRecord>({
-          table: 'TB_PRODUCT_SOFTWARE',
-          orderBy: 'id',
-          orderDir: 'asc',
-        }),
-        fetch('/api/products')
-          .then((res) => res.json())
-          .then((json) => (json && json.success && Array.isArray(json.products) ? json.products : []))
-          .catch(() => []),
-      ])
-        .then(([softRecords, prodRecords]) => {
-          const cards: SolutionCardItem[] = [];
-          if (softRecords && softRecords.length > 0) {
-            cards.push(
-              ...softRecords.map((r, i) => mapSoftwareRecordToCardItem(r, i, softRecords.length))
+      fetchRecords<SoftwareRecord>({
+        table: 'TB_PRODUCT_SOFTWARE',
+        orderBy: 'id',
+        orderDir: 'asc',
+      })
+        .then((records) => {
+          if (records && records.length > 0) {
+            setDynamicRecords(
+              records.map((r, i) => mapSoftwareRecordToCardItem(r, i, records.length))
             );
-          }
-          if (prodRecords && prodRecords.length > 0) {
-            cards.push(
-              ...prodRecords.map((p: ProductRecord, i: number) =>
-                mapProductRecordToCardItem(p, i, prodRecords.length)
-              )
-            );
-          }
-          if (cards.length > 0) {
-            setDynamicRecords(cards);
           }
         })
-        .catch((err) => console.error('Error loading solution records from DB:', err))
+        .catch((err) => console.error('Error loading software records from DB:', err))
         .finally(() => {
           setDbLoading(false);
         });
     }
   }, [dynamicRecords.length]);
 
-  // Current cards: ดึงจาก DB ตาม activeTab (ห้ามใช้ mock เด็ดขาด เพื่อไม่ให้กระพริบข้อมูล mock บนหน้าเว็บ)
+  // Current cards:
+  // - ถ้าเป็น Software: ดึงรายการระบบจากฐานข้อมูล TB_PRODUCT_SOFTWARE
+  // - ถ้าเป็น หมวดอื่นๆ (Printing, Hardware, Network): แสดงการ์ดภาพรวมโซลูชัน (Overview Cards)
   const currentCards = useMemo(() => {
-    if (dbLoading) return [];
-    const matched = dynamicRecords.filter((item) => item.tabCategory === activeTab);
-    if (matched.length > 0) {
+    if (activeTab === 'software') {
+      if (dbLoading) return [];
+      const matched = dynamicRecords.filter((item) => item.tabCategory === 'software');
       return matched.map((item, idx) => ({
         ...item,
         counterText: `${String(idx + 1).padStart(2, '0')} / ${String(matched.length).padStart(2, '0')}`,
       }));
     }
-    return [];
+
+    const overviewCards = ALL_SOLUTION_CARDS.filter((item) => item.tabCategory === activeTab);
+    return overviewCards.map((item, idx) => ({
+      ...item,
+      counterText: `${String(idx + 1).padStart(2, '0')} / ${String(overviewCards.length).padStart(2, '0')}`,
+    }));
   }, [activeTab, dynamicRecords, dbLoading]);
 
   const handleTabClick = (tabId: string) => {
