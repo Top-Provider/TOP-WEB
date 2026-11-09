@@ -479,23 +479,32 @@ export function NetworkSolutionView({
             className="bg-white rounded-3xl w-full max-w-4xl lg:max-w-5xl overflow-hidden shadow-2xl border border-slate-200 my-auto animate-in fade-in zoom-in-95 duration-200"
           >
             {/* Modal Header */}
-            <div className="px-6 py-4 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <span className="text-xs sm:text-sm font-bold px-3 py-1 rounded-full bg-slate-900 text-white uppercase tracking-wider">
+            <div className="px-6 py-4 bg-slate-50 border-b border-slate-100 flex items-center justify-between gap-4">
+              <div className="flex flex-wrap items-center gap-2.5 sm:gap-3 min-w-0 pr-2">
+                <span className="text-xs sm:text-sm font-bold px-3 py-1 rounded-full bg-slate-900 text-white uppercase tracking-wider shrink-0">
                   {detailProduct.brand || "TOP PROVIDER"}
                 </span>
                 {detailProduct.sku &&
                   detailProduct.sku.trim() !== "" &&
                   detailProduct.sku.trim() !== "-" && (
-                    <span className="text-xs sm:text-sm text-slate-600 font-mono font-medium">
+                    <span className="text-xs sm:text-sm text-slate-600 font-mono font-medium shrink-0">
                       SKU: {detailProduct.sku}
                     </span>
                   )}
+                <span className="text-slate-300 hidden sm:inline">•</span>
+                <h3 className="text-base sm:text-lg font-bold text-slate-900 truncate">
+                  {detailProduct.name}
+                </h3>
+                {detailProduct.sub_category && (
+                  <span className="text-xs font-semibold text-blue-700 bg-blue-50 px-2.5 py-0.5 rounded-full border border-blue-100 shrink-0">
+                    {detailProduct.sub_category}
+                  </span>
+                )}
               </div>
               <button
                 type="button"
                 onClick={() => setDetailProduct(null)}
-                className="w-9 h-9 rounded-full bg-slate-200/70 hover:bg-slate-300 text-slate-600 flex items-center justify-center transition-colors cursor-pointer"
+                className="w-9 h-9 rounded-full bg-slate-200/70 hover:bg-slate-300 text-slate-600 flex items-center justify-center transition-colors cursor-pointer shrink-0"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -573,28 +582,21 @@ export function NetworkSolutionView({
 
                 {/* ฝั่งขวา: รายละเอียด สเปก และสินค้าที่ใช้ร่วมกัน */}
                 <div className="md:col-span-7 space-y-6">
-                  {/* Title & Description */}
-                  <div>
-                    <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 leading-snug tracking-tight">
-                      {detailProduct.name}
-                    </h2>
-                    {detailProduct.sub_category && (
-                      <p className="text-sm sm:text-base text-blue-600 font-semibold mt-1.5 flex items-center gap-2">
-                        <span className="w-2 h-2 rounded-full bg-blue-600 inline-block" />
-                        <span>หมวดหมู่: {detailProduct.sub_category}</span>
-                      </p>
-                    )}
-                    {detailProduct.short_description && (
-                      <p className="text-slate-600 text-sm sm:text-[15px] leading-relaxed mt-3">
-                        {detailProduct.short_description}
-                      </p>
-                    )}
-                    {detailProduct.full_description && (
-                      <p className="text-slate-600 text-xs sm:text-sm leading-relaxed mt-2 whitespace-pre-line">
-                        {detailProduct.full_description}
-                      </p>
-                    )}
-                  </div>
+                  {/* Descriptions */}
+                  {(detailProduct.short_description || detailProduct.full_description) && (
+                    <div className="space-y-2">
+                      {detailProduct.short_description && (
+                        <p className="text-slate-600 text-sm sm:text-[15px] leading-relaxed">
+                          {detailProduct.short_description}
+                        </p>
+                      )}
+                      {detailProduct.full_description && (
+                        <p className="text-slate-600 text-xs sm:text-sm leading-relaxed whitespace-pre-line">
+                          {detailProduct.full_description}
+                        </p>
+                      )}
+                    </div>
+                  )}
 
                   {/* Specifications Table */}
                   {detailProduct.specifications && detailProduct.specifications.length > 0 && (
