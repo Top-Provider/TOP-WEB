@@ -54,7 +54,7 @@ export default async function Home() {
         )
         .eq("is_active", true)
         .order("id", { ascending: true })
-        .limit(100),
+        .limit(300),
     ]);
 
     if (!catRes.error && catRes.data) {
@@ -73,10 +73,16 @@ export default async function Home() {
     }
 
     if (!prodRes.error && prodRes.data) {
-      initialProducts = prodRes.data.map((item) => ({
-        ...item,
-        cover_image_url: resolveProductImageUrl(item.id, item.cover_image_url, "/images/printer-product.png"),
-      }));
+      initialProducts = prodRes.data.map((item) => {
+        const isNetwork = String(item.category_id || "").toLowerCase().includes("network");
+        const defaultFallback = isNetwork
+          ? "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=1400&q=80"
+          : "/images/printer-product.png";
+        return {
+          ...item,
+          cover_image_url: resolveProductImageUrl(item.id, item.cover_image_url, defaultFallback),
+        };
+      });
     }
   } catch (err) {
     console.error("Error loading home page data from DB:", err);

@@ -622,16 +622,32 @@ export function mapProductRecordToCardItem(
 
   let deliverables: string[] = [];
   if (Array.isArray(p.specifications)) {
-    deliverables = p.specifications
-      .slice(0, 3)
-      .map((s) => s.value || s.label || '')
-      .filter(Boolean);
+    const specWithLines = p.specifications.find((s) => s.value && s.value.includes('\n'));
+    if (specWithLines && specWithLines.value) {
+      deliverables = specWithLines.value
+        .split('\n')
+        .map((l) => l.replace(/^-\s*/, '').trim())
+        .filter(Boolean)
+        .slice(0, 3);
+    } else {
+      deliverables = p.specifications
+        .slice(0, 3)
+        .map((s) => s.value || s.label || '')
+        .filter(Boolean);
+    }
   }
 
   const rawCover = p.cover_image_url || '';
+  const fallbackImg =
+    tabCategory === 'network'
+      ? 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=1400&q=80'
+      : tabCategory === 'hardware'
+      ? 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&w=1400&q=80'
+      : '/images/printer-product.png';
+
   const coverImage = rawCover.startsWith('data:')
     ? `/api/product-image/${p.id}`
-    : rawCover || '/images/printer-product.png';
+    : rawCover || fallbackImg;
 
   const subCategory = p.sub_category || p.brand || 'Product Item';
   const urlPath = `Topprovider.co.th / ${p.brand ? `${p.brand} ` : ''}${p.name}`;
@@ -643,6 +659,19 @@ export function mapProductRecordToCardItem(
     ctaText = 'ดูสินค้า Network ทั้งหมด';
   } else if (tabCategory === 'hardware') {
     ctaText = 'ดูสินค้า Hardware ทั้งหมด';
+  }
+
+  let shortDesc = p.short_description || p.full_description || '';
+  if (!shortDesc && Array.isArray(p.specifications)) {
+    const specWithVal = p.specifications.find(
+      (s) => s.value && (s.label?.includes('คุณลักษณะ') || s.label?.includes('รายละเอียด') || s.value.length > 20)
+    );
+    if (specWithVal?.value) {
+      shortDesc = specWithVal.value.split('\n')[0].replace(/^-\s*/, '').trim();
+    }
+  }
+  if (!shortDesc) {
+    shortDesc = `${p.name} - ระบบและอุปกรณ์มาตรฐานระดับองค์กรสำหรับโรงพยาบาลและหน่วยงานสาธารณสุข`;
   }
 
   return {
@@ -660,8 +689,8 @@ export function mapProductRecordToCardItem(
       year: '2026',
       category: p.category_id || 'Product',
       subCategory: subCategory,
-      shortDescription: p.short_description || p.full_description || '',
-      fullDescription: p.full_description || p.short_description || '',
+      shortDescription: shortDesc,
+      fullDescription: p.full_description || shortDesc,
       challenge: '',
       solution: '',
       deliverables,
