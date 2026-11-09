@@ -476,16 +476,16 @@ export function NetworkSolutionView({
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="bg-white rounded-3xl w-full max-w-4xl lg:max-w-5xl overflow-hidden shadow-2xl border border-slate-200 my-auto animate-in fade-in zoom-in-95 duration-200"
+            className="bg-white rounded-3xl w-full max-w-5xl lg:max-w-6xl xl:max-w-7xl overflow-hidden shadow-2xl border border-slate-200 my-auto animate-in fade-in zoom-in-95 duration-200"
           >
             {/* Modal Header */}
-            <div className="px-6 py-4 bg-slate-50 border-b border-slate-100 flex items-center justify-between gap-4">
+            <div className="px-6 sm:px-8 py-4 sm:py-5 bg-slate-50 border-b border-slate-100 flex items-center justify-between gap-4">
               <div className="flex flex-wrap items-center gap-2.5 sm:gap-3 min-w-0 pr-2">
-                <h3 className="text-base sm:text-lg font-bold text-slate-900 truncate">
+                <h3 className="text-lg sm:text-xl font-bold text-slate-900 truncate">
                   {detailProduct.name}
                 </h3>
                 {detailProduct.sub_category && (
-                  <span className="text-xs font-semibold text-blue-700 bg-blue-50 px-2.5 py-0.5 rounded-full border border-blue-100 shrink-0">
+                  <span className="text-xs sm:text-sm font-semibold text-blue-700 bg-blue-50 px-3 py-1 rounded-full border border-blue-100 shrink-0">
                     {detailProduct.sub_category}
                   </span>
                 )}
@@ -500,16 +500,16 @@ export function NetworkSolutionView({
             </div>
 
             {/* Modal Content: 2 Columns */}
-            <div className="p-6 md:p-8 max-h-[78vh] overflow-y-auto">
-              <div className="grid grid-cols-1 md:grid-cols-12 gap-6 lg:gap-8 items-start">
+            <div className="p-6 md:p-8 lg:p-10 max-h-[85vh] overflow-y-auto">
+              <div className="grid grid-cols-1 md:grid-cols-12 gap-8 lg:gap-10 items-start">
                 
                 {/* ฝั่งซ้าย: รูปสินค้าหลัก และเอกสารดาวน์โหลด */}
-                <div className="md:col-span-5 space-y-4 md:sticky md:top-0">
-                  <div className="w-full aspect-[4/3] rounded-2xl bg-white border border-slate-200/90 flex items-center justify-center p-4 shadow-xs overflow-hidden">
+                <div className="md:col-span-6 lg:col-span-5 xl:col-span-5 space-y-5 md:sticky md:top-0">
+                  <div className="w-full aspect-square md:aspect-[4/3] max-h-[460px] lg:max-h-[520px] rounded-3xl bg-slate-50/60 border border-slate-200/90 flex items-center justify-center p-6 sm:p-8 shadow-xs overflow-hidden">
                     <img
                       src={detailProduct.cover_image_url || "/images/logo.png"}
                       alt={detailProduct.name}
-                      className="max-h-full max-w-full object-cover rounded-xl"
+                      className="max-h-full max-w-full object-contain rounded-xl transition-transform duration-300 hover:scale-105"
                       onError={(e) => {
                         (e.currentTarget as HTMLImageElement).src = "/images/logo.png";
                       }}
@@ -518,16 +518,16 @@ export function NetworkSolutionView({
 
                   {/* Gallery Thumbnails (ถ้ามี) */}
                   {detailProduct.gallery_images && detailProduct.gallery_images.length > 0 && (
-                    <div className="flex gap-2.5 overflow-x-auto pb-1">
+                    <div className="flex gap-3 overflow-x-auto pb-1">
                       {detailProduct.gallery_images.map((gImg, gIdx) => (
                         <div
                           key={gIdx}
-                          className="w-16 h-16 rounded-xl border border-slate-200 bg-white p-1 shrink-0 overflow-hidden"
+                          className="w-20 h-20 rounded-2xl border border-slate-200 bg-white p-1.5 shrink-0 overflow-hidden shadow-xs hover:border-blue-400 transition-colors"
                         >
                           <img
                             src={gImg}
                             alt=""
-                            className="w-full h-full object-cover rounded-lg"
+                            className="w-full h-full object-contain rounded-lg"
                           />
                         </div>
                       ))}
@@ -570,7 +570,7 @@ export function NetworkSolutionView({
                 </div>
 
                 {/* ฝั่งขวา: รายละเอียด สเปก และสินค้าที่ใช้ร่วมกัน */}
-                <div className="md:col-span-7 space-y-6">
+                <div className="md:col-span-6 lg:col-span-7 xl:col-span-7 space-y-6">
                   {/* Descriptions */}
                   {(detailProduct.short_description || detailProduct.full_description) && (
                     <div className="space-y-2">
