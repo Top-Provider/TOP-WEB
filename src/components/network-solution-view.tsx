@@ -609,20 +609,82 @@ export function NetworkSolutionView({
                         <Cpu className="w-4 h-4 text-blue-600" />
                         <span>รายละเอียดสเปกทางเทคนิค (Specifications)</span>
                       </h4>
-                      <div className="rounded-2xl border border-slate-200/90 overflow-hidden divide-y divide-slate-100 bg-slate-50/50 p-4">
-                        {detailProduct.specifications.map((s, i) => (
-                          <div
-                            key={i}
-                            className="text-xs sm:text-sm flex flex-col sm:flex-row sm:items-start justify-between gap-1 sm:gap-6 py-2.5 first:pt-0 last:pb-0"
-                          >
-                            <span className="text-slate-600 font-medium shrink-0">
-                              {s.label}:
-                            </span>
-                            <span className="text-slate-900 font-semibold sm:text-right">
-                              {s.value}
-                            </span>
-                          </div>
-                        ))}
+                      <div className="bg-slate-50 rounded-2xl p-5 sm:p-6 border border-slate-100">
+                        <div className="space-y-1">
+                          {detailProduct.specifications.map((s, i) => {
+                            const hasLabel = Boolean(s.label && s.label.trim());
+                            const hasValue = Boolean(s.value && s.value.trim());
+
+                            if (!hasLabel && !hasValue) return null;
+
+                            const normalizedVal = (s.value || "").replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+                            const isMultiLineValue =
+                              hasValue &&
+                              (normalizedVal.includes("\n") ||
+                                (normalizedVal.includes(" - ") && normalizedVal.trim().startsWith("-")));
+
+                            // กรณีที่ 1: มีหลายข้อ/หลายบรรทัด -> แยกแสดงทีละข้อเป็น Bullet Points ชัดเจน
+                            if (isMultiLineValue) {
+                              let lines = normalizedVal.includes("\n")
+                                ? normalizedVal.split("\n").map((l) => l.trim()).filter(Boolean)
+                                : normalizedVal.split(/\s+-\s+/).map((l) => l.trim()).filter(Boolean);
+
+                              return (
+                                <div
+                                  key={i}
+                                  className="py-2.5 border-b border-slate-200/60 last:border-0 space-y-2 text-left"
+                                >
+                                  {hasLabel && (
+                                    <div className="font-bold text-slate-800 text-sm sm:text-[15px]">
+                                      {s.label} :
+                                    </div>
+                                  )}
+                                  <div className="pl-3 sm:pl-4 space-y-1.5">
+                                    {lines.map((line, lineIdx) => {
+                                      const cleanLine = line
+                                        .replace(/^[\s•\-\*·●\u2022\u25CF]+/, "")
+                                        .trim();
+                                      if (!cleanLine) return null;
+                                      return (
+                                        <div
+                                          key={lineIdx}
+                                          className="text-sm sm:text-[14.5px] flex items-start gap-2.5 text-slate-700 leading-relaxed"
+                                        >
+                                          <svg
+                                            className="w-2 h-2 text-[#0062FF] shrink-0 mt-2"
+                                            viewBox="0 0 16 16"
+                                            fill="currentColor"
+                                            aria-hidden="true"
+                                          >
+                                            <circle cx="8" cy="8" r="4.5" />
+                                          </svg>
+                                          <span className="flex-1 break-words">
+                                            {cleanLine}
+                                          </span>
+                                        </div>
+                                      );
+                                    })}
+                                  </div>
+                                </div>
+                              );
+                            }
+
+                            // กรณีที่ 2: ข้อความบรรทัดเดียว (แสดงแบบ Label : Value ชัดเจน)
+                            return (
+                              <div
+                                key={i}
+                                className="text-sm sm:text-[15px] flex items-start justify-between gap-6 py-2.5 border-b border-slate-200/60 last:border-0"
+                              >
+                                <span className="text-slate-600 font-medium text-left shrink-0">
+                                  {s.label}:
+                                </span>
+                                <span className="text-slate-900 font-semibold text-right">
+                                  {s.value}
+                                </span>
+                              </div>
+                            );
+                          })}
+                        </div>
                       </div>
                     </div>
                   )}
