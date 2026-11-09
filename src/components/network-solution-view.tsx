@@ -276,102 +276,69 @@ export function NetworkSolutionView({
           {/* ===================================================================== */}
           {/* LEFT SIDEBAR: SERVER & STORAGE (ตรงตาม Database จริง)                  */}
           {/* ===================================================================== */}
-          <div className="lg:col-span-3 bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs space-y-4">
+          <div className="lg:col-span-3 bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs space-y-6">
             
-            <div className="flex items-center gap-2 px-2">
-              <Server className="w-4 h-4 text-[#0062FF]" />
-              <h4 className="text-[12px] font-extrabold text-[#0062FF] uppercase tracking-wider">
+            <div className="space-y-2">
+              <h4 className="text-[11px] font-extrabold text-[#0062FF] uppercase tracking-wider px-2">
                 NETWORK & SERVER
               </h4>
-            </div>
 
-            <div className="space-y-1.5">
-              {/* All Products */}
-              <button
-                type="button"
-                onClick={() => setSelectedSubCategory("all")}
-                className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs sm:text-[13px] font-medium transition-all cursor-pointer flex items-center justify-between ${
-                  selectedSubCategory === "all"
-                    ? "bg-[#EEF4FF] text-[#0062FF] font-semibold"
-                    : "text-slate-600 hover:text-blue-600 hover:bg-slate-50"
-                }`}
-              >
-                <div className="flex items-center gap-2.5">
-                  <Layers className="w-4 h-4" />
-                  <span>สินค้าทั้งหมด (All)</span>
-                </div>
-                <span className={`text-[11px] px-2 py-0.5 rounded-full font-semibold ${
-                  selectedSubCategory === "all" ? "bg-blue-100 text-[#0062FF]" : "bg-slate-100 text-slate-600"
-                }`}>
-                  {allProducts.length}
-                </span>
-              </button>
-
-              {/* Server */}
-              <button
-                type="button"
-                onClick={() => setSelectedSubCategory("Server")}
-                className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs sm:text-[13px] font-medium transition-all cursor-pointer flex items-center justify-between ${
-                  selectedSubCategory === "Server"
-                    ? "bg-[#EEF4FF] text-[#0062FF] font-semibold"
-                    : "text-slate-600 hover:text-blue-600 hover:bg-slate-50"
-                }`}
-              >
-                <div className="flex items-center gap-2.5">
-                  <Server className="w-4 h-4" />
-                  <span>Server</span>
-                </div>
-                <span className={`text-[11px] px-2 py-0.5 rounded-full font-semibold ${
-                  selectedSubCategory === "Server" ? "bg-blue-100 text-[#0062FF]" : "bg-slate-100 text-slate-600"
-                }`}>
-                  {allProducts.filter((p) => (p.sub_category || "").toLowerCase() === "server").length}
-                </span>
-              </button>
-
-              {/* Storage */}
-              <button
-                type="button"
-                onClick={() => setSelectedSubCategory("Storage")}
-                className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs sm:text-[13px] font-medium transition-all cursor-pointer flex items-center justify-between ${
-                  selectedSubCategory === "Storage"
-                    ? "bg-[#EEF4FF] text-[#0062FF] font-semibold"
-                    : "text-slate-600 hover:text-blue-600 hover:bg-slate-50"
-                }`}
-              >
-                <div className="flex items-center gap-2.5">
-                  <HardDrive className="w-4 h-4" />
-                  <span>Storage</span>
-                </div>
-                <span className={`text-[11px] px-2 py-0.5 rounded-full font-semibold ${
-                  selectedSubCategory === "Storage" ? "bg-blue-100 text-[#0062FF]" : "bg-slate-100 text-slate-600"
-                }`}>
-                  {allProducts.filter((p) => (p.sub_category || "").toLowerCase() === "storage").length}
-                </span>
-              </button>
-
-              {/* Dynamic categories if added in admin */}
-              {dynamicOtherCategories.map((cat) => (
+              <div className="space-y-1">
+                {/* All Products */}
                 <button
-                  key={cat}
                   type="button"
-                  onClick={() => setSelectedSubCategory(cat)}
-                  className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs sm:text-[13px] font-medium transition-all cursor-pointer flex items-center justify-between ${
-                    selectedSubCategory === cat
+                  onClick={() => setSelectedSubCategory("all")}
+                  className={`w-full text-left px-3 py-2 rounded-lg text-xs sm:text-[13px] font-medium transition-all cursor-pointer block ${
+                    selectedSubCategory === "all"
                       ? "bg-[#EEF4FF] text-[#0062FF] font-semibold"
                       : "text-slate-600 hover:text-blue-600 hover:bg-slate-50"
                   }`}
                 >
-                  <div className="flex items-center gap-2.5">
-                    <Activity className="w-4 h-4" />
-                    <span>{cat}</span>
-                  </div>
-                  <span className={`text-[11px] px-2 py-0.5 rounded-full font-semibold ${
-                    selectedSubCategory === cat ? "bg-blue-100 text-[#0062FF]" : "bg-slate-100 text-slate-600"
-                  }`}>
-                    {allProducts.filter((p) => p.sub_category === cat).length}
-                  </span>
+                  สินค้าทั้งหมด (All)
                 </button>
-              ))}
+
+                {/* Server */}
+                <button
+                  type="button"
+                  onClick={() => setSelectedSubCategory("Server")}
+                  className={`w-full text-left px-3 py-2 rounded-lg text-xs sm:text-[13px] font-medium transition-all cursor-pointer block ${
+                    selectedSubCategory === "Server"
+                      ? "bg-[#EEF4FF] text-[#0062FF] font-semibold"
+                      : "text-slate-600 hover:text-blue-600 hover:bg-slate-50"
+                  }`}
+                >
+                  Server
+                </button>
+
+                {/* Storage */}
+                <button
+                  type="button"
+                  onClick={() => setSelectedSubCategory("Storage")}
+                  className={`w-full text-left px-3 py-2 rounded-lg text-xs sm:text-[13px] font-medium transition-all cursor-pointer block ${
+                    selectedSubCategory === "Storage"
+                      ? "bg-[#EEF4FF] text-[#0062FF] font-semibold"
+                      : "text-slate-600 hover:text-blue-600 hover:bg-slate-50"
+                  }`}
+                >
+                  Storage
+                </button>
+
+                {/* Dynamic categories if added in admin */}
+                {dynamicOtherCategories.map((cat) => (
+                  <button
+                    key={cat}
+                    type="button"
+                    onClick={() => setSelectedSubCategory(cat)}
+                    className={`w-full text-left px-3 py-2 rounded-lg text-xs sm:text-[13px] font-medium transition-all cursor-pointer block ${
+                      selectedSubCategory === cat
+                        ? "bg-[#EEF4FF] text-[#0062FF] font-semibold"
+                        : "text-slate-600 hover:text-blue-600 hover:bg-slate-50"
+                    }`}
+                  >
+                    {cat}
+                  </button>
+                ))}
+              </div>
             </div>
 
           </div>
