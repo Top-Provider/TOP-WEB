@@ -56,10 +56,13 @@ const defaultFormState: ProductFormState = {
 
 const CATEGORY_OPTIONS = [
   { value: "Printing", label: "Printing & Supply" },
+  { value: "Network", label: "Network & Server Solution" },
 ];
 
 const FILTER_CATEGORY_OPTIONS = [
-  { value: "all", label: "หมวดหมู่: Printing & Supply" },
+  { value: "all", label: "ทุกหมวดหมู่ (All Categories)" },
+  { value: "Printing", label: "หมวดหมู่: Printing & Supply" },
+  { value: "Network", label: "หมวดหมู่: Network & Server" },
 ];
 
 const PRODUCT_TYPE_OPTIONS = [
@@ -113,6 +116,12 @@ const SUB_CATEGORY_HARDWARE_OPTIONS = [
 const SUB_CATEGORY_NETWORK_OPTIONS = [
   { value: "Server", label: "Server" },
   { value: "Storage", label: "Storage" },
+  { value: "Core Server Cluster", label: "Core Server Cluster" },
+  { value: "Backup & Disaster Recovery", label: "Backup & Disaster Recovery" },
+  { value: "Next-Gen Firewall", label: "Next-Gen Firewall" },
+  { value: "Core & Access Switch", label: "Core & Access Switch" },
+  { value: "Enterprise Router", label: "Enterprise Router" },
+  { value: "Wireless & Wi-Fi 6", label: "Wireless & Wi-Fi 6" },
   { value: "License", label: "License" },
   { value: "Software Install Client", label: "Software Install Client" },
   { value: "Other", label: "อื่นๆ (กำหนดเอง)" },
@@ -556,7 +565,10 @@ export default function AdminProductsPage() {
         name: formData.name.trim(),
         sku: trimmedSku,
         slug: slug,
-        category_id: formData.category_id || "Printing",
+        category_id:
+          formData.product_type === "network"
+            ? "Network"
+            : formData.category_id || "Printing",
         sub_category: formData.sub_category,
         brand: trimmedBrand,
         product_type: formData.product_type || "printer",

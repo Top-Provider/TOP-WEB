@@ -499,7 +499,7 @@ export function NetworkSolutionView({
   });
 
   // Active Category state
-  const [loading, setLoading] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(initialProducts.length === 0);
   const [selectedSubCategory, setSelectedSubCategory] = useState<string>("Server");
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [detailProduct, setDetailProduct] = useState<ExtendedProductItem | null>(null);
@@ -556,9 +556,7 @@ export function NetworkSolutionView({
 
   // Fetch live products from /api/products
   useEffect(() => {
-    if (initialProducts.length === 0) {
-      setLoading(true);
-    }
+    setLoading(true);
     fetch("/api/products?category=Network")
       .then((res) => res.json())
       .then((json) => {
@@ -578,7 +576,11 @@ export function NetworkSolutionView({
           setAllProducts(dbProducts);
 
           setSelectedSubCategory((prev) => {
-            const hasMatch = dbProducts.some((p) => p.sub_category === prev);
+            const hasMatch = dbProducts.some((p) => {
+              const sub = (p.sub_category || "").toLowerCase().trim();
+              const target = prev.toLowerCase().trim();
+              return sub === target || sub.includes(target) || target.includes(sub);
+            });
             if (!hasMatch) {
               const firstWithCat = dbProducts.find((p) => p.sub_category && p.sub_category.trim());
               return firstWithCat?.sub_category ? firstWithCat.sub_category : prev;
@@ -591,7 +593,7 @@ export function NetworkSolutionView({
       .finally(() => {
         setLoading(false);
       });
-  }, [initialProducts.length]);
+  }, []);
 
   useEffect(() => {
     fetch("/api/admin/categories")
@@ -668,13 +670,10 @@ export function NetworkSolutionView({
     // 1. Filter by Sub-Category
     if (selectedSubCategory && selectedSubCategory !== "all") {
       const targetSub = selectedSubCategory.toLowerCase().trim();
-      const matched = list.filter((p) => {
+      list = list.filter((p) => {
         const sub = (p.sub_category || "").toLowerCase().trim();
         return sub === targetSub || sub.includes(targetSub) || targetSub.includes(sub);
       });
-      if (matched.length > 0) {
-        list = matched;
-      }
     }
 
     // 2. Filter by Search Query

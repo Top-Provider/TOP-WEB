@@ -27,7 +27,7 @@ export interface ProductItemResponse {
   category_id: string;
   sub_category?: string;
   brand?: string;
-  product_type: "printer" | "supply";
+  product_type: "printer" | "supply" | "hardware" | "network" | string;
   short_description?: string;
   full_description?: string;
   specifications: { label: string; value: string }[];
@@ -82,11 +82,17 @@ export async function GET(req: NextRequest) {
           category_id: String(item.category_id || "Printing"),
           sub_category: String(item.sub_category || ""),
           brand: String(item.brand || ""),
-          product_type: (item.product_type === "supply" ? "supply" : "printer"),
+          product_type: String(item.product_type || "printer"),
           short_description: String(item.short_description || ""),
           full_description: String(item.full_description || ""),
           specifications: specs,
-          cover_image_url: String(item.cover_image_url || "/images/printer-product.png"),
+          cover_image_url: item.cover_image_url
+            ? (String(item.cover_image_url).startsWith("data:")
+                ? `/api/product-image/${item.id}`
+                : String(item.cover_image_url))
+            : (String(item.category_id).toLowerCase() === "network"
+                ? "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=800&q=80"
+                : "/images/printer-product.png"),
           gallery_images: Array.isArray(item.gallery_images) ? (item.gallery_images as string[]) : [],
           compatible_products: compat,
           datasheet_en_url: String(item.datasheet_en_url || ""),

@@ -31,7 +31,7 @@ export default async function NetworkSolutionPage() {
         "id, name, sku, slug, category_id, sub_category, brand, product_type, short_description, full_description, specifications, cover_image_url, gallery_images, compatible_products, datasheet_en_url, tor_th_url, is_active"
       )
       .eq("is_active", true)
-      .eq("category_id", "Network")
+      .ilike("category_id", "Network")
       .order("id", { ascending: true })
       .limit(60);
 
@@ -46,15 +46,15 @@ export default async function NetworkSolutionPage() {
         category_id: String(item.category_id || "Network"),
         sub_category: String(item.sub_category || "Server"),
         brand: String(item.brand || "TOP PROVIDER"),
-        product_type: (item.product_type === "supply" ? "supply" : "printer"),
+        product_type: String(item.product_type || "network") as any,
         short_description: String(item.short_description || ""),
         full_description: String(item.full_description || ""),
-        specifications: Array.isArray(item.specifications) ? item.specifications : [],
+        specifications: Array.isArray(item.specifications) ? (item.specifications as { label: string; value: string }[]) : [],
         cover_image_url: resolveProductImageUrl(item.id, item.cover_image_url, "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=800&q=80"),
         gallery_images: Array.isArray(item.gallery_images)
           ? item.gallery_images.filter((img) => typeof img === "string" && (!img.startsWith("data:") || img.length <= 35000))
           : [],
-        compatible_products: Array.isArray(item.compatible_products) ? item.compatible_products : [],
+        compatible_products: Array.isArray(item.compatible_products) ? (item.compatible_products as string[]) : [],
         datasheet_en_url: String(item.datasheet_en_url || ""),
         tor_th_url: String(item.tor_th_url || ""),
         is_active: item.is_active !== false,
