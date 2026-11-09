@@ -116,14 +116,6 @@ const SUB_CATEGORY_HARDWARE_OPTIONS = [
 const SUB_CATEGORY_NETWORK_OPTIONS = [
   { value: "Server", label: "Server" },
   { value: "Storage", label: "Storage" },
-  { value: "Core Server Cluster", label: "Core Server Cluster" },
-  { value: "Backup & Disaster Recovery", label: "Backup & Disaster Recovery" },
-  { value: "Next-Gen Firewall", label: "Next-Gen Firewall" },
-  { value: "Core & Access Switch", label: "Core & Access Switch" },
-  { value: "Enterprise Router", label: "Enterprise Router" },
-  { value: "Wireless & Wi-Fi 6", label: "Wireless & Wi-Fi 6" },
-  { value: "License", label: "License" },
-  { value: "Software Install Client", label: "Software Install Client" },
   { value: "Other", label: "อื่นๆ (กำหนดเอง)" },
 ];
 

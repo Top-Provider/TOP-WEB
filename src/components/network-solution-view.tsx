@@ -39,23 +39,9 @@ export interface ExtendedProductItem extends ProductItemResponse {
   bullet_specs?: string[];
 }
 
-export const SIDEBAR_SERVER_CATEGORIES = [
+export const SIDEBAR_NETWORK_CATEGORIES = [
   "Server",
   "Storage",
-  "Core Server Cluster",
-  "Backup & Disaster Recovery",
-];
-
-export const SIDEBAR_NETWORK_CATEGORIES = [
-  "Next-Gen Firewall",
-  "Core & Access Switch",
-  "Enterprise Router",
-  "Wireless & Wi-Fi 6",
-];
-
-export const SIDEBAR_LICENSE_CATEGORIES = [
-  "License",
-  "Software Install Client",
 ];
 
 export const DEFAULT_NETWORK_PRODUCTS: ExtendedProductItem[] = [];
@@ -96,48 +82,35 @@ export function NetworkSolutionView({
   // Dynamic Solution Category Tabs from /api/admin/categories
   const [categoryTabs, setCategoryTabs] = useState(SOLUTION_CATEGORY_TABS);
 
-  // Dynamic categories from /api/admin/program-options
-  const [serverCategories, setServerCategories] = useState<{ value: string; label: string }[]>(
-    SIDEBAR_SERVER_CATEGORIES.map((c) => ({ value: c, label: c }))
-  );
+  // Sub-categories list
   const [networkCategories, setNetworkCategories] = useState<{ value: string; label: string }[]>(
     SIDEBAR_NETWORK_CATEGORIES.map((c) => ({ value: c, label: c }))
   );
-  const [licenseCategories, setLicenseCategories] = useState<{ value: string; label: string }[]>(
-    SIDEBAR_LICENSE_CATEGORIES.map((c) => ({ value: c, label: c }))
-  );
+
+  // Dynamic additional sub-categories if user adds any in DB
+  const dynamicOtherCategories = useMemo(() => {
+    const list: string[] = [];
+    allProducts.forEach((p) => {
+      const sub = p.sub_category?.trim();
+      if (
+        sub &&
+        sub.toLowerCase() !== "server" &&
+        sub.toLowerCase() !== "storage" &&
+        !list.includes(sub)
+      ) {
+        list.push(sub);
+      }
+    });
+    return list;
+  }, [allProducts]);
 
   // Fetch program options for Network categories
   useEffect(() => {
     fetch("/api/admin/program-options")
       .then((res) => res.json())
       .then((json) => {
-        if (json && json.success) {
-          if (Array.isArray(json.networkCategories) && json.networkCategories.length > 0) {
-            const apiCats: { value: string; label: string }[] = json.networkCategories;
-            const servers = apiCats.filter(
-              (c) =>
-                c.value.toLowerCase().includes("server") ||
-                c.value.toLowerCase().includes("storage")
-            );
-            const nets = apiCats.filter(
-              (c) =>
-                c.value.toLowerCase().includes("firewall") ||
-                c.value.toLowerCase().includes("switch") ||
-                c.value.toLowerCase().includes("router") ||
-                c.value.toLowerCase().includes("wireless") ||
-                c.value.toLowerCase().includes("wi-fi")
-            );
-            const lics = apiCats.filter(
-              (c) =>
-                c.value.toLowerCase().includes("license") ||
-                c.value.toLowerCase().includes("client")
-            );
-
-            if (servers.length > 0) setServerCategories(servers);
-            if (nets.length > 0) setNetworkCategories(nets);
-            if (lics.length > 0) setLicenseCategories(lics);
-          }
+        if (json && json.success && Array.isArray(json.networkCategories) && json.networkCategories.length > 0) {
+          setNetworkCategories(json.networkCategories);
         }
       })
       .catch((err) => console.log("Program options fetch error:", err));
@@ -220,39 +193,21 @@ export function NetworkSolutionView({
 
     if (subParam) {
       setSelectedSubCategory(subParam);
-    } else if (typeParam === "server") {
-      setSelectedSubCategory("Server");
     } else if (typeParam === "storage") {
       setSelectedSubCategory("Storage");
-    } else if (typeParam === "firewall") {
-      setSelectedSubCategory("Next-Gen Firewall");
-    } else if (typeParam === "switch") {
-      setSelectedSubCategory("Core & Access Switch");
-    } else if (typeParam === "license") {
-      setSelectedSubCategory("License");
+    } else if (typeParam === "all") {
+      setSelectedSubCategory("all");
+    } else {
+      setSelectedSubCategory("Server");
     }
   }, [searchParams]);
 
-  // Determine current group header
-  const isServerSelected = useMemo(() => {
-    const target = selectedSubCategory.toLowerCase();
-    return serverCategories.some(
-      (c) => c.value.toLowerCase() === target || c.label.toLowerCase() === target
-    );
-  }, [selectedSubCategory, serverCategories]);
-
-  const isNetworkSelected = useMemo(() => {
-    const target = selectedSubCategory.toLowerCase();
-    return networkCategories.some(
-      (c) => c.value.toLowerCase() === target || c.label.toLowerCase() === target
-    );
-  }, [selectedSubCategory, networkCategories]);
-
-  const currentGroupTitle = isServerSelected
-    ? "SERVER & STORAGE"
-    : isNetworkSelected
-    ? "NETWORK & SECURITY"
-    : "LICENSING & DEPLOYMENT";
+  const currentGroupTitle =
+    selectedSubCategory === "all"
+      ? "สินค้าทั้งหมด"
+      : selectedSubCategory === "Storage"
+      ? "Storage"
+      : selectedSubCategory || "Server";
 
   // Filtered products list
   const filteredProducts = useMemo(() => {
@@ -319,98 +274,104 @@ export function NetworkSolutionView({
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           
           {/* ===================================================================== */}
-          {/* LEFT SIDEBAR: SERVER, NETWORK, AND LICENSE CATEGORIES                 */}
+          {/* LEFT SIDEBAR: SERVER & STORAGE (ตรงตาม Database จริง)                  */}
           {/* ===================================================================== */}
-          <div className="lg:col-span-3 bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs space-y-6">
+          <div className="lg:col-span-3 bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs space-y-4">
             
-            {/* GROUP 1: SERVER & STORAGE */}
-            <div className="space-y-2">
-              <div className="flex items-center gap-2 px-2">
-                <Server className="w-3.5 h-3.5 text-[#0062FF]" />
-                <h4 className="text-[11px] font-extrabold text-[#0062FF] uppercase tracking-wider">
-                  SERVER & STORAGE
-                </h4>
-              </div>
-              <div className="space-y-1">
-                {serverCategories.map((cat) => {
-                  const isSelected =
-                    selectedSubCategory === cat.value || selectedSubCategory === cat.label;
-                  return (
-                    <button
-                      key={cat.value}
-                      type="button"
-                      onClick={() => setSelectedSubCategory(cat.value)}
-                      className={`w-full text-left px-3 py-2 rounded-lg text-xs sm:text-[13px] font-medium transition-all cursor-pointer block ${
-                        isSelected
-                          ? "bg-[#EEF4FF] text-[#0062FF] font-semibold"
-                          : "text-slate-600 hover:text-blue-600 hover:bg-slate-50"
-                      }`}
-                    >
-                      {cat.label}
-                    </button>
-                  );
-                })}
-              </div>
+            <div className="flex items-center gap-2 px-2">
+              <Server className="w-4 h-4 text-[#0062FF]" />
+              <h4 className="text-[12px] font-extrabold text-[#0062FF] uppercase tracking-wider">
+                NETWORK & SERVER
+              </h4>
             </div>
 
-            {/* GROUP 2: NETWORK & SECURITY */}
-            <div className="space-y-2 pt-2 border-t border-slate-100">
-              <div className="flex items-center gap-2 px-2">
-                <Shield className="w-3.5 h-3.5 text-[#0062FF]" />
-                <h4 className="text-[11px] font-extrabold text-[#0062FF] uppercase tracking-wider">
-                  NETWORK & SECURITY
-                </h4>
-              </div>
-              <div className="space-y-1">
-                {networkCategories.map((cat) => {
-                  const isSelected =
-                    selectedSubCategory === cat.value || selectedSubCategory === cat.label;
-                  return (
-                    <button
-                      key={cat.value}
-                      type="button"
-                      onClick={() => setSelectedSubCategory(cat.value)}
-                      className={`w-full text-left px-3 py-2 rounded-lg text-xs sm:text-[13px] font-medium transition-all cursor-pointer block ${
-                        isSelected
-                          ? "bg-[#EEF4FF] text-[#0062FF] font-semibold"
-                          : "text-slate-600 hover:text-blue-600 hover:bg-slate-50"
-                      }`}
-                    >
-                      {cat.label}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
+            <div className="space-y-1.5">
+              {/* All Products */}
+              <button
+                type="button"
+                onClick={() => setSelectedSubCategory("all")}
+                className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs sm:text-[13px] font-medium transition-all cursor-pointer flex items-center justify-between ${
+                  selectedSubCategory === "all"
+                    ? "bg-[#EEF4FF] text-[#0062FF] font-semibold"
+                    : "text-slate-600 hover:text-blue-600 hover:bg-slate-50"
+                }`}
+              >
+                <div className="flex items-center gap-2.5">
+                  <Layers className="w-4 h-4" />
+                  <span>สินค้าทั้งหมด (All)</span>
+                </div>
+                <span className={`text-[11px] px-2 py-0.5 rounded-full font-semibold ${
+                  selectedSubCategory === "all" ? "bg-blue-100 text-[#0062FF]" : "bg-slate-100 text-slate-600"
+                }`}>
+                  {allProducts.length}
+                </span>
+              </button>
 
-            {/* GROUP 3: LICENSING & DEPLOYMENT */}
-            <div className="space-y-2 pt-2 border-t border-slate-100">
-              <div className="flex items-center gap-2 px-2">
-                <Layers className="w-3.5 h-3.5 text-[#0062FF]" />
-                <h4 className="text-[11px] font-extrabold text-[#0062FF] uppercase tracking-wider">
-                  LICENSING & DEPLOYMENT
-                </h4>
-              </div>
-              <div className="space-y-1">
-                {licenseCategories.map((cat) => {
-                  const isSelected =
-                    selectedSubCategory === cat.value || selectedSubCategory === cat.label;
-                  return (
-                    <button
-                      key={cat.value}
-                      type="button"
-                      onClick={() => setSelectedSubCategory(cat.value)}
-                      className={`w-full text-left px-3 py-2 rounded-lg text-xs sm:text-[13px] font-medium transition-all cursor-pointer block ${
-                        isSelected
-                          ? "bg-[#EEF4FF] text-[#0062FF] font-semibold"
-                          : "text-slate-600 hover:text-blue-600 hover:bg-slate-50"
-                      }`}
-                    >
-                      {cat.label}
-                    </button>
-                  );
-                })}
-              </div>
+              {/* Server */}
+              <button
+                type="button"
+                onClick={() => setSelectedSubCategory("Server")}
+                className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs sm:text-[13px] font-medium transition-all cursor-pointer flex items-center justify-between ${
+                  selectedSubCategory === "Server"
+                    ? "bg-[#EEF4FF] text-[#0062FF] font-semibold"
+                    : "text-slate-600 hover:text-blue-600 hover:bg-slate-50"
+                }`}
+              >
+                <div className="flex items-center gap-2.5">
+                  <Server className="w-4 h-4" />
+                  <span>Server</span>
+                </div>
+                <span className={`text-[11px] px-2 py-0.5 rounded-full font-semibold ${
+                  selectedSubCategory === "Server" ? "bg-blue-100 text-[#0062FF]" : "bg-slate-100 text-slate-600"
+                }`}>
+                  {allProducts.filter((p) => (p.sub_category || "").toLowerCase() === "server").length}
+                </span>
+              </button>
+
+              {/* Storage */}
+              <button
+                type="button"
+                onClick={() => setSelectedSubCategory("Storage")}
+                className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs sm:text-[13px] font-medium transition-all cursor-pointer flex items-center justify-between ${
+                  selectedSubCategory === "Storage"
+                    ? "bg-[#EEF4FF] text-[#0062FF] font-semibold"
+                    : "text-slate-600 hover:text-blue-600 hover:bg-slate-50"
+                }`}
+              >
+                <div className="flex items-center gap-2.5">
+                  <HardDrive className="w-4 h-4" />
+                  <span>Storage</span>
+                </div>
+                <span className={`text-[11px] px-2 py-0.5 rounded-full font-semibold ${
+                  selectedSubCategory === "Storage" ? "bg-blue-100 text-[#0062FF]" : "bg-slate-100 text-slate-600"
+                }`}>
+                  {allProducts.filter((p) => (p.sub_category || "").toLowerCase() === "storage").length}
+                </span>
+              </button>
+
+              {/* Dynamic categories if added in admin */}
+              {dynamicOtherCategories.map((cat) => (
+                <button
+                  key={cat}
+                  type="button"
+                  onClick={() => setSelectedSubCategory(cat)}
+                  className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs sm:text-[13px] font-medium transition-all cursor-pointer flex items-center justify-between ${
+                    selectedSubCategory === cat
+                      ? "bg-[#EEF4FF] text-[#0062FF] font-semibold"
+                      : "text-slate-600 hover:text-blue-600 hover:bg-slate-50"
+                  }`}
+                >
+                  <div className="flex items-center gap-2.5">
+                    <Activity className="w-4 h-4" />
+                    <span>{cat}</span>
+                  </div>
+                  <span className={`text-[11px] px-2 py-0.5 rounded-full font-semibold ${
+                    selectedSubCategory === cat ? "bg-blue-100 text-[#0062FF]" : "bg-slate-100 text-slate-600"
+                  }`}>
+                    {allProducts.filter((p) => p.sub_category === cat).length}
+                  </span>
+                </button>
+              ))}
             </div>
 
           </div>
@@ -781,7 +742,7 @@ function NetworkProductCard({
           <img
             src={product.cover_image_url || "/images/logo.png"}
             alt={product.name}
-            className="max-h-full max-w-full object-cover rounded-lg group-hover:scale-105 transition-transform duration-300"
+            className="max-h-full max-w-full object-contain rounded-lg group-hover:scale-105 transition-transform duration-300"
             onError={(e) => {
               (e.currentTarget as HTMLImageElement).src = "/images/logo.png";
             }}
