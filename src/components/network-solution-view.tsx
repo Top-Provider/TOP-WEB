@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
@@ -102,8 +102,15 @@ export function NetworkSolutionView({
     return list;
   }, [allProducts]);
 
-  // Fetch program options for Network categories
+  // Dedup guards to prevent double-fetching on mount/refresh
+  const hasLoadedOptionsRef = useRef(false);
+  const hasLoadedProductsRef = useRef(false);
+  const hasLoadedCategoriesRef = useRef(false);
+
+  // Fetch program options for Network categories (only once)
   useEffect(() => {
+    if (hasLoadedOptionsRef.current) return;
+    hasLoadedOptionsRef.current = true;
     fetch("/api/admin/program-options")
       .then((res) => res.json())
       .then((json) => {
@@ -114,11 +121,15 @@ export function NetworkSolutionView({
       .catch((err) => console.log("Program options fetch error:", err));
   }, []);
 
-  // Fetch live products from /api/products
+  // Fetch live products from /api/products only if initialProducts was empty
   useEffect(() => {
-    if (allProducts.length === 0) {
-      setLoading(true);
+    if (initialProducts && initialProducts.length > 0) {
+      setLoading(false);
+      return;
     }
+    if (hasLoadedProductsRef.current) return;
+    hasLoadedProductsRef.current = true;
+    setLoading(true);
     fetch("/api/products?category=Network")
       .then((res) => res.json())
       .then((json) => {
@@ -157,9 +168,12 @@ export function NetworkSolutionView({
       .finally(() => {
         setLoading(false);
       });
-  }, []);
+  }, [initialProducts]);
 
+  // Fetch dynamic category tabs (only once)
   useEffect(() => {
+    if (hasLoadedCategoriesRef.current) return;
+    hasLoadedCategoriesRef.current = true;
     fetch("/api/admin/categories")
       .then((res) => res.json())
       .then((json) => {

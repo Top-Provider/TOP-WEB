@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -257,8 +257,11 @@ export function SoftwareSolutionView({ initialRecords, initialPrograms }: Softwa
 
   // Dynamic Solution Category Tabs from /api/admin/categories
   const [categoryTabs, setCategoryTabs] = useState(SOLUTION_CATEGORY_TABS);
+  const hasLoadedCategoriesRef = useRef(false);
 
   useEffect(() => {
+    if (hasLoadedCategoriesRef.current) return;
+    hasLoadedCategoriesRef.current = true;
     fetch("/api/admin/categories")
       .then((res) => res.json())
       .then((json) => {

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ArrowUpRight, CheckCircle2, Play, Pause, Package, Loader2 } from 'lucide-react';
@@ -786,7 +786,12 @@ export const StickyProjectSection: React.FC<StickyProjectSectionProps> = ({
     return SOLUTION_TABS.map((t) => ({ id: t.id, label: t.label }));
   });
 
+  const hasLoadedTabsRef = useRef(false);
+
   useEffect(() => {
+    if (initialCategories && initialCategories.length > 0) return;
+    if (hasLoadedTabsRef.current) return;
+    hasLoadedTabsRef.current = true;
     fetch('/api/admin/categories')
       .then((res) => res.json())
       .then((json) => {
@@ -801,7 +806,7 @@ export const StickyProjectSection: React.FC<StickyProjectSectionProps> = ({
         }
       })
       .catch((err) => console.log('Tabs API fallback:', err));
-  }, []);
+  }, [initialCategories]);
 
   // Cards from DB (Software)
   const initialCards = useMemo(() => {
