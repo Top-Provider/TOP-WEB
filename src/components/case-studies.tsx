@@ -130,89 +130,137 @@ export const ALL_SOLUTION_CARDS: SolutionCardItem[] = [
 
   // =================== 2. HARDWARE SOLUTION (Overview) ===================
   {
-    id: 'hardware-aio-pc',
+    id: 'hardware-barcode-scanner',
     tabCategory: 'hardware',
-    counterText: '01 / 02',
-    urlPath: 'Topprovider.co.th / Medical All-in-One PC',
-    clientSubtitle: '2026 • Medical Grade Hardware',
-    ctaText: 'ดูสินค้า Hardware ทั้งหมด',
+    counterText: '01 / 03',
+    urlPath: 'Topprovider.co.th / Hardware Solution / Barcode & Scanner',
+    clientSubtitle: '2026 • Barcode & Scanner Solution',
+    ctaText: 'ดูสินค้า Barcode & Scanner ทั้งหมด',
     isProductPhoto: true,
     project: {
-      id: 'medical-aio-pc',
-      name: 'Medical-Grade All-in-One PC Workstations',
-      client: 'Hospital Hardware Infrastructure',
+      id: 'hardware-barcode-scanner',
+      name: 'Barcode & Scanner',
+      client: 'Clinical & Enterprise Barcode Solution',
       year: '2026',
       category: 'Hardware Solution',
-      subCategory: 'Medical PC',
+      subCategory: 'Barcode & Scanner',
       shortDescription:
-        'จัดจำหน่ายและติดตั้งเครื่องคอมพิวเตอร์ประสิทธิภาพสูง All-in-One PC เกรดการแพทย์ ตัวเครื่องป้องกันน้ำและฝุ่น ทนทานต่อน้ำยาฆ่าเชื้อ รองรับการทำงานต่อเนื่อง 24 ชั่วโมง',
+        'ศูนย์รวมเครื่องอ่านบาร์โค้ดมือถือ (Handheld Barcode Scanner), เครื่องสแกนบาร์โค้ด 2 มิติเกรดการแพทย์ และเครื่องสแกนเนอร์ความเร็วสูง รองรับการสแกนฉลากยา สายรัดข้อมือ และเอกสารเวชระเบียนได้อย่างรวดเร็ว แม่นยำ',
       fullDescription:
-        'คอมพิวเตอร์ระดับอุตสาหกรรมการแพทย์สำหรับเคาน์เตอร์พยาบาล ห้องตรวจ และห้องผ่าตัด ออกแบบไร้พัดลม (Fanless) ลดการสะสมของเชื้อโรค ตัวเครื่องเคลือบสารต้านจุลชีพและมีมาตรฐานกันน้ำ IP65 ที่แผงหน้าจอ ทนทานต่อการเช็ดทำความสะอาดตลอดเวลา',
+        'จัดจำหน่ายและติดตั้งเครื่องอ่านบาร์โค้ดคุณภาพสูง ทั้งแบบมีสาย ไร้สาย และมือถือพกพา (Handheld Barcode) ออกแบบสำหรับโรงพยาบาลและคลังเวชภัณฑ์ ทนต่อสารเคมีทำความสะอาด มีระบบเซนเซอร์ความไวสูง อ่านโค้ดยับหรือเปียกน้ำได้แม่นยำ พร้อมเครื่องสแกนเนอร์ความเร็วสูงสำหรับงานเอกสาร',
       challenge:
-        'คอมพิวเตอร์สำนักงานทั่วไปมีช่องพัดลมดูดฝุ่นและเชื้อโรคเข้ามาสะสม และพังง่ายเมื่อโดนน้ำยาฆ่าเชื้อเช็ดหน้าจอ',
+        'โรงพยาบาลและองค์กรต้องการความเร็วและความแม่นยำในการระบุตัวตนผู้ป่วย สแกนฉลากยา และแปลงเอกสารเวชระเบียนเป็นดิจิทัล',
       solution:
-        'นำเข้าคอมพิวเตอร์เกรดการแพทย์แบบ Fanless หน้าจอป้องกันรอยขีดข่วนและของเหลว พร้อมการรับประกัน Onsite แบบเปลี่ยนเครื่องทันที',
+        'นำเสนอเครื่องสแกนบาร์โค้ด 1D/2D, Handheld Barcode Scanner (Casio, CipherLab) และ Document Scanner (Fujitsu, Canon) พร้อมรับประกันและบริการ Onsite ทั่วประเทศ',
       deliverables: [
-        'Fanless Antimicrobial Medical PC',
-        'IP65 Waterproof Front Bezel',
-        'High-Brightness Anti-Glare Medical Display',
-        'Hot-Swappable UPS Battery Backup',
-        'Onsite Hardware Maintenance SLA',
+        'Handheld Barcode Scanner (Casio, CipherLab)',
+        '2D Medical Barcode Scanner (Honeywell, Opticon)',
+        'High-Speed Document Scanner (Fujitsu, Canon)',
+        'Healthcare Disinfectant-Ready Housing',
+        'Long-Range Wireless Bluetooth & Drop Resistance',
       ],
       metrics: [
-        { label: 'รองรับการทำงานต่อเนื่องแบบ Non-stop', value: '24/7' },
-        { label: 'มาตรฐานป้องกันน้ำและฝุ่นละออง', value: 'IP65' },
+        { label: 'ความเร็วในการอ่านบาร์โค้ด', value: '< 0.1 วินาที' },
+        { label: 'ความแม่นยำในการระบุข้อมูล', value: '100%' },
       ],
-      technologies: ['Fanless Cooling', 'Antimicrobial Chassis', 'Medical Touchscreen'],
-      coverImage: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1400&q=80',
-      galleryImages: ['https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1200&q=80'],
+      technologies: ['2D Area Imager', 'Bluetooth LE', 'Antimicrobial Enclosure', 'High-Speed ADF Scanner'],
+      coverImage: 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&w=1400&q=80',
+      galleryImages: ['https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&w=1200&q=80'],
       testimonial: {
-        quote: 'เครื่องคอมพิวเตอร์ทนทานมาก เช็ดน้ำยาฆ่าเชื้อได้ทั้งวันไม่มีปัญหา และเครื่องเงียบสนิทเหมาะกับห้องผู้ป่วย',
-        author: 'ผู้จัดการฝ่ายวิศวกรรมการแพทย์',
-        role: 'โรงพยาบาลกรุงเทพและปริมณฑล',
+        quote: 'เครื่องสแกนไวและทนทานมาก สแกนสายรัดข้อมือและฉลากยาได้ในเสี้ยววินาที ช่วยลดเวลาทำงานของพยาบาลได้อย่างชัดเจน',
+        author: 'หัวหน้าพยาบาลแผนกผู้ป่วยนอก',
+        role: 'โรงพยาบาลศูนย์',
       },
       featured: true,
       accentColor: '#0066FF',
     },
   },
   {
-    id: 'hardware-scanners',
+    id: 'hardware-computer-display',
     tabCategory: 'hardware',
-    counterText: '02 / 02',
-    urlPath: 'Topprovider.co.th / 2D Medical Scanners',
-    clientSubtitle: '2026 • High-Speed Barcode Readers',
-    ctaText: 'ดูสินค้า Hardware ทั้งหมด',
+    counterText: '02 / 03',
+    urlPath: 'Topprovider.co.th / Hardware Solution / Computer & Display',
+    clientSubtitle: '2026 • Computer & Display Workstations',
+    ctaText: 'ดูสินค้า Computer & Display ทั้งหมด',
     isProductPhoto: true,
     project: {
-      id: 'medical-scanners',
-      name: 'High-Speed 2D Medical Barcode Scanners',
-      client: 'Clinical Devices',
+      id: 'hardware-computer-display',
+      name: 'Computer & Display',
+      client: 'Hospital Computer & Display Infrastructure',
       year: '2026',
       category: 'Hardware Solution',
-      subCategory: 'Barcode Readers',
+      subCategory: 'Computer & Display',
       shortDescription:
-        'เครื่องอ่านบาร์โค้ด 2 มิติเกรดการแพทย์ สแกนสายรัดข้อมือและฉลากยาได้ในเสี้ยววินาที รองรับการอ่านบาร์โค้ดที่ยับหรือเปียกน้ำ พร้อมระบบเสียงและแสงยืนยันการอ่านสำเร็จ',
+        'จัดจำหน่ายและติดตั้งเครื่องคอมพิวเตอร์ประสิทธิภาพสูง All-in-One PC สำหรับงานสำนักงานและเกรดการแพทย์ ตัวเครื่องป้องกันน้ำและฝุ่น ทนต่อน้ำยาฆ่าเชื้อ พร้อมจอแสดงภาพ Display ขนาด 19 - 21.5 นิ้ว มาตรฐานสากล',
       fullDescription:
-        'เครื่องอ่านบาร์โค้ดแบบไร้สายและมีสาย ออกแบบสำหรับโรงพยาบาลโดยเฉพาะ ตัวเครื่องทนต่อสารเคมีทำความสะอาด มีระบบเล็งและสแกนความเร็วสูง อ่านโค้ดบนพื้นผิวโค้งของขวดยาหรือสายรัดข้อมือได้อย่างแม่นยำในครั้งเดียว',
-      challenge: 'พยาบาลเสียเวลาในการสแกนบาร์โค้ดบนสายรัดข้อมือที่ไม่ค่อยติด หรือบาร์โค้ดยับบนซองยา',
-      solution: 'ใช้เซนเซอร์ออปติคอลความไวสูง จับภาพได้ 360 องศา อ่านโค้ดที่มีความเปรียบต่างต่ำหรือยับได้อย่างแม่นยำ',
+        'คอมพิวเตอร์ All-in-One PC และจอภาพประสิทธิภาพสูงสำหรับเคาน์เตอร์พยาบาล ห้องตรวจ ห้องยา และสำนักงาน ออกแบบไร้พัดลม (Fanless) ลดการสะสมเชื้อโรค เคลือบสารต้านจุลชีพ และมีมาตรฐานกันน้ำ IP65 ที่แผงหน้าจอ รองรับการทำงานต่อเนื่อง 24 ชั่วโมง',
+      challenge:
+        'คอมพิวเตอร์สำนักงานทั่วไปเกิดปัญหาบ่อยเมื่อต้องเปิดทำงานตลอด 24 ชั่วโมง และพังง่ายเมื่อโดนน้ำยาฆ่าเชื้อเช็ดทำความสะอาดหน้าจอ',
+      solution:
+        'จัดหาเครื่องคอมพิวเตอร์ All-in-One PC เกรดการแพทย์และสำนักงานที่ทนทาน พร้อมจอแสดงภาพ Display ความคมชัดสูง รองรับการเชื่อมต่อกับระบบ HIS ได้อย่างสมบูรณ์แบบ',
       deliverables: [
-        'Healthcare Disinfectant-Ready Housing',
-        'Omnidirectional 1D/2D High-Speed Scanning',
-        'Night-Mode Vibration & LED Feedback',
-        'Long-Range Wireless Bluetooth Base',
-        '1.8m Drop Resistance Rating',
+        'Computer All-in-One สำหรับงานสำนักงานและโรงพยาบาล',
+        'Display จอแสดงภาพขนาด 19 นิ้ว และ 21.5 นิ้ว',
+        'Fanless Antimicrobial Medical PC Housing',
+        'IP65 Waterproof Front Bezel ป้องกันน้ำและของเหลว',
+        'Onsite Hardware Maintenance SLA ตลอดอายุสัญญา',
       ],
       metrics: [
-        { label: 'ความเร็วในการอ่านบาร์โค้ด', value: '< 0.1 วินาที' },
-        { label: 'ความแม่นยำในการระบุตัวยา', value: '100%' },
+        { label: 'รองรับการทำงานต่อเนื่องแบบ Non-stop', value: '24/7' },
+        { label: 'มาตรฐานป้องกันน้ำและฝุ่นละออง', value: 'IP65' },
       ],
-      technologies: ['2D Area Imager', 'Bluetooth LE', 'Antimicrobial Enclosure'],
-      coverImage: 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&w=1400&q=80',
-      galleryImages: ['https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&w=1200&q=80'],
+      technologies: ['Fanless Cooling', 'Antimicrobial Chassis', 'Medical Display', 'All-in-One Architecture'],
+      coverImage: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1400&q=80',
+      galleryImages: ['https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1200&q=80'],
       testimonial: {
-        quote: 'สแกนไวมาก แม้คนไข้จะขยับมือหรือบาร์โค้ดเปียกน้ำ ก็อ่านได้ในครั้งเดียว พยาบาลทำงานได้เร็วขึ้นเยอะ',
-        author: 'หัวหน้าพยาบาลแผนกผู้ป่วยนอก',
+        quote: 'เครื่องคอมพิวเตอร์ All-in-One ทนทานและประหยัดพื้นที่มาก เช็ดทำความสะอาดได้ทั้งวัน เครื่องเงียบและเสถียรมาก',
+        author: 'ผู้จัดการฝ่ายสารสนเทศและเทคโนโลยี',
+        role: 'โรงพยาบาลทั่วไป',
+      },
+      featured: true,
+      accentColor: '#0066FF',
+    },
+  },
+  {
+    id: 'hardware-equipment-power',
+    tabCategory: 'hardware',
+    counterText: '03 / 03',
+    urlPath: 'Topprovider.co.th / Hardware Solution / Equipment & Power',
+    clientSubtitle: '2026 • UPS, Projector & Enterprise Equipment',
+    ctaText: 'ดูสินค้า Equipment & Power ทั้งหมด',
+    isProductPhoto: true,
+    project: {
+      id: 'hardware-equipment-power',
+      name: 'Equipment & Power',
+      client: 'Enterprise Power & Multimedia Infrastructure',
+      year: '2026',
+      category: 'Hardware Solution',
+      subCategory: 'Equipment & Power',
+      shortDescription:
+        'ศูนย์รวมเครื่องสำรองไฟฟ้า (UPS) ประสิทธิภาพสูงเพื่อความต่อเนื่องของระบบไอทีโรงพยาบาล เครื่องฉายโปรเจกเตอร์ (Projector) ห้องประชุม และอุปกรณ์แท็บเล็ต กล้องพกพาสำหรับองค์กร (Mobile & Camera)',
+      fullDescription:
+        'ระบบสำรองไฟฟ้าอัตโนมัติ (UPS) คุณภาพสูง ช่วยป้องกันไฟตก ไฟกระชาก และไฟฟ้าดับ เพื่อปกป้องเครื่องมือแพทย์และเซิร์ฟเวอร์ พร้อมโปรเจกเตอร์คุณภาพสูงสำหรับห้องประชุมและห้องเรียนรู้ และอุปกรณ์พกพาสำหรับตรวจการณ์',
+      challenge:
+        'ปัญหาไฟตกหรือไฟดับกะทันหันอาจสร้างความเสียหายร้ายแรงต่อระบบคอมพิวเตอร์และข้อมูลเวชระเบียนผู้ป่วย',
+      solution:
+        'ติดตั้งเครื่องสำรองไฟฟ้า Pure Sine Wave UPS ที่เชื่อถือได้ พร้อมโซลูชันอุปกรณ์แสดงภาพโปรเจกเตอร์ความสว่างสูงและอุปกรณ์พกพาครบวงจร',
+      deliverables: [
+        'เครื่องสำรองไฟฟ้าฉุกเฉิน (UPS) ประสิทธิภาพสูง',
+        'เครื่องฉายภาพโปรเจกเตอร์ความสว่างสูงสำหรับห้องประชุม (Projector)',
+        'อุปกรณ์แท็บเล็ตและกล้องสำหรับองค์กร (Mobile & Camera)',
+        'Surge Protection ป้องกันไฟฟ้ากระชากและสัญญาณรบกวน',
+        'บริการตรวจเช็กสภาพแบตเตอรี่และบำรุงรักษาเชิงป้องกัน',
+      ],
+      metrics: [
+        { label: 'ความต่อเนื่องในการจ่ายกระแสไฟฟ้า', value: '100%' },
+        { label: 'ระบบป้องกันไฟกระชากและสัญญาณรบกวน', value: 'True Online' },
+      ],
+      technologies: ['Pure Sine Wave UPS', 'High-Lumen 3LCD/DLP Projector', 'Surge Protection', 'Mobile Solutions'],
+      coverImage: 'https://images.unsplash.com/photo-1588508065123-287b28e013da?auto=format&fit=crop&w=1400&q=80',
+      galleryImages: ['https://images.unsplash.com/photo-1588508065123-287b28e013da?auto=format&fit=crop&w=1200&q=80'],
+      testimonial: {
+        quote: 'ระบบ UPS ของ Top Provider ช่วยป้องกันความเสียหายจากไฟตกในโรงพยาบาลได้อย่างดีเยี่ยม มั่นใจได้ในความปลอดภัยของข้อมูล',
+        author: 'หัวหน้างานระบบไฟฟ้าและสื่อสาร',
         role: 'ศูนย์การแพทย์เฉพาะทาง',
       },
       featured: true,
@@ -850,6 +898,18 @@ export const StickyProjectSection: React.FC<StickyProjectSectionProps> = ({
       return;
     }
     if (cardItem.tabCategory === 'hardware') {
+      if (cardItem.id === 'hardware-barcode-scanner') {
+        router.push('/solutions/hardware?sub=Handheld Barcode Scanner');
+        return;
+      }
+      if (cardItem.id === 'hardware-computer-display') {
+        router.push('/solutions/hardware?sub=Computer');
+        return;
+      }
+      if (cardItem.id === 'hardware-equipment-power') {
+        router.push('/solutions/hardware?sub=UPS');
+        return;
+      }
       router.push('/solutions/hardware');
       return;
     }
@@ -1074,7 +1134,15 @@ export const StickyProjectSection: React.FC<StickyProjectSectionProps> = ({
                           </Link>
                         ) : cardItem.tabCategory === 'hardware' ? (
                           <Link
-                            href="/solutions/hardware"
+                            href={
+                              cardItem.id === 'hardware-barcode-scanner'
+                                ? '/solutions/hardware?sub=Handheld Barcode Scanner'
+                                : cardItem.id === 'hardware-computer-display'
+                                ? '/solutions/hardware?sub=Computer'
+                                : cardItem.id === 'hardware-equipment-power'
+                                ? '/solutions/hardware?sub=UPS'
+                                : '/solutions/hardware'
+                            }
                             prefetch={true}
                             className="w-full py-3.5 px-6 rounded-full bg-[#0066FF] hover:bg-[#0052CC] text-white font-medium text-xs sm:text-sm flex items-center justify-center gap-2 shadow-[0_8px_20px_rgba(0,102,255,0.3)] hover:shadow-[0_12px_28px_rgba(0,102,255,0.45)] transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] cursor-pointer group"
                           >
