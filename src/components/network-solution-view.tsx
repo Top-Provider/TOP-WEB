@@ -27,7 +27,7 @@ import type { ProductItemResponse } from "@/app/api/products/route";
 
 export const SOLUTION_CATEGORY_TABS = [
   { id: "printing", label: "Printing & Supply Solution", href: "/solutions/printing" },
-  { id: "hardware", label: "Hardware Solution", href: "/#case-studies" },
+  { id: "hardware", label: "Hardware Solution", href: "/solutions/hardware" },
   { id: "software", label: "Software Solution", href: "/solutions/software" },
   { id: "network", label: "Network Solution", href: "/solutions/network", active: true },
 ];
@@ -172,6 +172,7 @@ export function NetworkSolutionView({
               if (rawId === "printing") href = "/solutions/printing";
               else if (rawId === "software") href = "/solutions/software";
               else if (rawId === "network") href = "/solutions/network";
+              else if (rawId === "hardware" || rawId.includes("hard")) href = "/solutions/hardware";
 
               return {
                 id: rawId,

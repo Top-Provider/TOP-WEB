@@ -77,25 +77,25 @@ export function Footer() {
             <ul className="space-y-2.5 text-xs text-slate-600 font-medium">
               <li className="flex items-center gap-2">
                 <span className="w-1 h-1 rounded-full bg-[#0066FF]" />
-                <Link href="#case-studies" className="hover:text-[#0066FF] transition-colors">
+                <Link href="/solutions/printing" className="hover:text-[#0066FF] transition-colors">
                   Printing & Supply Solution
                 </Link>
               </li>
               <li className="flex items-center gap-2">
                 <span className="w-1 h-1 rounded-full bg-[#0066FF]" />
-                <Link href="#case-studies" className="hover:text-[#0066FF] transition-colors">
+                <Link href="/solutions/hardware" className="hover:text-[#0066FF] transition-colors">
                   Hardware Solution
                 </Link>
               </li>
               <li className="flex items-center gap-2">
                 <span className="w-1 h-1 rounded-full bg-[#0066FF]" />
-                <Link href="#case-studies" className="hover:text-[#0066FF] transition-colors">
+                <Link href="/solutions/software" className="hover:text-[#0066FF] transition-colors">
                   Software Solution (HIS)
                 </Link>
               </li>
               <li className="flex items-center gap-2">
                 <span className="w-1 h-1 rounded-full bg-[#0066FF]" />
-                <Link href="#case-studies" className="hover:text-[#0066FF] transition-colors">
+                <Link href="/solutions/network" className="hover:text-[#0066FF] transition-colors">
                   Network & Smart IoT
                 </Link>
               </li>

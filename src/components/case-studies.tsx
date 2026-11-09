@@ -716,6 +716,7 @@ export const StickyProjectSection: React.FC<StickyProjectSectionProps> = ({
   useEffect(() => {
     router.prefetch('/solutions/printing?type=printer');
     router.prefetch('/solutions/printing?type=supply');
+    router.prefetch('/solutions/hardware');
     router.prefetch('/solutions/software');
     router.prefetch('/solutions/network');
     router.prefetch('/products');
@@ -849,7 +850,7 @@ export const StickyProjectSection: React.FC<StickyProjectSectionProps> = ({
       return;
     }
     if (cardItem.tabCategory === 'hardware') {
-      router.push('/products?type=hardware');
+      router.push('/solutions/hardware');
       return;
     }
     if (cardItem.tabCategory === 'network') {
@@ -1073,7 +1074,7 @@ export const StickyProjectSection: React.FC<StickyProjectSectionProps> = ({
                           </Link>
                         ) : cardItem.tabCategory === 'hardware' ? (
                           <Link
-                            href="/products?type=hardware"
+                            href="/solutions/hardware"
                             prefetch={true}
                             className="w-full py-3.5 px-6 rounded-full bg-[#0066FF] hover:bg-[#0052CC] text-white font-medium text-xs sm:text-sm flex items-center justify-center gap-2 shadow-[0_8px_20px_rgba(0,102,255,0.3)] hover:shadow-[0_12px_28px_rgba(0,102,255,0.45)] transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] cursor-pointer group"
                           >
