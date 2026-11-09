@@ -392,19 +392,6 @@ export function ProductCatalogView({
             {/* Modal Header */}
             <div className="px-6 py-4 bg-slate-50 border-b border-slate-100 flex items-center justify-between gap-4">
               <div className="flex flex-wrap items-center gap-2.5 sm:gap-3 min-w-0 pr-2">
-                <span className="text-xs sm:text-sm font-bold px-3 py-1 rounded-full bg-slate-900 text-white uppercase tracking-wider shrink-0">
-                  {detailProduct.brand && detailProduct.brand !== "-"
-                    ? detailProduct.brand
-                    : "TOP PROVIDER"}
-                </span>
-                {detailProduct.sku &&
-                  detailProduct.sku.trim() !== "" &&
-                  detailProduct.sku.trim() !== "-" && (
-                    <span className="text-xs sm:text-sm text-slate-600 font-mono font-medium shrink-0">
-                      SKU: {detailProduct.sku}
-                    </span>
-                  )}
-                <span className="text-slate-300 hidden sm:inline">•</span>
                 <h3 className="text-base sm:text-lg font-bold text-slate-900 truncate">
                   {detailProduct.name}
                 </h3>
