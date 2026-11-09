@@ -195,17 +195,22 @@ export function mapSoftwareRecordToProgram(
   const feature1Badge = r.feature_1_badge || (isVitanix ? VITANIX_FALLBACK.feature1Badge : "");
   const feature1Title = r.feature_1_title || (isVitanix ? VITANIX_FALLBACK.feature1Title : "");
   const feature1Desc = r.feature_1_desc || (isVitanix ? VITANIX_FALLBACK.feature1Desc : "");
-  const feature1Image = r.feature_1_image || (isVitanix ? VITANIX_FALLBACK.feature1Image : coverImage);
+  const rawF1Image = r.feature_1_image || "";
+  const feature1Image = rawF1Image.startsWith("data:")
+    ? `/api/software-image/${r.id}?field=feature_1_image`
+    : rawF1Image || (isVitanix ? VITANIX_FALLBACK.feature1Image : coverImage);
 
   const feature2Badge = r.feature_2_badge || (isVitanix ? VITANIX_FALLBACK.feature2Badge : "");
   const feature2Title = r.feature_2_title || (isVitanix ? VITANIX_FALLBACK.feature2Title : "");
   const feature2Desc = r.feature_2_desc || (isVitanix ? VITANIX_FALLBACK.feature2Desc : "");
-  const feature2Image =
-    r.feature_2_image && r.feature_2_image !== "/images/vitanix-claim.png"
-      ? r.feature_2_image
-      : isVitanix
-      ? VITANIX_FALLBACK.feature2Image
-      : coverImage;
+  const rawF2Image = r.feature_2_image || "";
+  const feature2Image = rawF2Image.startsWith("data:")
+    ? `/api/software-image/${r.id}?field=feature_2_image`
+    : rawF2Image && rawF2Image !== "/images/vitanix-claim.png"
+    ? rawF2Image
+    : isVitanix
+    ? VITANIX_FALLBACK.feature2Image
+    : coverImage;
 
   return {
     id: `software-${r.id}`,
