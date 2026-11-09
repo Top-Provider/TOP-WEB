@@ -543,15 +543,31 @@ export function mapSoftwareRecordToCardItem(
   const rawCover = r.cover_image_url || '';
   const coverImage = rawCover.startsWith('data:')
     ? `/api/software-image/${r.id}`
-    : rawCover || '/images/vitanix-dashboard-hd.png';
+    : rawCover || (String(r.category_id).toLowerCase() === 'network' ? 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=1400&q=80' : '/images/vitanix-dashboard-hd.png');
+
+  const rawCat = (r.category_id || '').toLowerCase();
+  const tabCategory: SolutionCardItem['tabCategory'] =
+    rawCat === 'network' ? 'network'
+    : rawCat === 'printing' ? 'printing'
+    : rawCat === 'hardware' ? 'hardware'
+    : rawCat === 'medical' ? 'medical'
+    : rawCat === 'iot' ? 'iot'
+    : 'software';
+
+  const cardId =
+    tabCategory === 'network'
+      ? (r.id === 15 || r.name.toLowerCase().includes('server') ? 'network-datacenter' : 'network-firewall-wifi')
+      : `software-${r.id}`;
+
+  const ctaText = tabCategory === 'network' ? 'ดูสินค้า Network ทั้งหมด' : 'ดูรายละเอียดระบบ';
 
   return {
-    id: `software-${r.id}`,
-    tabCategory: 'software',
+    id: cardId,
+    tabCategory,
     counterText,
     urlPath: `Topprovider.co.th / ${r.name}`,
     clientSubtitle: `2026 • ${subCategory}`,
-    ctaText: 'ดูรายละเอียดระบบ',
+    ctaText,
     project: {
       id: `vitanix-${r.id}`,
       name: r.name,
@@ -565,7 +581,7 @@ export function mapSoftwareRecordToCardItem(
       solution: r.feature_2_desc || '',
       deliverables,
       metrics,
-      technologies: ['React', 'TypeScript', 'Tailwind CSS', 'PostgreSQL', 'HL7/FHIR'],
+      technologies: tabCategory === 'network' ? ['Cisco/Aruba', 'SAN All-Flash', 'Fiber Optic 10G', 'VMware HA'] : ['React', 'TypeScript', 'Tailwind CSS', 'PostgreSQL', 'HL7/FHIR'],
       coverImage: coverImage,
       videoUrl: r.video_url || '',
       galleryImages: [coverImage],
@@ -616,8 +632,8 @@ export const StickyProjectSection: React.FC<StickyProjectSectionProps> = ({
       .catch((err) => console.log('Tabs API fallback:', err));
   }, []);
 
-  // Cards from DB (Software Solution)
-  const initialSoftwareCards = useMemo(() => {
+  // Cards from DB (Software & Network Solutions)
+  const initialCards = useMemo(() => {
     if (initialSoftwareRecords && initialSoftwareRecords.length > 0) {
       return initialSoftwareRecords.map((r, i) =>
         mapSoftwareRecordToCardItem(r as unknown as SoftwareRecord, i, initialSoftwareRecords.length)
@@ -626,13 +642,13 @@ export const StickyProjectSection: React.FC<StickyProjectSectionProps> = ({
     return [];
   }, [initialSoftwareRecords]);
 
-  const [dynamicSoftwareCards, setDynamicSoftwareCards] = useState<SolutionCardItem[]>(initialSoftwareCards);
-  const [softwareLoading, setSoftwareLoading] = useState<boolean>(initialSoftwareCards.length === 0);
+  const [dynamicRecords, setDynamicRecords] = useState<SolutionCardItem[]>(initialCards);
+  const [dbLoading, setDbLoading] = useState<boolean>(initialCards.length === 0);
 
-  // Client-side fetch fallback for software from DB
+  // Client-side fetch fallback from DB
   useEffect(() => {
-    if (dynamicSoftwareCards.length === 0) {
-      setSoftwareLoading(true);
+    if (dynamicRecords.length === 0) {
+      setDbLoading(true);
       fetchRecords<SoftwareRecord>({
         table: 'TB_PRODUCT_SOFTWARE',
         orderBy: 'id',
@@ -640,25 +656,29 @@ export const StickyProjectSection: React.FC<StickyProjectSectionProps> = ({
       })
         .then((records) => {
           if (records && records.length > 0) {
-            setDynamicSoftwareCards(
+            setDynamicRecords(
               records.map((r, i) => mapSoftwareRecordToCardItem(r, i, records.length))
             );
           }
         })
-        .catch((err) => console.error('Error loading software from DB:', err))
+        .catch((err) => console.error('Error loading solution records from DB:', err))
         .finally(() => {
-          setSoftwareLoading(false);
+          setDbLoading(false);
         });
     }
-  }, [dynamicSoftwareCards.length]);
+  }, [dynamicRecords.length]);
 
-  // Current cards: ถ้าเป็น software ใช้ข้อมูลจาก DB, หมวดหมู่อื่นๆ ใช้ Overview Cards
+  // Current cards: ดึงจาก DB ตาม activeTab ถ้ามีข้อมูล ถ้าไม่มีใช้ ALL_SOLUTION_CARDS
   const currentCards = useMemo(() => {
-    if (activeTab === 'software') {
-      return dynamicSoftwareCards;
+    const matched = dynamicRecords.filter((item) => item.tabCategory === activeTab);
+    if (matched.length > 0) {
+      return matched.map((item, idx) => ({
+        ...item,
+        counterText: `${String(idx + 1).padStart(2, '0')} / ${String(matched.length).padStart(2, '0')}`,
+      }));
     }
     return ALL_SOLUTION_CARDS.filter((item) => item.tabCategory === activeTab);
-  }, [activeTab, dynamicSoftwareCards]);
+  }, [activeTab, dynamicRecords]);
 
   const handleTabClick = (tabId: string) => {
     setActiveTab(tabId);
@@ -750,7 +770,7 @@ export const StickyProjectSection: React.FC<StickyProjectSectionProps> = ({
         </div>
 
         {/* Dynamic Cards Stage or Loading / Empty State */}
-        {activeTab === 'software' && softwareLoading ? (
+        {(activeTab === 'software' || activeTab === 'network') && dbLoading && currentCards.length === 0 ? (
           <div className="rounded-[24px] sm:rounded-[32px] bg-white border border-blue-100/90 shadow-sm p-6 sm:p-10 space-y-6 animate-pulse my-6">
             <div className="flex items-center justify-between pb-4 border-b border-slate-100">
               <div className="flex items-center gap-2">
@@ -761,7 +781,7 @@ export const StickyProjectSection: React.FC<StickyProjectSectionProps> = ({
               </div>
               <div className="flex items-center gap-2 text-xs font-medium text-blue-600">
                 <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                <span>กำลังโหลดข้อมูลระบบซอฟต์แวร์...</span>
+                <span>กำลังโหลดข้อมูลโซลูชันจากฐานข้อมูล...</span>
               </div>
             </div>
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">

@@ -30,7 +30,7 @@ export default async function Home() {
       )
       .eq("is_active", true)
       .order("id", { ascending: true })
-      .limit(12);
+      .limit(30);
 
     if (!error && data) {
       initialSoftwareRecords = data.map((item) => ({
