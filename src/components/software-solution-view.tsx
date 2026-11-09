@@ -15,6 +15,8 @@ import {
   Award,
   Package,
   Loader2,
+  Sparkles,
+  Share2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -44,6 +46,35 @@ export interface ProgramItem {
   feature2Tags?: string[];
   feature2Image?: string;
 }
+
+// ข้อมูล Fallback สำหรับ Vitanix Claim ในกรณีที่ฟิลด์ Feature ในฐานข้อมูลยังว่างอยู่
+export const VITANIX_FALLBACK = {
+  feature1Badge: "PRE-AUDIT & VALIDATION SYSTEM",
+  feature1Title: "Automated Healthcare Claim Validation & Pre-Audit System",
+  feature1Desc:
+    "ระบบช่วยตรวจสอบความถูกต้องของเวชระเบียนและเงื่อนไขกองทุนสุขภาพภาครัฐและเอกชนล่วงหน้า (Pre-audit) ตรวจสอบความถูกต้องของรหัสโรค ICD-10, ICD-9-CM และสิทธิการรักษาแบบอัตโนมัติก่อนส่งเคลม\n\nพร้อมระบบตรวจจับข้อผิดพลาดแบบอัจฉริยะ ป้องกันการส่งเคลมซ้ำซ้อนหรือข้อมูลไม่ครบถ้วน ช่วยให้โรงพยาบาลได้รับการอนุมัติการจ่ายเงินที่รวดเร็วและแม่นยำยิ่งขึ้น",
+  feature1Bullets: [
+    "Real-time Validation for OP-CR, PPFS & Fund Rules",
+    "Seamless HIS & Insurer Policy Integration",
+    "Automated ICD-10 & ICD-9 Coding Check",
+  ],
+  feature1Image: "/images/vitanix-dashboard.png",
+  feature2Badge: "HOSPITAL FINANCIAL BENEFITS",
+  feature2Title: "Why Hospital Financial Teams Choose Vitanix Claim?",
+  feature2Desc:
+    "ลดความเสี่ยงในการสูญเสียรายได้จากการเบิกจ่ายไม่ทันเวลาหรือถูกตัดสิทธิ์ ช่วยให้ฝ่ายการเงินและเวชระเบียนมองเห็นสถานะการเคลมและลูกหนี้ค่ารักษาพยาบาลแบบ Real-time",
+  feature2Highlights: [
+    { title: "ลดความผิดพลาดก่อนส่งเบิก", desc: "ตัดปัญหาการถูกปฏิเสธเคลมหรือถูกตัดสิทธิ์ซ้ำซ้อนด้วยกฎ Pre-Audit" },
+    { title: "อัตราความสำเร็จ Pre-Audit สูง", desc: "เพิ่มโอกาสรับเงินชดเชยค่ารักษาพยาบาลเต็มจำนวนอย่างแม่นยำ" },
+    { title: "ลดรอบระยะเวลาการเบิกจ่าย", desc: "เพิ่มกระแสเงินสดหมุนเวียน (Cash Flow) ให้โรงพยาบาลได้รวดเร็วขึ้น" },
+  ],
+  feature2Tags: [
+    "Denial Management",
+    "Cash Flow Optimization",
+    "Direct Billing Reconciliation",
+  ],
+  feature2Image: "/images/vitanix-claim.png",
+};
 
 // ค่าเริ่มต้นเป็น Array ว่าง ไม่ใช้ข้อมูล mock
 export const DEFAULT_PROGRAMS: ProgramItem[] = [];
@@ -144,9 +175,32 @@ export function mapSoftwareRecordToProgram(
   }
 
   const features = parseBullets(r.key_features);
-  const f1Bullets = parseBullets(r.feature_1_bullets);
-  const f2Highlights = parseHighlights(r.feature_2_highlights);
-  const f2Tags = parseTags(r.feature_2_tags);
+  const isVitanix = (r.name || "").toLowerCase().includes("vitanix");
+
+  const parsedF1Bullets = parseBullets(r.feature_1_bullets);
+  const f1Bullets = parsedF1Bullets.length > 0
+    ? parsedF1Bullets
+    : (isVitanix ? VITANIX_FALLBACK.feature1Bullets : undefined);
+
+  const parsedF2Highlights = parseHighlights(r.feature_2_highlights);
+  const f2Highlights = parsedF2Highlights.length > 0
+    ? parsedF2Highlights
+    : (isVitanix ? VITANIX_FALLBACK.feature2Highlights : undefined);
+
+  const parsedF2Tags = parseTags(r.feature_2_tags);
+  const f2Tags = parsedF2Tags.length > 0
+    ? parsedF2Tags
+    : (isVitanix ? VITANIX_FALLBACK.feature2Tags : undefined);
+
+  const feature1Badge = r.feature_1_badge || (isVitanix ? VITANIX_FALLBACK.feature1Badge : "");
+  const feature1Title = r.feature_1_title || (isVitanix ? VITANIX_FALLBACK.feature1Title : "");
+  const feature1Desc = r.feature_1_desc || (isVitanix ? VITANIX_FALLBACK.feature1Desc : "");
+  const feature1Image = r.feature_1_image || (isVitanix ? VITANIX_FALLBACK.feature1Image : coverImage);
+
+  const feature2Badge = r.feature_2_badge || (isVitanix ? VITANIX_FALLBACK.feature2Badge : "");
+  const feature2Title = r.feature_2_title || (isVitanix ? VITANIX_FALLBACK.feature2Title : "");
+  const feature2Desc = r.feature_2_desc || (isVitanix ? VITANIX_FALLBACK.feature2Desc : "");
+  const feature2Image = r.feature_2_image || (isVitanix ? VITANIX_FALLBACK.feature2Image : coverImage);
 
   return {
     id: `software-${r.id}`,
@@ -160,17 +214,17 @@ export function mapSoftwareRecordToProgram(
     videoUrl: r.video_url || "",
     features: features.length > 0 ? features : undefined,
     metrics: metrics.length > 0 ? metrics : undefined,
-    feature1Badge: r.feature_1_badge || "",
-    feature1Title: r.feature_1_title || "",
-    feature1Desc: r.feature_1_desc || "",
-    feature1Bullets: f1Bullets.length > 0 ? f1Bullets : undefined,
-    feature1Image: r.feature_1_image || coverImage,
-    feature2Badge: r.feature_2_badge || "",
-    feature2Title: r.feature_2_title || "",
-    feature2Desc: r.feature_2_desc || "",
-    feature2Highlights: f2Highlights.length > 0 ? f2Highlights : undefined,
-    feature2Tags: f2Tags.length > 0 ? f2Tags : undefined,
-    feature2Image: r.feature_2_image || coverImage,
+    feature1Badge,
+    feature1Title,
+    feature1Desc,
+    feature1Bullets: f1Bullets,
+    feature1Image,
+    feature2Badge,
+    feature2Title,
+    feature2Desc,
+    feature2Highlights: f2Highlights,
+    feature2Tags: f2Tags,
+    feature2Image,
   };
 }
 
@@ -500,7 +554,7 @@ export function SoftwareSolutionView({ initialRecords, initialPrograms }: Softwa
                       onClick={scrollToDetails}
                       className="rounded-full bg-[#0062FF] hover:bg-blue-700 text-white font-semibold text-xs px-5 py-2.5 shadow-sm shadow-blue-500/25 flex items-center gap-1.5 cursor-pointer"
                     >
-                      <span>ดูรายละเอียดโปรแกรม</span>
+                      <span>ดูรายละเอียดระบบ</span>
                       <ArrowRight className="w-3.5 h-3.5" />
                     </Button>
                   </div>
@@ -693,35 +747,35 @@ export function SoftwareSolutionView({ initialRecords, initialPrograms }: Softwa
               TECHNOLOGY & CAPABILITIES
             </span>
             <h3 className="text-2xl sm:text-3xl font-extrabold text-slate-900">
-              Technology That Powers Smarter Hospital Systems
+              Technology That Powers Smarter Hospital Claims
             </h3>
             <p className="text-xs sm:text-sm text-slate-500">
-              เทคโนโลยีล้ำสมัยที่อยู่เบื้องหลังการประมวลผลและการบริหารจัดการระบบโรงพยาบาลระดับ Enterprise
+              เทคโนโลยีที่อยู่เบื้องหลังการประมวลผลและการบริหารจัดการเวชระเบียนโรงพยาบาลระดับ Enterprise
             </p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
             <Card className="p-6 rounded-3xl bg-white border border-slate-200/90 shadow-xs hover:shadow-md hover:border-blue-200 transition-all space-y-3">
               <div className="w-10 h-10 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center">
-                <ShieldCheck className="w-5 h-5" />
+                <Sparkles className="w-5 h-5" />
               </div>
               <h4 className="text-sm font-bold text-slate-900">
-                High Security & Compliance
+                Clinical AI Coding Assisting
               </h4>
               <p className="text-xs text-slate-500 leading-relaxed">
-                สถาปัตยกรรมความปลอดภัยตามมาตรฐานสากล พร้อมระบบเข้ารหัสข้อมูลและนโยบายความเป็นส่วนตัว
+                ระบบ AI ช่วยตรวจสอบและแนะนำรหัสโรค ICD-10 และหัตถการทางการแพทย์อัตโนมัติ
               </p>
             </Card>
 
             <Card className="p-6 rounded-3xl bg-white border border-slate-200/90 shadow-xs hover:shadow-md hover:border-blue-200 transition-all space-y-3">
               <div className="w-10 h-10 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center">
-                <Cpu className="w-5 h-5" />
+                <Share2 className="w-5 h-5" />
               </div>
               <h4 className="text-sm font-bold text-slate-900">
-                Real-time Rule Engine
+                Real-time HIS Integration
               </h4>
               <p className="text-xs text-slate-500 leading-relaxed">
-                ประมวลผลกฎเกณฑ์และตรวจสอบข้อมูลแบบ Real-time ทันทีที่ผู้ปฏิบัติงานลงข้อมูล
+                เชื่อมต่อระบบเวชระเบียนเดิม (HIS, EMR, PACS, LIS) อย่างไร้รอยต่อแบบ Real-time
               </p>
             </Card>
 
@@ -730,10 +784,10 @@ export function SoftwareSolutionView({ initialRecords, initialPrograms }: Softwa
                 <Zap className="w-5 h-5" />
               </div>
               <h4 className="text-sm font-bold text-slate-900">
-                Seamless Integration
+                Faster Reimbursement
               </h4>
               <p className="text-xs text-slate-500 leading-relaxed">
-                เชื่อมต่อระบบโรงพยาบาลเดิม (HIS, EMR, PACS, LIS) และอุปกรณ์การแพทย์ได้อย่างราบรื่น
+                ลดระยะเวลาการเบิกจ่ายเงินชดเชยค่ารักษาพยาบาล รวดเร็ว แม่นยำ และเพิ่มกระแสเงินสด
               </p>
             </Card>
 
@@ -742,10 +796,10 @@ export function SoftwareSolutionView({ initialRecords, initialPrograms }: Softwa
                 <RefreshCw className="w-5 h-5" />
               </div>
               <h4 className="text-sm font-bold text-slate-900">
-                24/7 Enterprise Support
+                Continuous Rule Updates
               </h4>
               <p className="text-xs text-slate-500 leading-relaxed">
-                ทีมวิศวกรและผู้เชี่ยวชาญพร้อมดูแลระบบและให้คำปรึกษาตลอด 24 ชั่วโมง
+                อัปเดตเงื่อนไขและกฎเกณฑ์การเบิกจ่ายของกองทุนสุขภาพภาครัฐและเอกชนอัตโนมัติตลอด 24 ชั่วโมง
               </p>
             </Card>
           </div>
@@ -772,7 +826,7 @@ export function SoftwareSolutionView({ initialRecords, initialPrograms }: Softwa
                 className="rounded-full bg-white hover:bg-slate-100 text-[#0062FF] font-bold text-xs sm:text-sm px-7 py-3.5 shadow-md transition-all cursor-pointer"
               >
                 <Link href="/#contact" className="flex items-center gap-2">
-                  <span>ติดต่อทีมงานของเรา</span>
+                  <span>ติดต่อเราตอนนี้</span>
                   <ArrowRight className="w-4 h-4" />
                 </Link>
               </Button>
