@@ -343,7 +343,7 @@ export function NetworkSolutionView({
                   {selectedSubCategory || currentGroupTitle}
                 </h2>
                 <p className="text-xs text-slate-400 mt-0.5">
-                  Showing {filteredProducts.length} network & server solutions
+                  Showing {filteredProducts.length} products
                 </p>
               </div>
 
@@ -353,7 +353,7 @@ export function NetworkSolutionView({
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="ค้นหา Server, Switch, Firewall..."
+                  placeholder="ค้นหาสินค้า"
                   className="w-full pl-9 pr-4 py-2 rounded-xl bg-white border border-slate-200 text-xs sm:text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all shadow-2xs"
                 />
                 <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
@@ -701,31 +701,23 @@ function NetworkProductCard({
           {product.name}
         </h3>
 
-        {/* Brand & Sub-Category */}
-        <p className="text-xs text-slate-500 font-medium line-clamp-1 mt-0.5">
-          {product.brand ? `${product.brand} • ` : ""}{product.sub_category || "Network Solution"}
-        </p>
-
-        {/* Model / Subtitle */}
+        {/* Model (รุ่น) */}
         {modelText && (
-          <p className="text-[11px] sm:text-xs text-slate-400 line-clamp-1 mt-1 font-normal">
+          <p className="text-xs text-slate-500 font-medium line-clamp-1 mt-1">
             {modelText}
           </p>
         )}
 
-        {/* Key Specification Bullet Points */}
+        {/* Bullet Specs (แสดงเฉพาะเมื่อมีข้อมูลสเปกเท่านั้น) */}
         {product.bullet_specs && product.bullet_specs.length > 0 && (
-          <div className="mt-3 pt-3 border-t border-slate-100 space-y-1">
-            {product.bullet_specs.slice(0, 2).map((b, i) => (
-              <p
-                key={i}
-                className="text-[11px] text-slate-600 line-clamp-1 flex items-center gap-1.5"
-              >
-                <span className="w-1 h-1 rounded-full bg-blue-600 shrink-0" />
-                <span>{b}</span>
-              </p>
+          <ul className="text-xs text-slate-500 space-y-1 mt-2.5 mb-4">
+            {product.bullet_specs.map((spec, idx) => (
+              <li key={idx} className="flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-slate-400 shrink-0" />
+                <span className="truncate">{spec}</span>
+              </li>
             ))}
-          </div>
+          </ul>
         )}
       </div>
 
