@@ -8,6 +8,7 @@ import { motion } from 'framer-motion';
 import type { Project } from '../types';
 import { ProjectModal } from './project-modal';
 import { fetchRecords } from '@/lib/crud';
+import { MedicalCrossLoader } from './ui/medical-cross-loader';
 
 interface StickyProjectSectionProps {
   onSelectProject?: (project: Project) => void;
@@ -930,14 +931,12 @@ export const StickyProjectSection: React.FC<StickyProjectSectionProps> = ({
 
         {/* Dynamic Cards Stage or Loading / Empty State */}
         {dbLoading ? (
-          <div className="min-h-[420px] rounded-[32px] sm:rounded-[36px] bg-white border border-slate-200/90 shadow-sm p-8 sm:p-16 flex flex-col items-center justify-center text-center my-6 space-y-4">
-            <div className="w-14 h-14 rounded-2xl bg-blue-50 border border-blue-100 flex items-center justify-center text-[#0066FF] shadow-xs">
-              <Loader2 className="w-7 h-7 animate-spin stroke-[2.5]" />
-            </div>
-            <div className="space-y-1">
-              <h4 className="text-base font-bold text-slate-800">กำลังโหลดข้อมูลโซลูชัน...</h4>
-              <p className="text-xs sm:text-sm text-slate-400">กำลังดึงข้อมูลล่าสุดจากฐานข้อมูล กรุณารอสักครู่</p>
-            </div>
+          <div className="min-h-[420px] rounded-[32px] sm:rounded-[36px] bg-white border border-slate-200/90 shadow-sm p-8 sm:p-16 flex flex-col items-center justify-center text-center my-6">
+            <MedicalCrossLoader
+              size="md"
+              text="กำลังโหลดข้อมูลโซลูชัน..."
+              subtext="TOP PROVIDER HEALTHCARE & IT SOLUTIONS"
+            />
           </div>
         ) : currentCards.length === 0 ? (
           <div className="rounded-3xl bg-white border border-slate-200/90 p-12 text-center my-8 shadow-sm">
