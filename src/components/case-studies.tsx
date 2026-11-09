@@ -585,6 +585,7 @@ export const StickyProjectSection: React.FC<StickyProjectSectionProps> = ({
     router.prefetch('/solutions/printing?type=printer');
     router.prefetch('/solutions/printing?type=supply');
     router.prefetch('/solutions/software');
+    router.prefetch('/solutions/network');
     router.prefetch('/products');
   }, [router]);
 
@@ -695,7 +696,15 @@ export const StickyProjectSection: React.FC<StickyProjectSectionProps> = ({
       return;
     }
     if (cardItem.tabCategory === 'network') {
-      router.push('/products?type=network');
+      if (cardItem.id === 'network-datacenter') {
+        router.push('/solutions/network?type=server');
+        return;
+      }
+      if (cardItem.id === 'network-firewall-wifi') {
+        router.push('/solutions/network?type=firewall');
+        return;
+      }
+      router.push('/solutions/network');
       return;
     }
     if (cardItem.tabCategory === 'software') {
@@ -922,9 +931,22 @@ export const StickyProjectSection: React.FC<StickyProjectSectionProps> = ({
                             <span>{cardItem.ctaText || 'ดูสินค้าทั้งหมด'}</span>
                             <ArrowUpRight className="w-4 h-4 stroke-[2.5] transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
                           </Link>
-                        ) : cardItem.tabCategory === 'hardware' || cardItem.tabCategory === 'network' ? (
+                        ) : cardItem.tabCategory === 'network' ? (
                           <Link
-                            href={cardItem.tabCategory === 'hardware' ? '/products?type=hardware' : '/products?type=network'}
+                            href={
+                              cardItem.id === 'network-datacenter'
+                                ? '/solutions/network?type=server'
+                                : '/solutions/network?type=firewall'
+                            }
+                            prefetch={true}
+                            className="w-full py-3.5 px-6 rounded-full bg-[#0066FF] hover:bg-[#0052CC] text-white font-medium text-xs sm:text-sm flex items-center justify-center gap-2 shadow-[0_8px_20px_rgba(0,102,255,0.3)] hover:shadow-[0_12px_28px_rgba(0,102,255,0.45)] transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] cursor-pointer group"
+                          >
+                            <span>{cardItem.ctaText || 'ดูสินค้า Network ทั้งหมด'}</span>
+                            <ArrowUpRight className="w-4 h-4 stroke-[2.5] transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                          </Link>
+                        ) : cardItem.tabCategory === 'hardware' ? (
+                          <Link
+                            href="/products?type=hardware"
                             prefetch={true}
                             className="w-full py-3.5 px-6 rounded-full bg-[#0066FF] hover:bg-[#0052CC] text-white font-medium text-xs sm:text-sm flex items-center justify-center gap-2 shadow-[0_8px_20px_rgba(0,102,255,0.3)] hover:shadow-[0_12px_28px_rgba(0,102,255,0.45)] transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] cursor-pointer group"
                           >

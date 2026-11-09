@@ -20,7 +20,7 @@ export const SOLUTION_CATEGORY_TABS = [
   { id: "printing", label: "Printing & Supply Solution", href: "/solutions/printing", active: true },
   { id: "hardware", label: "Hardware Solution", href: "/#case-studies" },
   { id: "software", label: "Software Solution", href: "/solutions/software" },
-  { id: "network", label: "Network Solution", href: "/#case-studies" },
+  { id: "network", label: "Network Solution", href: "/solutions/network" },
   { id: "medical", label: "Medical Equipment", href: "/#case-studies" },
   { id: "iot", label: "Smart Solution (IoT)", href: "/#case-studies" },
 ];
@@ -173,6 +173,7 @@ export function PrintingSolutionView({
               let href = "/#case-studies";
               if (rawId === "printing") href = "/solutions/printing";
               else if (rawId === "software") href = "/solutions/software";
+              else if (rawId === "network") href = "/solutions/network";
 
               return {
                 id: rawId,

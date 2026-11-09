@@ -54,7 +54,7 @@ export async function GET(req: NextRequest) {
       .order("id", { ascending: false });
 
     if (categoryParam) {
-      query = query.eq("category_id", categoryParam);
+      query = query.ilike("category_id", categoryParam);
     }
     if (typeParam && typeParam !== "all") {
       query = query.eq("product_type", typeParam);
