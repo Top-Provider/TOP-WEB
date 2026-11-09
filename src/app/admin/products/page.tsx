@@ -895,95 +895,88 @@ export default function AdminProductsPage() {
         </div>
 
         {/* Pagination Footer (แสดงผลทีละ 10 รายการ) */}
-        <div className="py-3.5 px-4 sm:px-6 bg-slate-50/80 border-t border-slate-200/80 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500">
-          <div>
-            <span>
-              {isLoading ? (
-                <span className="inline-flex items-center gap-2 text-slate-400">
-                  <Loader2 className="w-3.5 h-3.5 animate-spin text-blue-500" />
-                  กำลังโหลดข้อมูล...
-                </span>
-              ) : (
-                <>
-                  แสดง{" "}
-                  <strong className="font-semibold text-slate-800">
-                    {totalItems === 0 ? 0 : startIndex + 1}
-                  </strong>{" "}
-                  ถึง{" "}
-                  <strong className="font-semibold text-slate-800">{endIndex}</strong>{" "}
-                  จากทั้งหมด{" "}
-                  <strong className="font-semibold text-slate-800">{totalItems}</strong>{" "}
-                  รายการ (หน้าละ 10 รายการ)
-                </>
-              )}
-            </span>
-          </div>
-
-          {!isLoading && totalPages > 1 && (
-            <div className="flex items-center gap-1.5">
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                disabled={safeCurrentPage <= 1}
-                className="h-8 px-2.5 rounded-lg text-xs font-medium border-slate-200 text-slate-600 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-white"
-              >
-                <ChevronLeft className="w-3.5 h-3.5 mr-0.5" />
-                <span>ก่อนหน้า</span>
-              </Button>
-
-              <div className="flex items-center gap-1">
-                {Array.from({ length: totalPages }, (_, i) => i + 1)
-                  .filter((p) => {
-                    return (
-                      p === 1 ||
-                      p === totalPages ||
-                      Math.abs(p - safeCurrentPage) <= 1
-                    );
-                  })
-                  .reduce<(number | string)[]>((acc, p, idx, arr) => {
-                    if (idx > 0 && p - (arr[idx - 1] as number) > 1) {
-                      acc.push("...");
-                    }
-                    acc.push(p);
-                    return acc;
-                  }, [])
-                  .map((item, idx) =>
-                    typeof item === "string" ? (
-                      <span key={`ellipsis-${idx}`} className="px-1 text-slate-400">
-                        ...
-                      </span>
-                    ) : (
-                      <button
-                        key={item}
-                        type="button"
-                        onClick={() => setCurrentPage(item)}
-                        className={`w-8 h-8 rounded-lg text-xs font-semibold transition-all cursor-pointer ${safeCurrentPage === item
-                            ? "bg-[#0062FF] text-white shadow-xs shadow-blue-500/30"
-                            : "bg-white hover:bg-slate-100 text-slate-700 border border-slate-200"
-                          }`}
-                      >
-                        {item}
-                      </button>
-                    )
-                  )}
-              </div>
-
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                disabled={safeCurrentPage >= totalPages}
-                className="h-8 px-2.5 rounded-lg text-xs font-medium border-slate-200 text-slate-600 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-white"
-              >
-                <span>ถัดไป</span>
-                <ChevronRight className="w-3.5 h-3.5 ml-0.5" />
-              </Button>
+        {!isLoading && totalItems > 0 && (
+          <div className="py-3.5 px-4 sm:px-6 bg-slate-50/80 border-t border-slate-200/80 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500">
+            <div>
+              <span>
+                แสดง{" "}
+                <strong className="font-semibold text-slate-800">
+                  {totalItems === 0 ? 0 : startIndex + 1}
+                </strong>{" "}
+                ถึง{" "}
+                <strong className="font-semibold text-slate-800">{endIndex}</strong>{" "}
+                จากทั้งหมด{" "}
+                <strong className="font-semibold text-slate-800">{totalItems}</strong>{" "}
+                รายการ (หน้าละ 10 รายการ)
+              </span>
             </div>
-          )}
-        </div>
+
+            {totalPages > 1 && (
+              <div className="flex items-center gap-1.5">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                  disabled={safeCurrentPage <= 1}
+                  className="h-8 px-2.5 rounded-lg text-xs font-medium border-slate-200 text-slate-600 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-white"
+                >
+                  <ChevronLeft className="w-3.5 h-3.5 mr-0.5" />
+                  <span>ก่อนหน้า</span>
+                </Button>
+
+                <div className="flex items-center gap-1">
+                  {Array.from({ length: totalPages }, (_, i) => i + 1)
+                    .filter((p) => {
+                      return (
+                        p === 1 ||
+                        p === totalPages ||
+                        Math.abs(p - safeCurrentPage) <= 1
+                      );
+                    })
+                    .reduce<(number | string)[]>((acc, p, idx, arr) => {
+                      if (idx > 0 && p - (arr[idx - 1] as number) > 1) {
+                        acc.push("...");
+                      }
+                      acc.push(p);
+                      return acc;
+                    }, [])
+                    .map((item, idx) =>
+                      typeof item === "string" ? (
+                        <span key={`ellipsis-${idx}`} className="px-1 text-slate-400">
+                          ...
+                        </span>
+                      ) : (
+                        <button
+                          key={item}
+                          type="button"
+                          onClick={() => setCurrentPage(item)}
+                          className={`w-8 h-8 rounded-lg text-xs font-semibold transition-all cursor-pointer ${safeCurrentPage === item
+                              ? "bg-[#0062FF] text-white shadow-xs shadow-blue-500/30"
+                              : "bg-white hover:bg-slate-100 text-slate-700 border border-slate-200"
+                            }`}
+                        >
+                          {item}
+                        </button>
+                      )
+                    )}
+                </div>
+
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={safeCurrentPage >= totalPages}
+                  className="h-8 px-2.5 rounded-lg text-xs font-medium border-slate-200 text-slate-600 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-white"
+                >
+                  <span>ถัดไป</span>
+                  <ChevronRight className="w-3.5 h-3.5 ml-0.5" />
+                </Button>
+              </div>
+            )}
+          </div>
+        )}
       </Card>
 
       {/* ========================================================================= */}
