@@ -668,8 +668,9 @@ export const StickyProjectSection: React.FC<StickyProjectSectionProps> = ({
     }
   }, [dynamicRecords.length]);
 
-  // Current cards: ดึงจาก DB ตาม activeTab ถ้ามีข้อมูล ถ้าไม่มีใช้ ALL_SOLUTION_CARDS
+  // Current cards: ดึงจาก DB ตาม activeTab ถ้ามีข้อมูล (ถ้ากำลังโหลดให้เป็น [] เพื่อแสดง loading skeleton แทนข้อมูล mock)
   const currentCards = useMemo(() => {
+    if (dbLoading) return [];
     const matched = dynamicRecords.filter((item) => item.tabCategory === activeTab);
     if (matched.length > 0) {
       return matched.map((item, idx) => ({
@@ -677,8 +678,12 @@ export const StickyProjectSection: React.FC<StickyProjectSectionProps> = ({
         counterText: `${String(idx + 1).padStart(2, '0')} / ${String(matched.length).padStart(2, '0')}`,
       }));
     }
+    // สำหรับ Software และ Network ต้องดึงจากฐานข้อมูลจริงเท่านั้น ไม่ใช้ข้อมูล mock
+    if (activeTab === 'software' || activeTab === 'network') {
+      return [];
+    }
     return ALL_SOLUTION_CARDS.filter((item) => item.tabCategory === activeTab);
-  }, [activeTab, dynamicRecords]);
+  }, [activeTab, dynamicRecords, dbLoading]);
 
   const handleTabClick = (tabId: string) => {
     setActiveTab(tabId);
@@ -770,7 +775,7 @@ export const StickyProjectSection: React.FC<StickyProjectSectionProps> = ({
         </div>
 
         {/* Dynamic Cards Stage or Loading / Empty State */}
-        {(activeTab === 'software' || activeTab === 'network') && dbLoading && currentCards.length === 0 ? (
+        {dbLoading ? (
           <div className="rounded-[24px] sm:rounded-[32px] bg-white border border-blue-100/90 shadow-sm p-6 sm:p-10 space-y-6 animate-pulse my-6">
             <div className="flex items-center justify-between pb-4 border-b border-slate-100">
               <div className="flex items-center gap-2">

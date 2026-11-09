@@ -31,8 +31,9 @@ export default async function PrintingSolutionPage() {
         "id, name, sku, slug, category_id, sub_category, brand, product_type, short_description, full_description, specifications, cover_image_url, gallery_images, compatible_products, datasheet_en_url, tor_th_url, is_active"
       )
       .eq("is_active", true)
+      .ilike("category_id", "Printing")
       .order("id", { ascending: true })
-      .limit(60);
+      .limit(200);
 
     const combinedRecords: Record<string, unknown>[] = records && Array.isArray(records) ? records : [];
 

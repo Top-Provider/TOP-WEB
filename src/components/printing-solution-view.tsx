@@ -122,10 +122,8 @@ export function PrintingSolutionView({
 
   // Fetch live products from /api/products
   useEffect(() => {
-    if (initialProducts.length === 0) {
-      setLoading(true);
-    }
-    fetch("/api/products")
+    setLoading(true);
+    fetch("/api/products?category=Printing")
       .then((res) => res.json())
       .then((json) => {
         if (json && json.success && Array.isArray(json.products)) {
@@ -146,7 +144,9 @@ export function PrintingSolutionView({
 
           // If current selected category has 0 items but DB has items, auto-select first available
           setSelectedSubCategory((prev) => {
-            const hasMatch = dbProducts.some((p) => p.sub_category === prev);
+            const hasMatch = dbProducts.some(
+              (p) => (p.sub_category || "").trim().toLowerCase() === prev.trim().toLowerCase()
+            );
             if (!hasMatch) {
               const firstWithCat = dbProducts.find((p) => p.sub_category && p.sub_category.trim());
               return firstWithCat?.sub_category ? firstWithCat.sub_category : prev;
@@ -159,7 +159,7 @@ export function PrintingSolutionView({
       .finally(() => {
         setLoading(false);
       });
-  }, [initialProducts.length]);
+  }, []);
 
   useEffect(() => {
     fetch("/api/admin/categories")
