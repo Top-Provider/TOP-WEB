@@ -4,61 +4,49 @@ import React from "react";
 
 interface MedicalCrossLoaderProps {
   size?: "sm" | "md" | "lg" | "xl";
-  text?: string;
-  subtext?: string;
   className?: string;
 }
 
 export function MedicalCrossLoader({
-  size = "md",
-  text = "กำลังโหลดข้อมูล...",
-  subtext = "TOP PROVIDER SYSTEM GROUP CO., LTD.",
+  size = "lg",
   className = "",
 }: MedicalCrossLoaderProps) {
   const sizeMap = {
     sm: {
-      orbitBox: "w-56 h-56 sm:w-64 sm:h-64",
+      orbitBox: "w-64 h-64 sm:w-72 sm:h-72",
       innerInset: "inset-3 sm:inset-4",
-      logoBox: "w-36 sm:w-44",
-      dot1: "w-3 h-3 -top-1.5",
-      dot2: "w-2.5 h-2.5 -bottom-1.25",
-      text: "text-xs sm:text-sm",
-      sub: "text-[11px]",
-    },
-    md: {
-      orbitBox: "w-68 h-68 sm:w-80 sm:h-80 md:w-88 md:h-88",
-      innerInset: "inset-4 sm:inset-5",
-      logoBox: "w-48 sm:w-56 md:w-64",
+      logoBox: "w-48 sm:w-56",
       dot1: "w-3.5 h-3.5 -top-1.75",
       dot2: "w-3 h-3 -bottom-1.5",
-      text: "text-sm sm:text-base",
-      sub: "text-xs",
     },
-    lg: {
+    md: {
       orbitBox: "w-76 h-76 sm:w-88 sm:h-88 md:w-96 md:h-96",
-      innerInset: "inset-5 sm:inset-6",
-      logoBox: "w-52 sm:w-64 md:w-72",
+      innerInset: "inset-4 sm:inset-5",
+      logoBox: "w-56 sm:w-68 md:w-76",
       dot1: "w-4 h-4 -top-2",
       dot2: "w-3.5 h-3.5 -bottom-1.75",
-      text: "text-base sm:text-lg",
-      sub: "text-xs sm:text-sm",
     },
-    xl: {
-      orbitBox: "w-88 h-88 sm:w-96 sm:h-96 md:w-[420px] md:h-[420px]",
-      innerInset: "inset-6 sm:inset-8",
-      logoBox: "w-60 sm:w-72 md:w-80",
+    lg: {
+      orbitBox: "w-84 h-84 sm:w-[400px] sm:h-[400px] md:w-[450px] md:h-[450px]",
+      innerInset: "inset-5 sm:inset-6",
+      logoBox: "w-64 sm:w-80 md:w-92",
       dot1: "w-4.5 h-4.5 -top-2.25",
       dot2: "w-4 h-4 -bottom-2",
-      text: "text-lg sm:text-xl",
-      sub: "text-sm",
+    },
+    xl: {
+      orbitBox: "w-96 h-96 sm:w-[460px] sm:h-[460px] md:w-[520px] md:h-[520px]",
+      innerInset: "inset-6 sm:inset-8",
+      logoBox: "w-72 sm:w-92 md:w-[400px]",
+      dot1: "w-5 h-5 -top-2.5",
+      dot2: "w-4.5 h-4.5 -bottom-2.25",
     },
   };
 
-  const current = sizeMap[size] || sizeMap.md;
+  const current = sizeMap[size] || sizeMap.lg;
 
   return (
     <div className={`flex flex-col items-center justify-center text-center select-none py-6 px-4 ${className}`}>
-      {/* 1. Orbit Stage with Circles surrounding the Logo */}
+      {/* 1. Orbit Stage with Circles surrounding the Large Logo */}
       <div className={`relative ${current.orbitBox} flex items-center justify-center`}>
         {/* Soft Ambient Radial Glow */}
         <div className="absolute inset-4 rounded-full bg-gradient-to-tr from-blue-500/10 via-sky-400/10 to-amber-500/10 blur-2xl pointer-events-none animate-pulse" />
@@ -87,9 +75,9 @@ export function MedicalCrossLoader({
           />
         </div>
 
-        {/* Center: Large Logo Card inside the Orbit Rings */}
+        {/* Center: Extra-Large Logo Card inside the Orbit Rings */}
         <div
-          className={`relative z-10 ${current.logoBox} p-4 sm:p-5 rounded-3xl bg-white/95 backdrop-blur-md border border-blue-50 shadow-lg shadow-blue-500/5 flex flex-col items-center justify-center transition-all duration-300`}
+          className={`relative z-10 ${current.logoBox} px-5 sm:px-8 py-4 sm:py-6 rounded-3xl bg-white/95 backdrop-blur-md border border-blue-50 shadow-xl shadow-blue-500/10 flex flex-col items-center justify-center transition-all duration-300`}
         >
           <img
             src="/images/top-provider-logo.png"
@@ -98,23 +86,6 @@ export function MedicalCrossLoader({
           />
         </div>
       </div>
-
-      {/* 2. Text Info & Pulse Indicator underneath the Orbit Logo */}
-      {(text || subtext) && (
-        <div className="mt-5 sm:mt-6 space-y-1.5 max-w-md mx-auto">
-          {text && (
-            <div className="flex items-center justify-center gap-2 text-sm sm:text-base font-bold text-slate-800 tracking-tight">
-              <span className="w-2.5 h-2.5 rounded-full bg-[#0066FF] animate-ping" />
-              <span>{text}</span>
-            </div>
-          )}
-          {subtext && (
-            <p className="text-xs sm:text-sm text-slate-400 font-medium">
-              {subtext}
-            </p>
-          )}
-        </div>
-      )}
     </div>
   );
 }
