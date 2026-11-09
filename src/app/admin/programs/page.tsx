@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { Modal } from "@/components/ui/modal";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -183,6 +184,10 @@ export default function AdminProgramsPage() {
   const [solutionGroupOptions, setSolutionGroupOptions] = useState(SOLUTION_GROUP_OPTIONS);
   const [programCategoryOptions, setProgramCategoryOptions] = useState(PROGRAM_CATEGORY_OPTIONS);
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+  const [deleteTarget, setDeleteTarget] = useState<{ id: number; name: string } | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [isSyncConfirmOpen, setIsSyncConfirmOpen] = useState(false);
+  const [isSyncing, setIsSyncing] = useState(false);
 
   const loadPrograms = async () => {
     try {
@@ -304,10 +309,9 @@ export default function AdminProgramsPage() {
     });
   };
 
-  const handleSyncDefaultsToDb = async () => {
-    if (!confirm("คุณต้องการนำเข้าข้อมูลโปรแกรมเริ่มต้นทั้งหมด (Vitanix Claim, HIS ฯลฯ) เข้าสู่ฐานข้อมูล Supabase ใช่หรือไม่?")) return;
+  const handleExecuteSyncDefaults = async () => {
     try {
-      setIsSaving(true);
+      setIsSyncing(true);
       for (const p of SAMPLE_TEMPLATES) {
         await saveRecord({
           table: "TB_PRODUCT_SOFTWARE",
@@ -341,11 +345,12 @@ export default function AdminProgramsPage() {
         });
       }
       toast.success("นำเข้าข้อมูลโปรแกรมเริ่มต้นเข้าฐานข้อมูล Supabase เรียบร้อยแล้ว!");
+      setIsSyncConfirmOpen(false);
       await loadPrograms();
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : String(err), "เกิดข้อผิดพลาดในการนำเข้า");
     } finally {
-      setIsSaving(false);
+      setIsSyncing(false);
     }
   };
 
@@ -498,20 +503,24 @@ export default function AdminProgramsPage() {
     }
   };
 
-  const handleDelete = async (id: number, name: string) => {
-    if (!confirm(`ยืนยันการลบโปรแกรม "${name}" ?`)) return;
+  const handleConfirmDelete = async () => {
+    if (!deleteTarget) return;
 
     try {
+      setIsDeleting(true);
       await saveRecord({
         table: "TB_PRODUCT_SOFTWARE",
         action: "delete",
-        id,
+        id: deleteTarget.id,
       });
       await loadPrograms();
-      toast.success(`ลบโปรแกรม "${name}" เรียบร้อยแล้ว`, "สำเร็จ");
+      toast.success(`ลบโปรแกรม "${deleteTarget.name}" เรียบร้อยแล้ว`, "สำเร็จ");
+      setDeleteTarget(null);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
       toast.error(msg, "ลบข้อมูลไม่สำเร็จ");
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -554,8 +563,8 @@ export default function AdminProgramsPage() {
           <Button
             type="button"
             variant="outline"
-            onClick={handleSyncDefaultsToDb}
-            disabled={isSaving}
+            onClick={() => setIsSyncConfirmOpen(true)}
+            disabled={isSaving || isSyncing}
             className="rounded-full px-4 py-2.5 text-xs text-slate-700 border-slate-300 hover:bg-slate-50 cursor-pointer shadow-xs"
             title="นำเข้าข้อมูลโปรแกรมเริ่มต้นทั้งหมดเข้าฐานข้อมูล Supabase"
           >
@@ -717,7 +726,7 @@ export default function AdminProgramsPage() {
                           type="button"
                           variant="ghost"
                           size="icon-sm"
-                          onClick={() => handleDelete(item.id, item.name)}
+                          onClick={() => setDeleteTarget({ id: item.id, name: item.name })}
                           className="hover:bg-rose-50 text-slate-500 hover:text-rose-600"
                           title="ลบ"
                         >
@@ -1144,6 +1153,37 @@ export default function AdminProgramsPage() {
           </div>
         </form>
       </Modal>
+
+      {/* Delete Confirmation Dialog */}
+      <ConfirmDialog
+        isOpen={!!deleteTarget}
+        onClose={() => {
+          if (!isDeleting) setDeleteTarget(null);
+        }}
+        onConfirm={handleConfirmDelete}
+        title="ยืนยันการลบโปรแกรม"
+        itemName={deleteTarget?.name}
+        description="คุณแน่ใจหรือไม่ว่าต้องการลบโปรแกรมนี้ออกจากระบบ? การดำเนินการนี้ไม่สามารถย้อนกลับได้"
+        confirmText="ยืนยันการลบ"
+        cancelText="ยกเลิก"
+        isLoading={isDeleting}
+        variant="danger"
+      />
+
+      {/* Sync Defaults Confirmation Dialog */}
+      <ConfirmDialog
+        isOpen={isSyncConfirmOpen}
+        onClose={() => {
+          if (!isSyncing) setIsSyncConfirmOpen(false);
+        }}
+        onConfirm={handleExecuteSyncDefaults}
+        title="ยืนยันการนำเข้าข้อมูลเริ่มต้น (Sync DB)"
+        description="คุณต้องการนำเข้าข้อมูลโปรแกรมเริ่มต้นทั้งหมด (Vitanix Claim, HIS ฯลฯ) เข้าสู่ฐานข้อมูล Supabase ใช่หรือไม่?"
+        confirmText="ยืนยันการนำเข้า"
+        cancelText="ยกเลิก"
+        isLoading={isSyncing}
+        variant="info"
+      />
     </div>
   );
 }

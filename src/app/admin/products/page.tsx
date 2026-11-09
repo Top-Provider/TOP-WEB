@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import Image from "next/image";
 import { Modal } from "@/components/ui/modal";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -218,6 +219,8 @@ export default function AdminProductsPage() {
   const [draggableIndex, setDraggableIndex] = useState<number | null>(null);
   const [draggedSpecIndex, setDraggedSpecIndex] = useState<number | null>(null);
   const [dragOverSpecIndex, setDragOverSpecIndex] = useState<number | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<{ id: number; name: string } | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -606,22 +609,24 @@ export default function AdminProductsPage() {
     }
   };
 
-  const handleDelete = async (id: number, name: string) => {
-    if (!confirm(`ยืนยันการลบสินค้า "${name}" ?`)) return;
+  const handleConfirmDelete = async () => {
+    if (!deleteTarget) return;
 
     try {
+      setIsDeleting(true);
       await saveRecord({
         table: "TB_PRODUCTS",
         action: "delete",
-        id,
+        id: deleteTarget.id,
       });
       await loadProducts();
       setStatusModal({
         isOpen: true,
         type: "success",
         title: "ลบสินค้าสำเร็จ",
-        message: `ลบสินค้า "${name}" ออกจากระบบเรียบร้อยแล้ว`,
+        message: `ลบสินค้า "${deleteTarget.name}" ออกจากระบบเรียบร้อยแล้ว`,
       });
+      setDeleteTarget(null);
     } catch (err: unknown) {
       setStatusModal({
         isOpen: true,
@@ -629,6 +634,8 @@ export default function AdminProductsPage() {
         title: "ลบสินค้าไม่สำเร็จ",
         message: getFriendlyErrorMessage(err, "เกิดข้อผิดพลาดในการลบสินค้า"),
       });
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -872,7 +879,7 @@ export default function AdminProductsPage() {
                           type="button"
                           variant="ghost"
                           size="icon-sm"
-                          onClick={() => handleDelete(product.id, product.name)}
+                          onClick={() => setDeleteTarget({ id: product.id, name: product.name })}
                           className="hover:bg-rose-50 text-slate-500 hover:text-rose-600"
                           title="ลบ"
                         >
@@ -1745,6 +1752,22 @@ export default function AdminProductsPage() {
           </div>
         </div>
       </Modal>
+
+      {/* Delete Confirmation Dialog */}
+      <ConfirmDialog
+        isOpen={!!deleteTarget}
+        onClose={() => {
+          if (!isDeleting) setDeleteTarget(null);
+        }}
+        onConfirm={handleConfirmDelete}
+        title="ยืนยันการลบสินค้า"
+        itemName={deleteTarget?.name}
+        description="คุณแน่ใจหรือไม่ว่าต้องการลบสินค้านี้ออกจากระบบ? การดำเนินการนี้ไม่สามารถย้อนกลับได้"
+        confirmText="ยืนยันการลบ"
+        cancelText="ยกเลิก"
+        isLoading={isDeleting}
+        variant="danger"
+      />
     </div>
   );
 }
