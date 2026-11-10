@@ -1,4 +1,5 @@
 import { supabase } from "@/lib/supabase";
+import { pgSelect } from "@/lib/db";
 import { Navbar } from "@/components/navbar";
 import { HeroShowcase } from "@/components/hero-showcase";
 import { HospitalDashboard } from "@/components/hospital-dashboard";
@@ -33,70 +34,101 @@ export default async function Home() {
   let initialProducts: Record<string, unknown>[] = [];
   let initialSolutionTopics: Record<string, unknown>[] = [];
 
-  try {
-    const [catRes, softRes, prodRes, topicsRes] = await Promise.all([
-      supabase
-        .from("TBM_PRODUCT_CATEGORIES")
-        .select("id, category_id, name, is_active")
-        .eq("is_active", true)
-        .order("id", { ascending: true }),
-      supabase
-        .from("TB_PRODUCT_SOFTWARE")
-        .select(
-          "id, name, program_code, category_id, client_subtitle, short_description, full_description, cover_image_url, video_url, key_features, metric_label, metric_value, is_active"
-        )
-        .eq("is_active", true)
-        .order("id", { ascending: true })
-        .limit(30),
-      supabase
-        .from("TB_PRODUCTS")
-        .select(
-          "id, name, sku, slug, category_id, sub_category, brand, product_type, short_description, full_description, specifications, cover_image_url, is_active"
-        )
-        .eq("is_active", true)
-        .order("id", { ascending: true })
-        .limit(300),
-      supabase
-        .from("TB_SOLUTION_TOPICS")
-        .select("*")
-        .eq("is_active", true)
-        .order("sort_order", { ascending: true }),
-    ]);
+  // 1. โหลดข้อมูลจาก Local PostgreSQL เป็นหลัก
+  if (process.env.DATABASE_URL) {
+    try {
+      const [catData, softData, prodData, topicsData] = await Promise.all([
+        pgSelect({ table: "TBM_PRODUCT_CATEGORIES", where: { is_active: true }, orderBy: "id", orderDir: "asc" }),
+        pgSelect({ table: "TB_PRODUCT_SOFTWARE", where: { is_active: true }, orderBy: "id", orderDir: "asc", limit: 30 }),
+        pgSelect({ table: "TB_PRODUCTS", where: { is_active: true }, orderBy: "id", orderDir: "asc", limit: 300 }),
+        pgSelect({ table: "TB_SOLUTION_TOPICS", where: { is_active: true }, orderBy: "sort_order", orderDir: "asc" }),
+      ]);
 
-    if (!catRes.error && catRes.data) {
-      initialCategories = catRes.data.map((c) => ({
-        id: c.id,
-        category_id: c.category_id,
-        name: c.name,
+      initialCategories = (catData || []).map((c) => ({
+        id: Number(c.id),
+        category_id: String(c.category_id),
+        name: String(c.name),
       }));
+      initialSoftwareRecords = (softData || []) as Record<string, unknown>[];
+      initialProducts = (prodData || []) as Record<string, unknown>[];
+      initialSolutionTopics = (topicsData || []) as Record<string, unknown>[];
+    } catch (pgErr) {
+      console.warn("[PostgreSQL Home Page load error, falling back to Supabase]:", pgErr);
     }
-
-    if (!topicsRes.error && topicsRes.data) {
-      initialSolutionTopics = topicsRes.data;
-    }
-
-    if (!softRes.error && softRes.data) {
-      initialSoftwareRecords = softRes.data.map((item) => ({
-        ...item,
-        cover_image_url: resolveSoftwareImageUrl(item.id, item.cover_image_url, "/images/vitanix-dashboard-hd.png"),
-      }));
-    }
-
-    if (!prodRes.error && prodRes.data) {
-      initialProducts = prodRes.data.map((item) => {
-        const isNetwork = String(item.category_id || "").toLowerCase().includes("network");
-        const defaultFallback = isNetwork
-          ? "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=1400&q=80"
-          : "/images/printer-product.png";
-        return {
-          ...item,
-          cover_image_url: resolveProductImageUrl(item.id, item.cover_image_url, defaultFallback),
-        };
-      });
-    }
-  } catch (err) {
-    console.error("Error loading home page data from DB:", err);
   }
+
+  // 2. Fallback ไปยัง Supabase หากยังไม่มีข้อมูล
+  if (initialCategories.length === 0) {
+    try {
+      const [catRes, softRes, prodRes, topicsRes] = await Promise.all([
+        supabase
+          .from("TBM_PRODUCT_CATEGORIES")
+          .select("id, category_id, name, is_active")
+          .eq("is_active", true)
+          .order("id", { ascending: true }),
+        supabase
+          .from("TB_PRODUCT_SOFTWARE")
+          .select(
+            "id, name, program_code, category_id, client_subtitle, short_description, full_description, cover_image_url, video_url, key_features, metric_label, metric_value, is_active"
+          )
+          .eq("is_active", true)
+          .order("id", { ascending: true })
+          .limit(30),
+        supabase
+          .from("TB_PRODUCTS")
+          .select(
+            "id, name, sku, slug, category_id, sub_category, brand, product_type, short_description, full_description, specifications, cover_image_url, is_active"
+          )
+          .eq("is_active", true)
+          .order("id", { ascending: true })
+          .limit(300),
+        supabase
+          .from("TB_SOLUTION_TOPICS")
+          .select("*")
+          .eq("is_active", true)
+          .order("sort_order", { ascending: true }),
+      ]);
+
+      if (!catRes.error && catRes.data) {
+        initialCategories = catRes.data.map((c) => ({
+          id: c.id,
+          category_id: c.category_id,
+          name: c.name,
+        }));
+      }
+
+      if (!softRes.error && softRes.data) {
+        initialSoftwareRecords = softRes.data;
+      }
+
+      if (!prodRes.error && prodRes.data) {
+        initialProducts = prodRes.data;
+      }
+
+      if (!topicsRes.error && topicsRes.data) {
+        initialSolutionTopics = topicsRes.data;
+      }
+    } catch (err) {
+      console.error("[Home Page Fetch Exception]:", err);
+    }
+  }
+
+  // Resolve image URLs for software and products
+  initialSoftwareRecords = initialSoftwareRecords.map((item) => ({
+    ...item,
+    cover_image_url: resolveSoftwareImageUrl(item.id, item.cover_image_url, "/images/vitanix-dashboard-hd.png"),
+  }));
+
+  initialProducts = initialProducts.map((item) => {
+    const isNetwork = String(item.category_id || "").toLowerCase().includes("network");
+    const defaultFallback = isNetwork
+      ? "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=1400&q=80"
+      : "/images/printer-product.png";
+    return {
+      ...item,
+      cover_image_url: resolveProductImageUrl(item.id, item.cover_image_url, defaultFallback),
+    };
+  });
 
   return (
     <div className="min-h-screen flex flex-col bg-[#F8FAFC] selection:bg-blue-600 selection:text-white">

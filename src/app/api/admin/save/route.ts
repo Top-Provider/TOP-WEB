@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { pgSelect, pgInsert, pgUpdate, pgDelete } from "@/lib/db";
 
 // ทำความสะอาด Supabase URL
 const rawUrl =
@@ -99,6 +100,34 @@ export async function POST(req: NextRequest) {
         resolvedAction = "update";
       } else {
         resolvedAction = "insert";
+      }
+    }
+
+    // 3.1 บันทึกลง Local PostgreSQL เป็นอันดับแรก (หากกำหนดค่าไว้)
+    if (process.env.DATABASE_URL && resolvedAction) {
+      try {
+        let pgResult;
+        if (resolvedAction === "insert" && data && !Array.isArray(data)) {
+          pgResult = await pgInsert(normalizedTable, data);
+        } else if (resolvedAction === "update" && data && !Array.isArray(data) && id !== undefined) {
+          pgResult = await pgUpdate(normalizedTable, data, id, idColumn);
+        } else if (resolvedAction === "delete" && id !== undefined) {
+          pgResult = await pgDelete(normalizedTable, id, idColumn);
+        }
+
+        if (pgResult !== undefined) {
+          return NextResponse.json({
+            success: true,
+            action: resolvedAction,
+            table: normalizedTable,
+            data: pgResult,
+            count: 1,
+            source: "postgresql_local",
+            message: `ดำเนินการ ${resolvedAction} ตาราง ${normalizedTable} สำเร็จ (PostgreSQL Local)`,
+          });
+        }
+      } catch (pgErr) {
+        console.warn("[PostgreSQL Save failed, fallback to Supabase]:", pgErr);
       }
     }
 
@@ -388,21 +417,48 @@ export async function GET(req: NextRequest) {
     }
 
     let selectFields = searchParams.get("select") || "*";
-    let query = supabase.from(normalizedTable).select(selectFields);
-
     const id = searchParams.get("id");
     const idColumn = searchParams.get("idColumn") || "id";
+    const orderBy = searchParams.get("orderBy");
+    const orderDirParam = searchParams.get("orderDir");
+    const limit = searchParams.get("limit");
+
+    // ดึงจาก Local PostgreSQL เป็นอันดับแรก (หากกำหนดค่าไว้)
+    if (process.env.DATABASE_URL) {
+      try {
+        const pgRows = await pgSelect({
+          table: normalizedTable,
+          select: selectFields,
+          id: id || undefined,
+          idColumn,
+          orderBy: orderBy || undefined,
+          orderDir: orderDirParam === "desc" ? "desc" : "asc",
+          limit: limit ? parseInt(limit, 10) : undefined,
+        });
+
+        return NextResponse.json({
+          success: true,
+          table: normalizedTable,
+          data: pgRows,
+          count: pgRows.length,
+          source: "postgresql_local",
+        });
+      } catch (pgErr) {
+        console.warn("[PostgreSQL GET failed, fallback to Supabase]:", pgErr);
+      }
+    }
+
+    let query = supabase.from(normalizedTable).select(selectFields);
+
     if (id) {
       query = query.eq(idColumn, id);
     }
 
-    const orderBy = searchParams.get("orderBy");
-    const orderDir = searchParams.get("orderDir") === "desc" ? false : true;
+    const orderDir = orderDirParam === "desc" ? false : true;
     if (orderBy) {
       query = query.order(orderBy, { ascending: orderDir });
     }
 
-    const limit = searchParams.get("limit");
     if (limit) {
       query = query.limit(parseInt(limit, 10));
     }

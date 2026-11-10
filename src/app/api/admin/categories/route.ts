@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { pgSelect } from "@/lib/db";
 
 const rawUrl =
   process.env.NEXT_PUBLIC_SUPABASE_URL ||
@@ -33,6 +34,22 @@ export const DEFAULT_CATEGORIES = [
  */
 export async function GET() {
   try {
+    if (process.env.DATABASE_URL) {
+      try {
+        const rows = await pgSelect({ table: "TBM_PRODUCT_CATEGORIES", orderBy: "id", orderDir: "asc" });
+        if (rows && rows.length > 0) {
+          return NextResponse.json({
+            success: true,
+            source: "postgresql_local",
+            count: rows.length,
+            categories: rows,
+          });
+        }
+      } catch (pgErr) {
+        console.warn("[PostgreSQL Categories GET error, fallback to Supabase]:", pgErr);
+      }
+    }
+
     const { data, error } = await supabase
       .from("TBM_PRODUCT_CATEGORIES")
       .select("*")
