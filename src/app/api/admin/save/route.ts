@@ -410,6 +410,17 @@ export async function GET(req: NextRequest) {
     const { data, error } = await query;
 
     if (error) {
+      // หากตารางยังไม่ได้สร้างใน Supabase (PGRST205) ให้ส่ง data: [] กลับไปอย่างปลอดภัย
+      if (error.code === "PGRST205" || error.message.includes("Could not find the table")) {
+        return NextResponse.json({
+          success: true,
+          table: normalizedTable,
+          data: [],
+          count: 0,
+          notCreated: true,
+          message: `ตาราง "${normalizedTable}" ยังไม่ได้ถูกสร้างใน Supabase`,
+        });
+      }
       return NextResponse.json(
         { success: false, error: error.message },
         { status: 400 }
