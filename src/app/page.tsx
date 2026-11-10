@@ -31,9 +31,10 @@ export default async function Home() {
   let initialCategories: { id: number; category_id: string; name: string }[] = [];
   let initialSoftwareRecords: Record<string, unknown>[] = [];
   let initialProducts: Record<string, unknown>[] = [];
+  let initialSolutionTopics: Record<string, unknown>[] = [];
 
   try {
-    const [catRes, softRes, prodRes] = await Promise.all([
+    const [catRes, softRes, prodRes, topicsRes] = await Promise.all([
       supabase
         .from("TBM_PRODUCT_CATEGORIES")
         .select("id, category_id, name, is_active")
@@ -55,6 +56,11 @@ export default async function Home() {
         .eq("is_active", true)
         .order("id", { ascending: true })
         .limit(300),
+      supabase
+        .from("TB_SOLUTION_TOPICS")
+        .select("*")
+        .eq("is_active", true)
+        .order("sort_order", { ascending: true }),
     ]);
 
     if (!catRes.error && catRes.data) {
@@ -63,6 +69,10 @@ export default async function Home() {
         category_id: c.category_id,
         name: c.name,
       }));
+    }
+
+    if (!topicsRes.error && topicsRes.data) {
+      initialSolutionTopics = topicsRes.data;
     }
 
     if (!softRes.error && softRes.data) {
@@ -106,6 +116,7 @@ export default async function Home() {
           initialCategories={initialCategories}
           initialSoftwareRecords={initialSoftwareRecords}
           initialProducts={initialProducts}
+          initialSolutionTopics={initialSolutionTopics}
         />
 
         {/* 4. Core Leadership & Specialist Team */}

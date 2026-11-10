@@ -2,13 +2,13 @@ import React from "react";
 import Link from "next/link";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Package, Layers, FolderTree, ArrowUpRight } from "lucide-react";
+import { Package, Layers, FolderTree, ArrowUpRight, LayoutGrid } from "lucide-react";
 
 export default function AdminDashboardPage() {
   const statCards = [
     {
       title: "Master สินค้าทั้งหมด",
-      count: "24",
+      count: "119",
       desc: "เครื่องพิมพ์, หมึกพิมพ์, ฮาร์ดแวร์",
       href: "/admin/products",
       icon: Package,
@@ -16,11 +16,19 @@ export default function AdminDashboardPage() {
     },
     {
       title: "โปรแกรม & ซอฟต์แวร์",
-      count: "12",
+      count: "7",
       desc: "Vitanix Claim, Panacea Plus HIS ฯลฯ",
       href: "/admin/programs",
       icon: Layers,
       color: "bg-emerald-50 text-emerald-600 border-emerald-100",
+    },
+    {
+      title: "การ์ดภาพรวมโซลูชัน",
+      count: "8",
+      desc: "Printer, Supply, Hardware, Network",
+      href: "/admin/solution-topics",
+      icon: LayoutGrid,
+      color: "bg-amber-50 text-amber-600 border-amber-100",
     },
     {
       title: "หมวดหมู่หลัก (Categories)",
@@ -58,7 +66,7 @@ export default function AdminDashboardPage() {
       </Card>
 
       {/* Stats Overview using UI Card */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {statCards.map((card) => {
           const Icon = card.icon;
           return (

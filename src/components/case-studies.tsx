@@ -15,6 +15,7 @@ interface StickyProjectSectionProps {
   initialCategories?: { id?: number; category_id: string; name: string }[];
   initialSoftwareRecords?: Record<string, unknown>[];
   initialProducts?: Record<string, unknown>[];
+  initialSolutionTopics?: Record<string, unknown>[];
 }
 
 export interface SolutionCardItem {
@@ -24,6 +25,7 @@ export interface SolutionCardItem {
   urlPath: string;
   clientSubtitle: string;
   ctaText?: string;
+  ctaLink?: string;
   isProductPhoto?: boolean;
   project: Project;
 }
@@ -753,11 +755,82 @@ export function mapProductRecordToCardItem(
   };
 }
 
+function mapTopicRecordToCardItem(
+  t: Record<string, unknown>,
+  index: number,
+  total: number
+): SolutionCardItem {
+  let deliverables: string[] = [];
+  if (Array.isArray(t.key_features)) {
+    deliverables = t.key_features.map(String).filter(Boolean);
+  } else if (typeof t.key_features === 'string' && t.key_features.trim()) {
+    try {
+      const parsed = JSON.parse(t.key_features);
+      if (Array.isArray(parsed)) {
+        deliverables = parsed.map(String).filter(Boolean);
+      } else {
+        deliverables = t.key_features.split('\n').map((s) => s.trim()).filter(Boolean);
+      }
+    } catch {
+      deliverables = t.key_features.split('\n').map((s) => s.trim()).filter(Boolean);
+    }
+  }
+
+  const rawCat = String(t.tab_category || 'printing').toLowerCase();
+  const tabCategory: SolutionCardItem['tabCategory'] =
+    rawCat === 'network' ? 'network'
+    : rawCat === 'hardware' ? 'hardware'
+    : rawCat === 'software' ? 'software'
+    : rawCat === 'medical' ? 'medical'
+    : rawCat === 'iot' ? 'iot'
+    : 'printing';
+
+  const title = String(t.title || 'Solution');
+  const subtitle = String(t.subtitle || '');
+  const shortDesc = String(t.short_description || t.full_description || '');
+  const fullDesc = String(t.full_description || shortDesc);
+  const coverImage = String(t.cover_image_url || '/images/printer-product.png');
+  const ctaText = String(t.cta_text || 'ดูสินค้าทั้งหมด');
+  const ctaLink = String(t.cta_link || `/solutions/${tabCategory}`);
+  const counterText = `${String(index + 1).padStart(2, '0')} / ${String(total).padStart(2, '0')}`;
+
+  return {
+    id: `topic-${t.id || index}`,
+    tabCategory,
+    counterText,
+    urlPath: `Topprovider.co.th / ${title}`,
+    clientSubtitle: subtitle || `2026 • ${title}`,
+    ctaText,
+    ctaLink,
+    isProductPhoto: true,
+    project: {
+      id: `topic-proj-${t.id || index}`,
+      name: title,
+      client: subtitle || title,
+      year: '2026',
+      category: tabCategory,
+      subCategory: title,
+      shortDescription: shortDesc,
+      fullDescription: fullDesc,
+      challenge: '',
+      solution: '',
+      deliverables,
+      metrics: [],
+      technologies: deliverables.slice(0, 4),
+      coverImage,
+      galleryImages: [coverImage],
+      featured: true,
+      accentColor: '#0066FF',
+    },
+  };
+}
+
 export const StickyProjectSection: React.FC<StickyProjectSectionProps> = ({
   onSelectProject,
   initialCategories,
   initialSoftwareRecords,
   initialProducts,
+  initialSolutionTopics,
 }) => {
   const router = useRouter();
 
@@ -851,9 +924,53 @@ export const StickyProjectSection: React.FC<StickyProjectSectionProps> = ({
     }
   }, [dynamicRecords.length]);
 
+  // Dynamic Solution Topics from TB_SOLUTION_TOPICS
+  const initialTopics = useMemo(() => {
+    if (initialSolutionTopics && initialSolutionTopics.length > 0) {
+      return initialSolutionTopics.map((t, i) =>
+        mapTopicRecordToCardItem(t, i, initialSolutionTopics.length)
+      );
+    }
+    return [];
+  }, [initialSolutionTopics]);
+
+  const [dynamicTopics, setDynamicTopics] = useState<SolutionCardItem[]>(initialTopics);
+
+  useEffect(() => {
+    if (initialTopics.length > 0) {
+      setDynamicTopics(initialTopics);
+    }
+  }, [initialTopics]);
+
+  // Client-side fetch fallback for TB_SOLUTION_TOPICS
+  useEffect(() => {
+    if (dynamicTopics.length === 0) {
+      fetchRecords({
+        table: 'TB_SOLUTION_TOPICS',
+        orderBy: 'sort_order',
+        orderDir: 'asc',
+      })
+        .then((records) => {
+          if (records && records.length > 0) {
+            const activeOnly = (records as Record<string, unknown>[]).filter(
+              (r) => r.is_active !== false
+            );
+            if (activeOnly.length > 0) {
+              setDynamicTopics(
+                activeOnly.map((r, i) => mapTopicRecordToCardItem(r, i, activeOnly.length))
+              );
+            }
+          }
+        })
+        .catch(() => {
+          // Table doesn't exist yet, seamlessly falls back
+        });
+    }
+  }, [dynamicTopics.length]);
+
   // Current cards:
   // - ถ้าเป็น Software: ดึงรายการระบบจากฐานข้อมูล TB_PRODUCT_SOFTWARE
-  // - ถ้าเป็น หมวดอื่นๆ (Printing, Hardware, Network): แสดงการ์ดภาพรวมโซลูชัน (Overview Cards)
+  // - ถ้าเป็น หมวดอื่นๆ: ตรวจสอบ TB_SOLUTION_TOPICS ก่อน ถ้ามีให้ใช้จาก DB ถ้าไม่มีให้ใช้ ALL_SOLUTION_CARDS (Fallback)
   const currentCards = useMemo(() => {
     if (activeTab === 'software') {
       if (dbLoading) return [];
@@ -864,12 +981,20 @@ export const StickyProjectSection: React.FC<StickyProjectSectionProps> = ({
       }));
     }
 
+    const matchedTopics = dynamicTopics.filter((item) => item.tabCategory === activeTab);
+    if (matchedTopics.length > 0) {
+      return matchedTopics.map((item, idx) => ({
+        ...item,
+        counterText: `${String(idx + 1).padStart(2, '0')} / ${String(matchedTopics.length).padStart(2, '0')}`,
+      }));
+    }
+
     const overviewCards = ALL_SOLUTION_CARDS.filter((item) => item.tabCategory === activeTab);
     return overviewCards.map((item, idx) => ({
       ...item,
       counterText: `${String(idx + 1).padStart(2, '0')} / ${String(overviewCards.length).padStart(2, '0')}`,
     }));
-  }, [activeTab, dynamicRecords, dbLoading]);
+  }, [activeTab, dynamicRecords, dynamicTopics, dbLoading]);
 
   const handleTabClick = (tabId: string) => {
     setActiveTab(tabId);
@@ -890,6 +1015,10 @@ export const StickyProjectSection: React.FC<StickyProjectSectionProps> = ({
   };
 
   const handleSelectCard = (cardItem: SolutionCardItem) => {
+    if (cardItem.ctaLink) {
+      router.push(cardItem.ctaLink);
+      return;
+    }
     if (cardItem.tabCategory === 'printing') {
       if (cardItem.id === 'printing-printer') {
         router.push('/solutions/printing?type=printer');
@@ -1111,7 +1240,16 @@ export const StickyProjectSection: React.FC<StickyProjectSectionProps> = ({
                         )}
 
                         {/* CTA Button ลิงก์ตรงไปหน้า Product เสมอ */}
-                        {cardItem.tabCategory === 'printing' ? (
+                        {cardItem.ctaLink ? (
+                          <Link
+                            href={cardItem.ctaLink}
+                            prefetch={true}
+                            className="w-full py-3.5 px-6 rounded-full bg-[#0066FF] hover:bg-[#0052CC] text-white font-medium text-xs sm:text-sm flex items-center justify-center gap-2 shadow-[0_8px_20px_rgba(0,102,255,0.3)] hover:shadow-[0_12px_28px_rgba(0,102,255,0.45)] transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] cursor-pointer group"
+                          >
+                            <span>{cardItem.ctaText || 'ดูสินค้าทั้งหมด'}</span>
+                            <ArrowUpRight className="w-4 h-4 stroke-[2.5] transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                          </Link>
+                        ) : cardItem.tabCategory === 'printing' ? (
                           <Link
                             href={
                               cardItem.id === 'printing-printer'

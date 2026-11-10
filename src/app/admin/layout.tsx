@@ -9,6 +9,7 @@ import { ToastContainer } from "@/components/ui/toast";
 import { supabase } from "@/lib/supabase";
 import {
   LayoutDashboard,
+  LayoutGrid,
   Package,
   Layers,
   FolderTree,
@@ -25,6 +26,7 @@ const navigation = [
   { name: "แดชบอร์ด", href: "/admin", icon: LayoutDashboard },
   { name: "จัดการสินค้า (Master)", href: "/admin/products", icon: Package },
   { name: "จัดการโปรแกรม (Programs)", href: "/admin/programs", icon: Layers },
+  { name: "การ์ดภาพรวมโซลูชัน", href: "/admin/solution-topics", icon: LayoutGrid },
   { name: "ข้อมูลหลัก (Master Data)", href: "/admin/categories", icon: FolderTree },
 ];
 
