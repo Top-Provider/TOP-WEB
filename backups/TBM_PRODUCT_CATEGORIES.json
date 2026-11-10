@@ -1,0 +1,50 @@
+[
+  {
+    "id": 1,
+    "category_id": "Printing",
+    "name": "Printing & Supply Solution",
+    "is_active": true,
+    "created_at": "2026-11-02T10:22:58.017543+00:00",
+    "updated_at": "2026-11-02T10:22:58.017543+00:00"
+  },
+  {
+    "id": 3,
+    "category_id": "Software",
+    "name": "Software Solution",
+    "is_active": true,
+    "created_at": "2026-11-02T10:22:58.017543+00:00",
+    "updated_at": "2026-11-02T10:22:58.017543+00:00"
+  },
+  {
+    "id": 5,
+    "category_id": "Medical",
+    "name": "Medical Equipment",
+    "is_active": false,
+    "created_at": "2026-11-02T10:22:58.017543+00:00",
+    "updated_at": "2026-11-04T03:08:00.524+00:00"
+  },
+  {
+    "id": 6,
+    "category_id": "IoT",
+    "name": "Smart Solution (IoT)",
+    "is_active": false,
+    "created_at": "2026-11-02T10:22:58.017543+00:00",
+    "updated_at": "2026-11-04T03:08:05.205+00:00"
+  },
+  {
+    "id": 2,
+    "category_id": "Hardware",
+    "name": "Hardware Solution",
+    "is_active": true,
+    "created_at": "2026-11-02T10:22:58.017543+00:00",
+    "updated_at": "2026-11-04T03:12:51.801+00:00"
+  },
+  {
+    "id": 4,
+    "category_id": "Network",
+    "name": "Network Solution",
+    "is_active": true,
+    "created_at": "2026-11-02T10:22:58.017543+00:00",
+    "updated_at": "2026-11-06T08:18:04.25+00:00"
+  }
+]
