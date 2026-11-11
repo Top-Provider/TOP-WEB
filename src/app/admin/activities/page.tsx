@@ -42,7 +42,7 @@ const DEFAULT_FORM: Omit<ActivityItem, "id"> = {
   title: "",
   title_en: "",
   category: "culture",
-  event_date: new Date().toISOString().split("T")[0],
+  event_date: "",
   location: "",
   short_description: "",
   content: "",
@@ -159,7 +159,10 @@ export default function AdminActivitiesPage() {
 
   const handleOpenAdd = () => {
     setEditingId(null);
-    setFormData(DEFAULT_FORM);
+    setFormData({
+      ...DEFAULT_FORM,
+      event_date: new Date().toISOString().split("T")[0],
+    });
     setTagsInput("");
     setNewGalleryUrl("");
     setShowModal(true);

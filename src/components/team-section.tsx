@@ -76,6 +76,7 @@ export function TeamSection({ initialMembers }: TeamSectionProps = {}) {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: idx * 0.1 }}
+              suppressHydrationWarning
               className="bg-white rounded-3xl p-4 border border-slate-200/70 shadow-sm hover:shadow-xl hover:border-blue-200 transition-all duration-300 flex flex-col justify-between group"
             >
               <div>
