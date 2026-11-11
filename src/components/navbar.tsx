@@ -60,13 +60,12 @@ export function Navbar() {
     { label: "Home", href: "/" },
     { label: "IT Solution & Product", href: "/solutions/software" },
     { label: "Service Solution", href: "/#capabilities" },
-    { label: "News & Activities", href: "/activities" },
+    { label: "News & Activities", href: "/#activities" },
     { label: "About Us", href: "/#team" },
   ];
 
   const isLinkActive = (href: string) => {
     if (href === "/") return pathname === "/";
-    if (href === "/activities") return pathname.startsWith("/activities");
     if (href.startsWith("/solutions")) return pathname.startsWith("/solutions") || pathname.startsWith("/products");
     return false;
   };
