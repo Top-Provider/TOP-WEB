@@ -56,6 +56,26 @@ export function Navbar() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  // Handle hash scrolling on page load / route change
+  useEffect(() => {
+    if (typeof window !== "undefined" && window.location.hash && pathname === "/") {
+      const targetId = window.location.hash.replace("#", "");
+      const timer = setTimeout(() => {
+        const element = document.getElementById(targetId);
+        if (element) {
+          const navOffset = 80;
+          const elementPosition = element.getBoundingClientRect().top;
+          const offsetPosition = elementPosition + window.scrollY - navOffset;
+          window.scrollTo({
+            top: Math.max(0, offsetPosition),
+            behavior: "smooth",
+          });
+        }
+      }, 150);
+      return () => clearTimeout(timer);
+    }
+  }, [pathname]);
+
   const navLinks = [
     { label: "Home", href: "/" },
     { label: "IT Solution & Product", href: "/solutions/software" },
@@ -70,6 +90,41 @@ export function Navbar() {
     return false;
   };
 
+  const handleNavClick = (
+    e: React.MouseEvent<HTMLAnchorElement>,
+    href: string,
+    onComplete?: () => void
+  ) => {
+    if (pathname === "/") {
+      if (href === "/") {
+        e.preventDefault();
+        window.scrollTo({ top: 0, behavior: "smooth" });
+        window.history.pushState(null, "", "/");
+        if (onComplete) onComplete();
+        return;
+      }
+
+      if (href.startsWith("/#") || href.startsWith("#")) {
+        const targetId = href.replace(/^\/?#/, "");
+        const element = document.getElementById(targetId);
+        if (element) {
+          e.preventDefault();
+          const navOffset = 80;
+          const elementPosition = element.getBoundingClientRect().top;
+          const offsetPosition = elementPosition + window.scrollY - navOffset;
+          window.scrollTo({
+            top: Math.max(0, offsetPosition),
+            behavior: "smooth",
+          });
+          window.history.pushState(null, "", href.startsWith("/") ? href : `/${href}`);
+          if (onComplete) onComplete();
+          return;
+        }
+      }
+    }
+    if (onComplete) onComplete();
+  };
+
   return (
     <div
       className={`sticky top-0 z-50 w-full px-4 sm:px-6 pt-3 sm:pt-4 pb-2 transition-all duration-300 ease-in-out ${
@@ -80,7 +135,11 @@ export function Navbar() {
     >
       <div className="w-[94%] max-w-[1680px] mx-auto bg-white/95 backdrop-blur-md rounded-full shadow-lg shadow-slate-200/50 border border-slate-100/90 px-4 sm:px-8 py-2.5 sm:py-3 flex items-center justify-between transition-all">
         {/* Brand Logo matching the user's uploaded image */}
-        <Link href="/" className="flex items-center gap-2.5 shrink-0 group">
+        <Link
+          href="/"
+          onClick={(e) => handleNavClick(e, "/")}
+          className="flex items-center gap-2.5 shrink-0 group"
+        >
           <div className="relative h-8 sm:h-9 w-20 sm:w-24">
             <Image
               src="/images/logo.png"
@@ -101,7 +160,8 @@ export function Navbar() {
               <Link
                 key={link.label}
                 href={link.href}
-                className={`text-[13px] font-medium transition-colors whitespace-nowrap ${
+                onClick={(e) => handleNavClick(e, link.href)}
+                className={`text-[13px] font-medium transition-colors whitespace-nowrap cursor-pointer ${
                   active
                     ? "text-[#0062FF] font-bold"
                     : "text-slate-600 hover:text-blue-600"
@@ -119,7 +179,11 @@ export function Navbar() {
             asChild
             className="hidden sm:inline-flex rounded-full bg-[#0062FF] hover:bg-blue-700 text-white font-semibold text-xs px-5 py-2 shadow-sm hover:shadow-md hover:shadow-blue-500/25 transition-all h-9"
           >
-            <Link href="/#contact" className="flex items-center gap-2">
+            <Link
+              href="/#contact"
+              onClick={(e) => handleNavClick(e, "/#contact")}
+              className="flex items-center gap-2 cursor-pointer"
+            >
               <Calendar className="w-3.5 h-3.5" />
               <span>contact</span>
             </Link>
@@ -155,8 +219,8 @@ export function Navbar() {
                           <Link
                             key={link.label}
                             href={link.href}
-                            onClick={() => setIsOpen(false)}
-                            className={`text-sm py-1 transition-colors ${
+                            onClick={(e) => handleNavClick(e, link.href, () => setIsOpen(false))}
+                            className={`text-sm py-1 transition-colors cursor-pointer ${
                               active
                                 ? "text-[#0062FF] font-bold"
                                 : "text-slate-700 font-medium hover:text-blue-600"
@@ -172,9 +236,12 @@ export function Navbar() {
                     <Button
                       asChild
                       className="w-full rounded-full bg-[#0062FF] hover:bg-blue-700 text-white py-2.5 font-semibold text-xs"
-                      onClick={() => setIsOpen(false)}
                     >
-                      <Link href="/#contact" className="flex items-center justify-center gap-2">
+                      <Link
+                        href="/#contact"
+                        onClick={(e) => handleNavClick(e, "/#contact", () => setIsOpen(false))}
+                        className="flex items-center justify-center gap-2 cursor-pointer"
+                      >
                         <Calendar className="w-4 h-4" />
                         <span>contact</span>
                       </Link>

@@ -21,8 +21,64 @@ import { Modal } from "@/components/ui/modal";
 import { Button } from "@/components/ui/button";
 
 interface ActivitiesViewProps {
-  initialActivities: ActivityItem[];
+  initialActivities?: ActivityItem[];
 }
+
+const DEFAULT_ACTIVITIES: ActivityItem[] = [
+  {
+    id: 1,
+    title: "TOP PROVIDER Annual Outing & Team Building 2026",
+    title_en: "Annual Outing & Team Synergy Workshop 2026",
+    category: "culture",
+    event_date: "2026-03-20",
+    location: "โรงแรมและรีสอร์ต อ่าวนาง จ.กระบี่",
+    short_description: "กิจกรรมกระชับความสัมพันธ์ประจำปี รวมพลังทีมวิศวกรและบุคลากรทุกฝ่ายเพื่อสร้างสรรค์โซลูชันโรงพยาบาลแห่งอนาคต",
+    cover_image_url: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1200&q=80",
+    gallery_images: [
+      "https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&w=1200&q=80",
+    ],
+    tags: ["Team Building", "Annual Outing"],
+    is_featured: true,
+    is_active: true,
+    sort_order: 1,
+  },
+  {
+    id: 2,
+    title: "ร่วมแสดงนวัตกรรมระบบ Smart Hospital ในงาน Thailand HealthTech Expo 2026",
+    title_en: "Exhibiting Smart Hospital & HIS Solutions at Thailand HealthTech Expo 2026",
+    category: "exhibition",
+    event_date: "2026-02-15",
+    location: "ศูนย์การประชุมแห่งชาติสิริกิติ์ (QSNCC)",
+    short_description: "นำเสนอสถาปัตยกรรมระบบเชื่อมโยงข้อมูลสุขภาพ PPHS, HIS และ HL7/FHIR Enterprise Gateway แก่ผู้บริหารโรงพยาบาลชั้นนำ",
+    cover_image_url: "https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=1200&q=80",
+    gallery_images: [
+      "https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1515187029135-18ee286d815b?auto=format&fit=crop&w=1200&q=80",
+    ],
+    tags: ["HealthTech", "Smart Hospital"],
+    is_featured: true,
+    is_active: true,
+    sort_order: 2,
+  },
+  {
+    id: 3,
+    title: "โครงการปันน้ำใจ มอบระบบสารสนเทศและคอมพิวเตอร์แก่ รพ.สต. พื้นที่ห่างไกล",
+    title_en: "CSR: Donating IT Equipment & Systems to Remote Healthcare Centers",
+    category: "csr",
+    event_date: "2026-01-28",
+    location: "โรงพยาบาลส่งเสริมสุขภาพตำบล จ.น่าน",
+    short_description: "ส่งมอบอุปกรณ์ระบบเครือข่าย เครื่องพิมพ์เวชระเบียน และซอฟต์แวร์บริหารจัดการยา เพื่อเพิ่มประสิทธิภาพการดูแลผู้ป่วยในชุมชน",
+    cover_image_url: "https://images.unsplash.com/photo-1593113598332-cd288d649433?auto=format&fit=crop&w=1200&q=80",
+    gallery_images: [
+      "https://images.unsplash.com/photo-1593113598332-cd288d649433?auto=format&fit=crop&w=1200&q=80",
+    ],
+    tags: ["CSR", "Healthcare Support"],
+    is_featured: false,
+    is_active: true,
+    sort_order: 3,
+  },
+];
 
 const CATEGORIES = [
   { id: "all", label: "ทั้งหมด", icon: "✨" },
@@ -32,7 +88,10 @@ const CATEGORIES = [
   { id: "training", label: "อบรม & พัฒนาทักษะ", icon: "🎓" },
 ];
 
-export function ActivitiesView({ initialActivities }: ActivitiesViewProps) {
+export function ActivitiesView({ initialActivities }: ActivitiesViewProps = {}) {
+  const activities =
+    initialActivities && initialActivities.length > 0 ? initialActivities : DEFAULT_ACTIVITIES;
+
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [activeActivity, setActiveActivity] = useState<ActivityItem | null>(null);
@@ -40,7 +99,7 @@ export function ActivitiesView({ initialActivities }: ActivitiesViewProps) {
 
   // กรองข้อมูลกิจกรรม
   const filteredActivities = useMemo(() => {
-    return initialActivities.filter((act) => {
+    return activities.filter((act) => {
       if (selectedCategory !== "all" && act.category !== selectedCategory) {
         return false;
       }
@@ -60,12 +119,12 @@ export function ActivitiesView({ initialActivities }: ActivitiesViewProps) {
         tags.includes(term)
       );
     });
-  }, [initialActivities, selectedCategory, searchTerm]);
+  }, [activities, selectedCategory, searchTerm]);
 
   // Featured activity (กิจกรรมไฮไลต์ตัวแรก)
   const featuredActivity = useMemo(() => {
-    return initialActivities.find((a) => a.is_featured) || initialActivities[0];
-  }, [initialActivities]);
+    return activities.find((a) => a.is_featured) || activities[0];
+  }, [activities]);
 
   const getCategoryBadgeClass = (category: string) => {
     switch (category) {
