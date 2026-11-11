@@ -15,6 +15,10 @@ import {
   Sparkles,
   Camera,
   Share2,
+  Users,
+  Award,
+  HeartHandshake,
+  GraduationCap,
 } from "lucide-react";
 import { ActivityItem } from "@/app/api/activities/route";
 import { Modal } from "@/components/ui/modal";
@@ -81,11 +85,11 @@ const DEFAULT_ACTIVITIES: ActivityItem[] = [
 ];
 
 const CATEGORIES = [
-  { id: "all", label: "ทั้งหมด", icon: "✨" },
-  { id: "culture", label: "วัฒนธรรม & Outing", icon: "🏢" },
-  { id: "exhibition", label: "สัมมนา & นิทรรศการ", icon: "🏥" },
-  { id: "csr", label: "เพื่อสังคม (CSR)", icon: "🤝" },
-  { id: "training", label: "อบรม & พัฒนาทักษะ", icon: "🎓" },
+  { id: "all", label: "ทั้งหมด", icon: Layers },
+  { id: "culture", label: "วัฒนธรรม & Outing", icon: Users },
+  { id: "exhibition", label: "สัมมนา & นิทรรศการ", icon: Award },
+  { id: "csr", label: "เพื่อสังคม (CSR)", icon: HeartHandshake },
+  { id: "training", label: "อบรม & พัฒนาทักษะ", icon: GraduationCap },
 ];
 
 export function ActivitiesView({ initialActivities }: ActivitiesViewProps = {}) {
@@ -247,8 +251,9 @@ export function ActivitiesView({ initialActivities }: ActivitiesViewProps = {}) 
                   ดูอัลบั้มภาพ & รายละเอียด
                 </Button>
                 {(featuredActivity.gallery_images?.length || 0) > 0 && (
-                  <span className="text-xs text-blue-300/80">
-                    📸 มีภาพ {featuredActivity.gallery_images.length + 1} รูป
+                  <span className="text-xs text-blue-300/80 flex items-center gap-1.5">
+                    <Camera className="w-3.5 h-3.5 text-blue-300" />
+                    <span>มีภาพ {featuredActivity.gallery_images.length + 1} รูป</span>
                   </span>
                 )}
               </div>
@@ -264,18 +269,19 @@ export function ActivitiesView({ initialActivities }: ActivitiesViewProps = {}) 
         {/* Category Tabs */}
         <div className="flex flex-wrap items-center gap-2">
           {CATEGORIES.map((cat) => {
+            const Icon = cat.icon;
             const isActive = selectedCategory === cat.id;
             return (
               <button
                 key={cat.id}
                 onClick={() => setSelectedCategory(cat.id)}
-                className={`px-4 py-2 rounded-2xl text-xs sm:text-sm font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
+                className={`px-4 py-2 rounded-2xl text-xs sm:text-sm font-semibold transition-all cursor-pointer flex items-center gap-2 ${
                   isActive
                     ? "bg-blue-600 text-white shadow-md shadow-blue-600/25 scale-[1.02]"
                     : "bg-white text-slate-600 hover:bg-slate-100 border border-slate-200/80"
                 }`}
               >
-                <span>{cat.icon}</span>
+                <Icon className="w-4 h-4 shrink-0" />
                 <span>{cat.label}</span>
               </button>
             );
