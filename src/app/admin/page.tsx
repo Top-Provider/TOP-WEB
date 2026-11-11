@@ -2,7 +2,7 @@ import React from "react";
 import Link from "next/link";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Package, Layers, FolderTree, ArrowUpRight, LayoutGrid, Users } from "lucide-react";
+import { Package, Layers, FolderTree, ArrowUpRight, LayoutGrid, Users, Calendar } from "lucide-react";
 
 export default function AdminDashboardPage() {
   const statCards = [
@@ -37,6 +37,14 @@ export default function AdminDashboardPage() {
       href: "/admin/users",
       icon: Users,
       color: "bg-purple-50 text-purple-600 border-purple-100",
+    },
+    {
+      title: "กิจกรรมบริษัท (Activities)",
+      count: "TB_ACTIVITIES",
+      desc: "ภาพกิจกรรม, สัมมนา, นิทรรศการ, CSR",
+      href: "/admin/activities",
+      icon: Calendar,
+      color: "bg-rose-50 text-rose-600 border-rose-100",
     },
     {
       title: "หมวดหมู่หลัก (Categories)",

@@ -21,6 +21,7 @@ import {
   ChevronRight,
   Loader2,
   Users,
+  Calendar,
 } from "lucide-react";
 
 const navigation = [
@@ -29,6 +30,7 @@ const navigation = [
   { name: "จัดการโปรแกรม (Programs)", href: "/admin/programs", icon: Layers },
   { name: "การ์ดภาพรวมโซลูชัน", href: "/admin/solution-topics", icon: LayoutGrid },
   { name: "จัดการบุคลากร (Users)", href: "/admin/users", icon: Users },
+  { name: "กิจกรรมบริษัท (Activities)", href: "/admin/activities", icon: Calendar },
   { name: "ข้อมูลหลัก (Master Data)", href: "/admin/categories", icon: FolderTree },
 ];
 
