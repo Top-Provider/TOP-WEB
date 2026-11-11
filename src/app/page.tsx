@@ -5,8 +5,6 @@ import { HeroShowcase } from "@/components/hero-showcase";
 import { HospitalDashboard } from "@/components/hospital-dashboard";
 import { CaseStudies } from "@/components/case-studies";
 import { TeamSection, TeamMember } from "@/components/team-section";
-import { ActivitiesSection } from "@/components/activities-section";
-import { ActivityItem } from "@/app/api/activities/route";
 import { StatsTicker } from "@/components/stats-ticker";
 import { AboutSection } from "@/components/about-section";
 import { Footer } from "@/components/footer";
@@ -36,7 +34,6 @@ export default async function Home() {
   let initialProducts: Record<string, unknown>[] = [];
   let initialSolutionTopics: Record<string, unknown>[] = [];
   let initialTeamMembers: TeamMember[] = [];
-  let initialActivities: ActivityItem[] = [];
 
   // Helper map users to team members
   const mapUsersToTeam = (users: Record<string, unknown>[]): TeamMember[] => {
@@ -74,13 +71,12 @@ export default async function Home() {
   // 1. โหลดข้อมูลจาก Local PostgreSQL เป็นหลัก
   if (process.env.DATABASE_URL) {
     try {
-      const [catData, softData, prodData, topicsData, usersData, activitiesData] = await Promise.all([
+      const [catData, softData, prodData, topicsData, usersData] = await Promise.all([
         pgSelect({ table: "TBM_PRODUCT_CATEGORIES", where: { is_active: true }, orderBy: "id", orderDir: "asc" }),
         pgSelect({ table: "TB_PRODUCT_SOFTWARE", where: { is_active: true }, orderBy: "id", orderDir: "asc", limit: 30 }),
         pgSelect({ table: "TB_PRODUCTS", where: { is_active: true }, orderBy: "id", orderDir: "asc", limit: 300 }),
         pgSelect({ table: "TB_SOLUTION_TOPICS", where: { is_active: true }, orderBy: "sort_order", orderDir: "asc" }),
         pgSelect({ table: "TB_USERS", where: { is_active: true }, orderBy: "sort_order", orderDir: "asc" }),
-        pgSelect({ table: "TB_ACTIVITIES", where: { is_active: true }, orderBy: "sort_order", orderDir: "asc", limit: 6 }),
       ]);
 
       initialCategories = (catData || []).map((c) => ({
@@ -94,42 +90,6 @@ export default async function Home() {
 
       if (usersData && usersData.length > 0) {
         initialTeamMembers = mapUsersToTeam(usersData as Record<string, unknown>[]);
-      }
-
-      if (activitiesData && activitiesData.length > 0) {
-        initialActivities = (activitiesData as Record<string, unknown>[]).map((act) => {
-          let dateStr = "";
-          if (act.event_date) {
-            dateStr = act.event_date instanceof Date ? act.event_date.toISOString().split("T")[0] : String(act.event_date).split("T")[0];
-          }
-          let gal: string[] = [];
-          if (Array.isArray(act.gallery_images)) gal = act.gallery_images as string[];
-          else if (typeof act.gallery_images === "string") {
-            try { gal = JSON.parse(act.gallery_images); } catch {}
-          }
-          let tags: string[] = [];
-          if (Array.isArray(act.tags)) tags = act.tags as string[];
-          else if (typeof act.tags === "string") {
-            try { tags = JSON.parse(act.tags); } catch {}
-          }
-
-          return {
-            id: Number(act.id),
-            title: String(act.title || ""),
-            title_en: act.title_en ? String(act.title_en) : undefined,
-            category: String(act.category || "culture"),
-            event_date: dateStr || undefined,
-            location: act.location ? String(act.location) : undefined,
-            short_description: act.short_description ? String(act.short_description) : undefined,
-            content: act.content ? String(act.content) : undefined,
-            cover_image_url: act.cover_image_url ? String(act.cover_image_url) : undefined,
-            gallery_images: gal,
-            tags,
-            is_featured: Boolean(act.is_featured),
-            is_active: Boolean(act.is_active),
-            sort_order: Number(act.sort_order || 0),
-          };
-        });
       }
     } catch (pgErr) {
       console.warn("[PostgreSQL Home Page load error, falling back to Supabase]:", pgErr);
@@ -232,9 +192,6 @@ export default async function Home() {
 
         {/* 4. Core Leadership & Specialist Team */}
         <TeamSection initialMembers={initialTeamMembers} />
-
-        {/* 5. Corporate Activities & Highlights */}
-        <ActivitiesSection initialActivities={initialActivities} />
 
         {/* 5. Partner Strip & Key Enterprise Metrics (15+ Years, 12 Systems, 99.9%, 24/7) */}
         <StatsTicker />
