@@ -94,6 +94,8 @@ const DEFAULT_JOB_OPTIONS: JobOption[] = [
   { value: "COO", label: "COO - ประธานเจ้าหน้าที่ฝ่ายปฏิบัติการ (Chief Operating Officer)" },
   { value: "VP", label: "VP - รองกรรมการผู้จัดการ / รองประธาน (Vice President)" },
   { value: "DEV", label: "DEV - นักพัฒนาระบบ (Software Developer / Engineer)" },
+  { value: "FRONTDEV", label: "FRONTDEV - นักพัฒนาระบบส่วนหน้า (Frontend Developer)" },
+  { value: "BACKDEV", label: "BACKDEV - นักพัฒนาระบบส่วนหลัง (Backend Developer)" },
   { value: "IMP", label: "IMP - ผู้เชี่ยวชาญการติดตั้งระบบ (System Implementer)" },
   { value: "เซลล์", label: "เซลล์ - ฝ่ายขายและการตลาด (Sales & Marketing)" },
   { value: "จัดซื้อ", label: "จัดซื้อ - ฝ่ายจัดซื้อและพัสดุ (Procurement & Purchasing)" },

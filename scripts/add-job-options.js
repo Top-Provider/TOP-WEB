@@ -30,11 +30,13 @@ const jobOptions = [
   { value: 'COO', label: 'COO - ประธานเจ้าหน้าที่ฝ่ายปฏิบัติการ (Chief Operating Officer)', order: 6 },
   { value: 'VP', label: 'VP - รองกรรมการผู้จัดการ / รองประธาน (Vice President)', order: 7 },
   { value: 'DEV', label: 'DEV - นักพัฒนาระบบ (Software Developer / Engineer)', order: 8 },
-  { value: 'IMP', label: 'IMP - ผู้เชี่ยวชาญการติดตั้งระบบ (System Implementer)', order: 9 },
-  { value: 'เซลล์', label: 'เซลล์ - ฝ่ายขายและการตลาด (Sales & Marketing)', order: 10 },
-  { value: 'จัดซื้อ', label: 'จัดซื้อ - ฝ่ายจัดซื้อและพัสดุ (Procurement & Purchasing)', order: 11 },
-  { value: 'hr', label: 'HR - ฝ่ายทรัพยากรบุคคล (Human Resources)', order: 12 },
-  { value: 'บัญชี', label: 'บัญชี - ฝ่ายบัญชีและการเงิน (Accounting & Finance)', order: 13 },
+  { value: 'FRONTDEV', label: 'FRONTDEV - นักพัฒนาระบบส่วนหน้า (Frontend Developer)', order: 9 },
+  { value: 'BACKDEV', label: 'BACKDEV - นักพัฒนาระบบส่วนหลัง (Backend Developer)', order: 10 },
+  { value: 'IMP', label: 'IMP - ผู้เชี่ยวชาญการติดตั้งระบบ (System Implementer)', order: 11 },
+  { value: 'เซลล์', label: 'เซลล์ - ฝ่ายขายและการตลาด (Sales & Marketing)', order: 12 },
+  { value: 'จัดซื้อ', label: 'จัดซื้อ - ฝ่ายจัดซื้อและพัสดุ (Procurement & Purchasing)', order: 13 },
+  { value: 'hr', label: 'HR - ฝ่ายทรัพยากรบุคคล (Human Resources)', order: 14 },
+  { value: 'บัญชี', label: 'บัญชี - ฝ่ายบัญชีและการเงิน (Accounting & Finance)', order: 15 },
 ];
 
 async function run() {

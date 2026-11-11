@@ -537,7 +537,7 @@
     "display_order": 1,
     "is_active": true,
     "created_at": "2026-11-11T08:03:26.187Z",
-    "updated_at": "2026-11-11T08:03:26.187Z"
+    "updated_at": "2026-11-11T08:15:30.490Z"
   },
   {
     "id": "67",
@@ -547,7 +547,7 @@
     "display_order": 2,
     "is_active": true,
     "created_at": "2026-11-11T08:03:26.219Z",
-    "updated_at": "2026-11-11T08:03:26.219Z"
+    "updated_at": "2026-11-11T08:15:30.520Z"
   },
   {
     "id": "68",
@@ -557,7 +557,7 @@
     "display_order": 3,
     "is_active": true,
     "created_at": "2026-11-11T08:03:26.252Z",
-    "updated_at": "2026-11-11T08:03:26.252Z"
+    "updated_at": "2026-11-11T08:15:30.537Z"
   },
   {
     "id": "69",
@@ -567,7 +567,7 @@
     "display_order": 4,
     "is_active": true,
     "created_at": "2026-11-11T08:03:26.269Z",
-    "updated_at": "2026-11-11T08:03:26.269Z"
+    "updated_at": "2026-11-11T08:15:30.555Z"
   },
   {
     "id": "70",
@@ -577,7 +577,7 @@
     "display_order": 5,
     "is_active": true,
     "created_at": "2026-11-11T08:03:26.297Z",
-    "updated_at": "2026-11-11T08:03:26.297Z"
+    "updated_at": "2026-11-11T08:15:30.571Z"
   },
   {
     "id": "71",
@@ -587,7 +587,7 @@
     "display_order": 6,
     "is_active": true,
     "created_at": "2026-11-11T08:03:26.335Z",
-    "updated_at": "2026-11-11T08:03:26.335Z"
+    "updated_at": "2026-11-11T08:15:30.590Z"
   },
   {
     "id": "72",
@@ -597,7 +597,7 @@
     "display_order": 7,
     "is_active": true,
     "created_at": "2026-11-11T08:03:26.349Z",
-    "updated_at": "2026-11-11T08:03:26.349Z"
+    "updated_at": "2026-11-11T08:15:30.605Z"
   },
   {
     "id": "73",
@@ -607,56 +607,76 @@
     "display_order": 8,
     "is_active": true,
     "created_at": "2026-11-11T08:03:26.367Z",
-    "updated_at": "2026-11-11T08:03:26.367Z"
+    "updated_at": "2026-11-11T08:15:30.622Z"
   },
   {
     "id": "74",
     "option_type": "job",
     "value": "IMP",
     "label": "IMP - ผู้เชี่ยวชาญการติดตั้งระบบ (System Implementer)",
-    "display_order": 9,
+    "display_order": 11,
     "is_active": true,
     "created_at": "2026-11-11T08:03:26.382Z",
-    "updated_at": "2026-11-11T08:03:26.382Z"
+    "updated_at": "2026-11-11T08:15:30.682Z"
   },
   {
     "id": "75",
     "option_type": "job",
     "value": "เซลล์",
     "label": "เซลล์ - ฝ่ายขายและการตลาด (Sales & Marketing)",
-    "display_order": 10,
+    "display_order": 12,
     "is_active": true,
     "created_at": "2026-11-11T08:03:26.400Z",
-    "updated_at": "2026-11-11T08:03:26.400Z"
+    "updated_at": "2026-11-11T08:15:30.702Z"
   },
   {
     "id": "76",
     "option_type": "job",
     "value": "จัดซื้อ",
     "label": "จัดซื้อ - ฝ่ายจัดซื้อและพัสดุ (Procurement & Purchasing)",
-    "display_order": 11,
+    "display_order": 13,
     "is_active": true,
     "created_at": "2026-11-11T08:03:26.427Z",
-    "updated_at": "2026-11-11T08:03:26.427Z"
+    "updated_at": "2026-11-11T08:15:30.717Z"
   },
   {
     "id": "77",
     "option_type": "job",
     "value": "hr",
     "label": "HR - ฝ่ายทรัพยากรบุคคล (Human Resources)",
-    "display_order": 12,
+    "display_order": 14,
     "is_active": true,
     "created_at": "2026-11-11T08:03:26.443Z",
-    "updated_at": "2026-11-11T08:03:26.443Z"
+    "updated_at": "2026-11-11T08:15:30.738Z"
   },
   {
     "id": "78",
     "option_type": "job",
     "value": "บัญชี",
     "label": "บัญชี - ฝ่ายบัญชีและการเงิน (Accounting & Finance)",
-    "display_order": 13,
+    "display_order": 15,
     "is_active": true,
     "created_at": "2026-11-11T08:03:26.462Z",
-    "updated_at": "2026-11-11T08:03:26.462Z"
+    "updated_at": "2026-11-11T08:15:30.761Z"
+  },
+  {
+    "id": "79",
+    "option_type": "job",
+    "value": "FRONTDEV",
+    "label": "FRONTDEV - นักพัฒนาระบบส่วนหน้า (Frontend Developer)",
+    "display_order": 9,
+    "is_active": true,
+    "created_at": "2026-11-11T08:15:30.642Z",
+    "updated_at": "2026-11-11T08:15:30.642Z"
+  },
+  {
+    "id": "80",
+    "option_type": "job",
+    "value": "BACKDEV",
+    "label": "BACKDEV - นักพัฒนาระบบส่วนหลัง (Backend Developer)",
+    "display_order": 10,
+    "is_active": true,
+    "created_at": "2026-11-11T08:15:30.659Z",
+    "updated_at": "2026-11-11T08:15:30.659Z"
   }
 ]
