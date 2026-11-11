@@ -815,7 +815,7 @@ export default function AdminUsersPage() {
         isOpen={showModal}
         onClose={() => setShowModal(false)}
         title={editingId ? "แก้ไขข้อมูลบุคลากร" : "เพิ่มบุคลากรใหม่"}
-        maxWidth="lg"
+        maxWidth="3xl"
       >
         <form onSubmit={handleSave} className="space-y-4 py-2">
           {/* ส่วนที่ 1: ข้อมูลภาษาไทย */}
