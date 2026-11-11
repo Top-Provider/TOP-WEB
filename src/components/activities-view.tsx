@@ -201,7 +201,7 @@ export function ActivitiesView({ initialActivities }: ActivitiesViewProps = {}) 
               <div className="space-y-4">
                 <div className="flex flex-wrap items-center gap-3 text-xs text-blue-200/80">
                   {featuredActivity.event_date && (
-                    <span className="flex items-center gap-1.5">
+                    <span className="flex items-center gap-1.5" suppressHydrationWarning>
                       <Calendar className="w-3.5 h-3.5 text-blue-400" />
                       {featuredActivity.event_date}
                     </span>
@@ -274,6 +274,7 @@ export function ActivitiesView({ initialActivities }: ActivitiesViewProps = {}) 
             return (
               <button
                 key={cat.id}
+                type="button"
                 onClick={() => setSelectedCategory(cat.id)}
                 className={`px-4 py-2 rounded-2xl text-xs sm:text-sm font-semibold transition-all cursor-pointer flex items-center gap-2 ${
                   isActive
@@ -380,7 +381,7 @@ export function ActivitiesView({ initialActivities }: ActivitiesViewProps = {}) 
                     {/* Date & Location */}
                     <div className="flex items-center gap-3 text-xs text-slate-400">
                       {act.event_date && (
-                        <span className="flex items-center gap-1 text-slate-600 font-medium">
+                        <span className="flex items-center gap-1 text-slate-600 font-medium" suppressHydrationWarning>
                           <Calendar className="w-3.5 h-3.5 text-blue-600" />
                           {act.event_date}
                         </span>
@@ -526,7 +527,7 @@ export function ActivitiesView({ initialActivities }: ActivitiesViewProps = {}) 
                 </span>
 
                 {activeActivity.event_date && (
-                  <span className="text-xs text-slate-600 flex items-center gap-1.5 font-medium">
+                  <span className="text-xs text-slate-600 flex items-center gap-1.5 font-medium" suppressHydrationWarning>
                     <Calendar className="w-4 h-4 text-blue-600" />
                     {activeActivity.event_date}
                   </span>

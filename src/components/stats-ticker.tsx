@@ -92,6 +92,7 @@ export function StatsTicker() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ duration: 0.5, delay: idx * 0.1 }}
+                  suppressHydrationWarning
                   className="bg-white rounded-3xl p-6 sm:p-7 border border-slate-200/70 shadow-sm hover:border-blue-200 hover:shadow-lg transition-all duration-300"
                 >
                   <div className="flex items-center justify-between mb-5">

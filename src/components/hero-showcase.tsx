@@ -12,6 +12,7 @@ export function HeroShowcase() {
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+          suppressHydrationWarning
           className="relative w-full rounded-2xl sm:rounded-[36px] overflow-hidden border border-slate-200/90 shadow-xl shadow-slate-200/50 bg-white"
         >
           <Image

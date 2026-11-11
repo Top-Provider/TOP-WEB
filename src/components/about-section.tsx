@@ -43,6 +43,7 @@ export function AboutSection() {
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
+            suppressHydrationWarning
             className="lg:col-span-7 relative min-h-[360px] sm:min-h-[440px] rounded-3xl overflow-hidden border border-slate-200/90 shadow-xl shadow-slate-200/50 group bg-slate-900"
           >
             <Image
@@ -75,6 +76,7 @@ export function AboutSection() {
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: 0.1 }}
+              suppressHydrationWarning
               className="flex-1 bg-slate-50/70 border border-slate-200/80 rounded-3xl p-6 sm:p-8 hover:shadow-lg hover:border-blue-200 transition-all duration-300 flex flex-col justify-center"
             >
               <div className="w-10 h-10 rounded-full bg-white border border-slate-200/80 flex items-center justify-center text-[#0066FF] mb-4 shadow-2xs">
@@ -95,6 +97,7 @@ export function AboutSection() {
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: 0.2 }}
+              suppressHydrationWarning
               className="flex-1 bg-[#0066FF] text-white rounded-3xl p-6 sm:p-8 shadow-xl shadow-blue-500/25 flex flex-col justify-center relative overflow-hidden group"
             >
               <div className="w-10 h-10 rounded-full bg-white/15 backdrop-blur-md border border-white/25 flex items-center justify-center text-white mb-4">

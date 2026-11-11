@@ -32,7 +32,11 @@ function formatRow(row: Record<string, unknown>): ActivityItem {
   let dateStr = "";
   if (row.event_date) {
     if (row.event_date instanceof Date) {
-      dateStr = row.event_date.toISOString().split("T")[0];
+      const d = row.event_date;
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, "0");
+      const day = String(d.getDate()).padStart(2, "0");
+      dateStr = `${year}-${month}-${day}`;
     } else {
       dateStr = String(row.event_date).split("T")[0];
     }

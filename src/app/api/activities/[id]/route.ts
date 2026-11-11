@@ -20,7 +20,11 @@ function formatActivityRow(row: Record<string, unknown>): ActivityItem {
   let eventDateStr = "";
   if (row.event_date) {
     if (row.event_date instanceof Date) {
-      eventDateStr = row.event_date.toISOString().split("T")[0];
+      const d = row.event_date;
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, "0");
+      const day = String(d.getDate()).padStart(2, "0");
+      eventDateStr = `${year}-${month}-${day}`;
     } else {
       eventDateStr = String(row.event_date).split("T")[0];
     }

@@ -80,6 +80,7 @@ export function HospitalDashboard() {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.3 }}
+                suppressHydrationWarning
                 className="w-full h-full relative"
               >
                 {/* Top-Left Live/Part Indicator Overlay */}
