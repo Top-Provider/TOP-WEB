@@ -678,5 +678,45 @@
     "is_active": true,
     "created_at": "2026-11-11T08:15:30.659Z",
     "updated_at": "2026-11-11T08:15:30.659Z"
+  },
+  {
+    "id": "81",
+    "option_type": "activity_type",
+    "value": "culture",
+    "label": "กิจกรรมภายในองค์กร (Company Culture & Outing)",
+    "display_order": 1,
+    "is_active": true,
+    "created_at": "2026-11-11T08:57:25.404Z",
+    "updated_at": "2026-11-11T08:57:25.404Z"
+  },
+  {
+    "id": "82",
+    "option_type": "activity_type",
+    "value": "exhibition",
+    "label": "งานสัมมนาและนิทรรศการ (Exhibition & Tech Conferences)",
+    "display_order": 2,
+    "is_active": true,
+    "created_at": "2026-11-11T08:57:25.423Z",
+    "updated_at": "2026-11-11T08:57:25.423Z"
+  },
+  {
+    "id": "83",
+    "option_type": "activity_type",
+    "value": "csr",
+    "label": "เพื่อสังคมและสาธารณประโยชน์ (CSR & Healthcare Support)",
+    "display_order": 3,
+    "is_active": true,
+    "created_at": "2026-11-11T08:57:25.441Z",
+    "updated_at": "2026-11-11T08:57:25.441Z"
+  },
+  {
+    "id": "84",
+    "option_type": "activity_type",
+    "value": "training",
+    "label": "อบรมและพัฒนาทักษะ (Training & Certification)",
+    "display_order": 4,
+    "is_active": true,
+    "created_at": "2026-11-11T08:57:25.457Z",
+    "updated_at": "2026-11-11T08:57:25.457Z"
   }
 ]

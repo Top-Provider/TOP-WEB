@@ -40,6 +40,8 @@ const ALLOWED_TABLES = new Set([
   "TB_SOLUTION_TOPICS",
   "tb_users",
   "TB_USERS",
+  "tb_activities",
+  "TB_ACTIVITIES",
 ]);
 
 interface SaveRequestBody {
