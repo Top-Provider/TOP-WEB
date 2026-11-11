@@ -20,6 +20,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Loader2,
+  Users,
 } from "lucide-react";
 
 const navigation = [
@@ -27,6 +28,7 @@ const navigation = [
   { name: "จัดการสินค้า (Master)", href: "/admin/products", icon: Package },
   { name: "จัดการโปรแกรม (Programs)", href: "/admin/programs", icon: Layers },
   { name: "การ์ดภาพรวมโซลูชัน", href: "/admin/solution-topics", icon: LayoutGrid },
+  { name: "จัดการบุคลากร (Users)", href: "/admin/users", icon: Users },
   { name: "ข้อมูลหลัก (Master Data)", href: "/admin/categories", icon: FolderTree },
 ];
 

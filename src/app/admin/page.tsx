@@ -2,7 +2,7 @@ import React from "react";
 import Link from "next/link";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Package, Layers, FolderTree, ArrowUpRight, LayoutGrid } from "lucide-react";
+import { Package, Layers, FolderTree, ArrowUpRight, LayoutGrid, Users } from "lucide-react";
 
 export default function AdminDashboardPage() {
   const statCards = [
@@ -24,11 +24,19 @@ export default function AdminDashboardPage() {
     },
     {
       title: "การ์ดภาพรวมโซลูชัน",
-      count: "8",
+      count: "9",
       desc: "Printer, Supply, Hardware, Network",
       href: "/admin/solution-topics",
       icon: LayoutGrid,
       color: "bg-amber-50 text-amber-600 border-amber-100",
+    },
+    {
+      title: "บุคลากร / ผู้ใช้ (Users)",
+      count: "TB_USERS",
+      desc: "ข้อมูลบุคลากร ชื่อ-สกุล (TH/EN) ตำแหน่ง",
+      href: "/admin/users",
+      icon: Users,
+      color: "bg-purple-50 text-purple-600 border-purple-100",
     },
     {
       title: "หมวดหมู่หลัก (Categories)",
@@ -66,7 +74,7 @@ export default function AdminDashboardPage() {
       </Card>
 
       {/* Stats Overview using UI Card */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 sm:gap-6">
         {statCards.map((card) => {
           const Icon = card.icon;
           return (
