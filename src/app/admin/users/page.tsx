@@ -24,6 +24,8 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectOption } from "@/components/ui/select";
 import { Card } from "@/components/ui/card";
 import { Modal } from "@/components/ui/modal";
 import { toast } from "@/components/ui/toast";
@@ -231,6 +233,46 @@ export default function AdminUsersPage() {
       );
     });
   }, [users, searchTerm, statusFilter, jobFilter, homeOnlyFilter]);
+
+  // Memoized Select Options for Form & Filter
+  const prefixThOptions: SelectOption[] = useMemo(() => {
+    const list = PREFIX_TH_OPTIONS.map((p) => ({ value: p, label: p }));
+    if (formData.prefix_th && !PREFIX_TH_OPTIONS.includes(formData.prefix_th)) {
+      return [{ value: formData.prefix_th, label: formData.prefix_th }, ...list];
+    }
+    return list;
+  }, [formData.prefix_th]);
+
+  const prefixEnOptions: SelectOption[] = useMemo(() => {
+    const list = PREFIX_EN_OPTIONS.map((p) => ({ value: p, label: p }));
+    if (formData.prefix_en && !PREFIX_EN_OPTIONS.includes(formData.prefix_en)) {
+      return [{ value: formData.prefix_en, label: formData.prefix_en }, ...list];
+    }
+    return list;
+  }, [formData.prefix_en]);
+
+  const jobSelectOptions: SelectOption[] = useMemo(() => {
+    return [
+      { value: "", label: "-- ไม่ระบุ (ทั่วไป) --" },
+      ...jobOptions.map((opt) => ({
+        value: opt.value,
+        label: `${opt.value} - ${opt.label.split(" - ")[1] || opt.label}`,
+        badge: ["CEO", "MD", "CIO", "CFO", "CTO", "COO", "VP"].includes(opt.value)
+          ? "Executive"
+          : undefined,
+      })),
+    ];
+  }, [jobOptions]);
+
+  const jobFilterOptions: SelectOption[] = useMemo(() => {
+    return [
+      { value: "all", label: "ทุกประเภทงาน (All Jobs)" },
+      ...jobOptions.map((opt) => ({
+        value: opt.value,
+        label: `${opt.value} - ${opt.label.split(" - ")[1] || opt.label}`,
+      })),
+    ];
+  }, [jobOptions]);
 
   const handleOpenAdd = () => {
     setEditingId(null);
@@ -531,18 +573,14 @@ export default function AdminUsersPage() {
         {/* Filter Controls */}
         <div className="flex flex-wrap items-center gap-2">
           {/* Job Role Filter */}
-          <select
-            value={jobFilter}
-            onChange={(e) => setJobFilter(e.target.value)}
-            className="text-xs font-medium border border-slate-200 rounded-xl px-3 py-2 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="all">ทุกประเภทงาน (All Jobs)</option>
-            {jobOptions.map((opt) => (
-              <option key={opt.value} value={opt.value}>
-                {opt.value} - {opt.label.split(" - ")[1] || opt.label}
-              </option>
-            ))}
-          </select>
+          <div className="w-56">
+            <Select
+              value={jobFilter}
+              onChange={(val) => setJobFilter(val)}
+              options={jobFilterOptions}
+              placeholder="ทุกประเภทงาน (All Jobs)"
+            />
+          </div>
 
           {/* Toggle Home Only */}
           <button
@@ -831,23 +869,14 @@ export default function AdminUsersPage() {
                 <label className="block text-xs font-medium text-slate-700 mb-1">
                   คำนำหน้า (TH)
                 </label>
-                <div className="relative">
-                  <input
-                    list="prefix_th_list"
-                    type="text"
-                    value={formData.prefix_th}
-                    onChange={(e) =>
-                      setFormData((p) => ({ ...p, prefix_th: e.target.value }))
-                    }
-                    placeholder="เช่น นาย, นพ."
-                    className="w-full text-sm border border-slate-200 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                  <datalist id="prefix_th_list">
-                    {PREFIX_TH_OPTIONS.map((opt) => (
-                      <option key={opt} value={opt} />
-                    ))}
-                  </datalist>
-                </div>
+                <Select
+                  value={formData.prefix_th}
+                  onChange={(val) =>
+                    setFormData((p) => ({ ...p, prefix_th: val }))
+                  }
+                  options={prefixThOptions}
+                  placeholder="เลือกคำนำหน้า..."
+                />
               </div>
 
               {/* ชื่อ TH */}
@@ -897,23 +926,14 @@ export default function AdminUsersPage() {
                 <label className="block text-xs font-medium text-slate-700 mb-1">
                   คำนำหน้า (EN)
                 </label>
-                <div className="relative">
-                  <input
-                    list="prefix_en_list"
-                    type="text"
-                    value={formData.prefix_en}
-                    onChange={(e) =>
-                      setFormData((p) => ({ ...p, prefix_en: e.target.value }))
-                    }
-                    placeholder="เช่น Mr., Dr."
-                    className="w-full text-sm border border-slate-200 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                  <datalist id="prefix_en_list">
-                    {PREFIX_EN_OPTIONS.map((opt) => (
-                      <option key={opt} value={opt} />
-                    ))}
-                  </datalist>
-                </div>
+                <Select
+                  value={formData.prefix_en}
+                  onChange={(val) =>
+                    setFormData((p) => ({ ...p, prefix_en: val }))
+                  }
+                  options={prefixEnOptions}
+                  placeholder="Select..."
+                />
               </div>
 
               {/* ชื่อ EN */}
@@ -991,18 +1011,12 @@ export default function AdminUsersPage() {
                 <label className="block text-xs font-medium text-slate-700 mb-1">
                   บทบาทงาน (Job Role)
                 </label>
-                <select
+                <Select
                   value={formData.job_role || ""}
-                  onChange={(e) => handleJobRoleChange(e.target.value)}
-                  className="w-full text-sm border border-slate-200 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-purple-500"
-                >
-                  <option value="">-- ไม่ระบุ (ทั่วไป) --</option>
-                  {jobOptions.map((opt) => (
-                    <option key={opt.value} value={opt.value}>
-                      {opt.value} - {opt.label.split(" - ")[1] || opt.label}
-                    </option>
-                  ))}
-                </select>
+                  onChange={(val) => handleJobRoleChange(val)}
+                  options={jobSelectOptions}
+                  placeholder="เลือกบทบาทงาน..."
+                />
                 <p className="text-[11px] text-slate-400 mt-1">
                   ข้อมูลจาก TBM_PROGRAM_OPTIONS (job)
                 </p>
@@ -1054,14 +1068,13 @@ export default function AdminUsersPage() {
               <label className="block text-xs font-medium text-slate-700 mb-1">
                 คำอธิบายประวัติ / ความเชี่ยวชาญ (Bio)
               </label>
-              <textarea
-                rows={2}
+              <Textarea
+                rows={3}
                 placeholder="เช่น บริหารกลยุทธ์องค์กรและการส่งมอบระบบสารสนเทศโรงพยาบาลระดับ Enterprise ทั่วประเทศ"
                 value={formData.bio}
                 onChange={(e) =>
                   setFormData((p) => ({ ...p, bio: e.target.value }))
                 }
-                className="w-full text-sm border border-slate-200 rounded-lg p-2.5 bg-white focus:outline-none focus:ring-2 focus:ring-purple-500"
               />
             </div>
 
