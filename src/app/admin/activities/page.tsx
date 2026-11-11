@@ -32,7 +32,11 @@ import { fetchRecords, saveRecord } from "@/lib/crud";
 import { ActivityItem } from "@/app/api/activities/route";
 
 const DEFAULT_CATEGORY_OPTIONS: SelectOption[] = [
-  { value: "culture", label: "กิจกรรมภายในองค์กร (Company Culture & Outing)" },
+  { value: "news", label: "ข่าวประชาสัมพันธ์ (News & PR)" },
+  { value: "event", label: "กิจกรรม & อีเวนต์ (Events & Activities)" },
+  { value: "tech", label: "ความรู้และเทคโนโลยี (Tech & Knowledge)" },
+  { value: "video", label: "วิดีโอ (Video & Media)" },
+  { value: "culture", label: "วัฒนธรรมภายในองค์กร (Company Culture & Outing)" },
   { value: "exhibition", label: "งานสัมมนาและนิทรรศการ (Exhibition & Tech Conferences)" },
   { value: "csr", label: "เพื่อสังคมและสาธารณประโยชน์ (CSR & Healthcare Support)" },
   { value: "training", label: "อบรมและพัฒนาทักษะ (Training & Certification)" },
@@ -373,6 +377,14 @@ export default function AdminActivitiesPage() {
 
   const getCategoryBadgeClass = (category: string) => {
     switch (category) {
+      case "news":
+        return "bg-sky-100 text-sky-700 border-sky-200";
+      case "event":
+        return "bg-blue-100 text-blue-700 border-blue-200";
+      case "tech":
+        return "bg-indigo-100 text-indigo-700 border-indigo-200";
+      case "video":
+        return "bg-cyan-100 text-cyan-700 border-cyan-200";
       case "culture":
         return "bg-purple-100 text-purple-700 border-purple-200";
       case "exhibition":
