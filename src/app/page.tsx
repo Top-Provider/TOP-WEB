@@ -4,7 +4,7 @@ import { Navbar } from "@/components/navbar";
 import { HeroShowcase } from "@/components/hero-showcase";
 import { HospitalDashboard } from "@/components/hospital-dashboard";
 import { CaseStudies } from "@/components/case-studies";
-import { TeamSection } from "@/components/team-section";
+import { TeamSection, TeamMember } from "@/components/team-section";
 import { StatsTicker } from "@/components/stats-ticker";
 import { AboutSection } from "@/components/about-section";
 import { Footer } from "@/components/footer";
@@ -33,15 +33,50 @@ export default async function Home() {
   let initialSoftwareRecords: Record<string, unknown>[] = [];
   let initialProducts: Record<string, unknown>[] = [];
   let initialSolutionTopics: Record<string, unknown>[] = [];
+  let initialTeamMembers: TeamMember[] = [];
+
+  // Helper map users to team members
+  const mapUsersToTeam = (users: Record<string, unknown>[]): TeamMember[] => {
+    const executiveRoles = ["CEO", "MD", "CIO", "CFO", "CTO", "COO", "VP"];
+    const filtered = users.filter((u) => {
+      const showHome = Boolean(u.show_on_home);
+      const roleStr = String(u.job_role || "").toUpperCase();
+      return showHome || executiveRoles.includes(roleStr);
+    });
+
+    return filtered.map((u) => {
+      const fullNameEn = [u.prefix_en, u.first_name_en, u.last_name_en]
+        .filter(Boolean)
+        .join(" ")
+        .trim();
+      const fullNameTh = [u.prefix_th, u.first_name_th, u.last_name_th]
+        .filter(Boolean)
+        .join(" ")
+        .trim();
+
+      return {
+        name: fullNameEn || fullNameTh || "บุคลากรผู้เชี่ยวชาญ",
+        role: (u.position as string) || (u.department as string) || "",
+        badge:
+          (u.badge as string) ||
+          (u.job_role as string) ||
+          (u.position as string) ||
+          "Executive",
+        bio: (u.bio as string) || "",
+        imageSrc: (u.avatar_url as string) || "/images/team_1.jpg",
+      };
+    });
+  };
 
   // 1. โหลดข้อมูลจาก Local PostgreSQL เป็นหลัก
   if (process.env.DATABASE_URL) {
     try {
-      const [catData, softData, prodData, topicsData] = await Promise.all([
+      const [catData, softData, prodData, topicsData, usersData] = await Promise.all([
         pgSelect({ table: "TBM_PRODUCT_CATEGORIES", where: { is_active: true }, orderBy: "id", orderDir: "asc" }),
         pgSelect({ table: "TB_PRODUCT_SOFTWARE", where: { is_active: true }, orderBy: "id", orderDir: "asc", limit: 30 }),
         pgSelect({ table: "TB_PRODUCTS", where: { is_active: true }, orderBy: "id", orderDir: "asc", limit: 300 }),
         pgSelect({ table: "TB_SOLUTION_TOPICS", where: { is_active: true }, orderBy: "sort_order", orderDir: "asc" }),
+        pgSelect({ table: "TB_USERS", where: { is_active: true }, orderBy: "sort_order", orderDir: "asc" }),
       ]);
 
       initialCategories = (catData || []).map((c) => ({
@@ -52,6 +87,10 @@ export default async function Home() {
       initialSoftwareRecords = (softData || []) as Record<string, unknown>[];
       initialProducts = (prodData || []) as Record<string, unknown>[];
       initialSolutionTopics = (topicsData || []) as Record<string, unknown>[];
+
+      if (usersData && usersData.length > 0) {
+        initialTeamMembers = mapUsersToTeam(usersData as Record<string, unknown>[]);
+      }
     } catch (pgErr) {
       console.warn("[PostgreSQL Home Page load error, falling back to Supabase]:", pgErr);
     }
@@ -152,7 +191,7 @@ export default async function Home() {
         />
 
         {/* 4. Core Leadership & Specialist Team */}
-        <TeamSection />
+        <TeamSection initialMembers={initialTeamMembers} />
 
         {/* 5. Partner Strip & Key Enterprise Metrics (15+ Years, 12 Systems, 99.9%, 24/7) */}
         <StatsTicker />

@@ -1,532 +1,662 @@
 [
   {
-    "id": 1,
+    "id": "1",
     "option_type": "solution_group",
     "value": "Healthcare Solution",
     "label": "Healthcare Solution (โซลูชันทางการแพทย์และสาธารณสุข)",
     "display_order": 1,
     "is_active": true,
-    "created_at": "2026-11-03T07:31:49.698132+00:00",
-    "updated_at": "2026-11-03T07:31:49.698132+00:00"
+    "created_at": "2026-11-03T07:31:49.698Z",
+    "updated_at": "2026-11-03T07:31:49.698Z"
   },
   {
-    "id": 2,
+    "id": "2",
     "option_type": "solution_group",
     "value": "Paperless Solution",
     "label": "Paperless Solution (โซลูชันระบบองค์กรไร้กระดาษ)",
     "display_order": 2,
     "is_active": true,
-    "created_at": "2026-11-03T07:31:49.698132+00:00",
-    "updated_at": "2026-11-03T07:31:49.698132+00:00"
+    "created_at": "2026-11-03T07:31:49.698Z",
+    "updated_at": "2026-11-03T07:31:49.698Z"
   },
   {
-    "id": 3,
+    "id": "3",
     "option_type": "solution_group",
     "value": "E-Learning Platform",
     "label": "E-Learning Platform (แพลตฟอร์มการเรียนรู้ออนไลน์)",
     "display_order": 3,
     "is_active": true,
-    "created_at": "2026-11-03T07:31:49.698132+00:00",
-    "updated_at": "2026-11-03T07:31:49.698132+00:00"
+    "created_at": "2026-11-03T07:31:49.698Z",
+    "updated_at": "2026-11-03T07:31:49.698Z"
   },
   {
-    "id": 4,
+    "id": "4",
     "option_type": "solution_group",
     "value": "Disaster & Incident CMS",
     "label": "Disaster & Incident CMS (ระบบจัดการเหตุฉุกเฉินและสาธารณภัย)",
     "display_order": 4,
     "is_active": true,
-    "created_at": "2026-11-03T07:31:49.698132+00:00",
-    "updated_at": "2026-11-03T07:31:49.698132+00:00"
+    "created_at": "2026-11-03T07:31:49.698Z",
+    "updated_at": "2026-11-03T07:31:49.698Z"
   },
   {
-    "id": 5,
+    "id": "5",
     "option_type": "solution_group",
     "value": "Enterprise Portal",
     "label": "Enterprise Portal (พอร์ทัลบริการข้อมูลองค์กร)",
     "display_order": 5,
     "is_active": true,
-    "created_at": "2026-11-03T07:31:49.698132+00:00",
-    "updated_at": "2026-11-03T07:31:49.698132+00:00"
+    "created_at": "2026-11-03T07:31:49.698Z",
+    "updated_at": "2026-11-03T07:31:49.698Z"
   },
   {
-    "id": 6,
+    "id": "6",
     "option_type": "program_category",
     "value": "Hospital Claim",
     "label": "Hospital Claim (ระบบบริหารและเบิกจ่ายค่ารักษา)",
     "display_order": 1,
     "is_active": true,
-    "created_at": "2026-11-03T07:31:49.698132+00:00",
-    "updated_at": "2026-11-03T07:31:49.698132+00:00"
+    "created_at": "2026-11-03T07:31:49.698Z",
+    "updated_at": "2026-11-03T07:31:49.698Z"
   },
   {
-    "id": 7,
+    "id": "7",
     "option_type": "program_category",
     "value": "Smart IPD",
     "label": "Smart IPD (ระบบบริหารจัดการผู้ป่วยในอัจฉริยะ)",
     "display_order": 2,
     "is_active": true,
-    "created_at": "2026-11-03T07:31:49.698132+00:00",
-    "updated_at": "2026-11-03T07:31:49.698132+00:00"
+    "created_at": "2026-11-03T07:31:49.698Z",
+    "updated_at": "2026-11-03T07:31:49.698Z"
   },
   {
-    "id": 8,
+    "id": "8",
     "option_type": "program_category",
     "value": "Smart Hospital",
     "label": "Smart Hospital (ระบบบริหารโรงพยาบาลอัจฉริยะ)",
     "display_order": 3,
     "is_active": true,
-    "created_at": "2026-11-03T07:31:49.698132+00:00",
-    "updated_at": "2026-11-03T07:31:49.698132+00:00"
+    "created_at": "2026-11-03T07:31:49.698Z",
+    "updated_at": "2026-11-03T07:31:49.698Z"
   },
   {
-    "id": 9,
+    "id": "9",
     "option_type": "program_category",
     "value": "Public Health CMS",
     "label": "Public Health CMS (ระบบสารสนเทศสุขภาพชุมชน/สาธารณสุข)",
     "display_order": 4,
     "is_active": true,
-    "created_at": "2026-11-03T07:31:49.698132+00:00",
-    "updated_at": "2026-11-03T07:31:49.698132+00:00"
+    "created_at": "2026-11-03T07:31:49.698Z",
+    "updated_at": "2026-11-03T07:31:49.698Z"
   },
   {
-    "id": 10,
+    "id": "10",
     "option_type": "program_category",
     "value": "Hospital HIS",
     "label": "Hospital HIS (โปรแกรมบริหารจัดการโรงพยาบาลครบวงจร)",
     "display_order": 5,
     "is_active": true,
-    "created_at": "2026-11-03T07:31:49.698132+00:00",
-    "updated_at": "2026-11-03T07:31:49.698132+00:00"
+    "created_at": "2026-11-03T07:31:49.698Z",
+    "updated_at": "2026-11-03T07:31:49.698Z"
   },
   {
-    "id": 11,
+    "id": "11",
     "option_type": "program_category",
     "value": "Pharmacy & Stock",
     "label": "Pharmacy & Stock (คลังยาและเวชภัณฑ์)",
     "display_order": 6,
     "is_active": true,
-    "created_at": "2026-11-03T07:31:49.698132+00:00",
-    "updated_at": "2026-11-03T07:31:49.698132+00:00"
+    "created_at": "2026-11-03T07:31:49.698Z",
+    "updated_at": "2026-11-03T07:31:49.698Z"
   },
   {
-    "id": 12,
+    "id": "12",
     "option_type": "program_category",
     "value": "Queue & Triage",
     "label": "Queue & Triage (คัดกรองและคิวอัตโนมัติ)",
     "display_order": 7,
     "is_active": true,
-    "created_at": "2026-11-03T07:31:49.698132+00:00",
-    "updated_at": "2026-11-03T07:31:49.698132+00:00"
+    "created_at": "2026-11-03T07:31:49.698Z",
+    "updated_at": "2026-11-03T07:31:49.698Z"
   },
   {
-    "id": 13,
+    "id": "13",
     "option_type": "program_category",
     "value": "Medical Record (EMR)",
     "label": "Medical Record / EMR (เวชระเบียน)",
     "display_order": 8,
     "is_active": true,
-    "created_at": "2026-11-03T07:31:49.698132+00:00",
-    "updated_at": "2026-11-03T07:31:49.698132+00:00"
+    "created_at": "2026-11-03T07:31:49.698Z",
+    "updated_at": "2026-11-03T07:31:49.698Z"
   },
   {
-    "id": 14,
+    "id": "14",
     "option_type": "program_category",
     "value": "Telemedicine",
     "label": "Telemedicine (การแพทย์ทางไกล)",
     "display_order": 9,
     "is_active": true,
-    "created_at": "2026-11-03T07:31:49.698132+00:00",
-    "updated_at": "2026-11-03T07:31:49.698132+00:00"
+    "created_at": "2026-11-03T07:31:49.698Z",
+    "updated_at": "2026-11-03T07:31:49.698Z"
   },
   {
-    "id": 15,
+    "id": "15",
     "option_type": "program_category",
     "value": "Financial & Billing",
     "label": "Financial & Billing (การเงินและบัญชี)",
     "display_order": 10,
     "is_active": true,
-    "created_at": "2026-11-03T07:31:49.698132+00:00",
-    "updated_at": "2026-11-03T07:31:49.698132+00:00"
+    "created_at": "2026-11-03T07:31:49.698Z",
+    "updated_at": "2026-11-03T07:31:49.698Z"
   },
   {
-    "id": 16,
+    "id": "16",
     "option_type": "brand",
     "value": "Canon",
     "label": "Canon",
     "display_order": 1,
     "is_active": true,
-    "created_at": "2026-11-03T09:02:19.156562+00:00",
-    "updated_at": "2026-11-03T09:02:19.156562+00:00"
+    "created_at": "2026-11-03T09:02:19.156Z",
+    "updated_at": "2026-11-03T09:02:19.156Z"
   },
   {
-    "id": 17,
+    "id": "17",
     "option_type": "brand",
     "value": "HP",
     "label": "HP",
     "display_order": 2,
     "is_active": true,
-    "created_at": "2026-11-03T09:02:19.156562+00:00",
-    "updated_at": "2026-11-03T09:02:19.156562+00:00"
+    "created_at": "2026-11-03T09:02:19.156Z",
+    "updated_at": "2026-11-03T09:02:19.156Z"
   },
   {
-    "id": 18,
+    "id": "18",
     "option_type": "brand",
     "value": "Epson",
     "label": "Epson",
     "display_order": 3,
     "is_active": true,
-    "created_at": "2026-11-03T09:02:19.156562+00:00",
-    "updated_at": "2026-11-03T09:02:19.156562+00:00"
+    "created_at": "2026-11-03T09:02:19.156Z",
+    "updated_at": "2026-11-03T09:02:19.156Z"
   },
   {
-    "id": 19,
+    "id": "19",
     "option_type": "brand",
     "value": "Brother",
     "label": "Brother",
     "display_order": 4,
     "is_active": true,
-    "created_at": "2026-11-03T09:02:19.156562+00:00",
-    "updated_at": "2026-11-03T09:02:19.156562+00:00"
+    "created_at": "2026-11-03T09:02:19.156Z",
+    "updated_at": "2026-11-03T09:02:19.156Z"
   },
   {
-    "id": 20,
+    "id": "20",
     "option_type": "brand",
     "value": "Zebra",
     "label": "Zebra",
     "display_order": 5,
     "is_active": true,
-    "created_at": "2026-11-03T09:02:19.156562+00:00",
-    "updated_at": "2026-11-03T09:02:19.156562+00:00"
+    "created_at": "2026-11-03T09:02:19.156Z",
+    "updated_at": "2026-11-03T09:02:19.156Z"
   },
   {
-    "id": 21,
+    "id": "21",
     "option_type": "brand",
     "value": "TSC",
     "label": "TSC",
     "display_order": 6,
     "is_active": true,
-    "created_at": "2026-11-03T09:02:19.156562+00:00",
-    "updated_at": "2026-11-03T09:02:19.156562+00:00"
+    "created_at": "2026-11-03T09:02:19.156Z",
+    "updated_at": "2026-11-03T09:02:19.156Z"
   },
   {
-    "id": 22,
+    "id": "22",
     "option_type": "brand",
     "value": "Bixolon",
     "label": "Bixolon",
     "display_order": 7,
     "is_active": true,
-    "created_at": "2026-11-03T09:02:19.156562+00:00",
-    "updated_at": "2026-11-03T09:02:19.156562+00:00"
+    "created_at": "2026-11-03T09:02:19.156Z",
+    "updated_at": "2026-11-03T09:02:19.156Z"
   },
   {
-    "id": 23,
+    "id": "23",
     "option_type": "brand",
     "value": "Ricoh",
     "label": "Ricoh",
     "display_order": 8,
     "is_active": true,
-    "created_at": "2026-11-03T09:02:19.156562+00:00",
-    "updated_at": "2026-11-03T09:02:19.156562+00:00"
+    "created_at": "2026-11-03T09:02:19.156Z",
+    "updated_at": "2026-11-03T09:02:19.156Z"
   },
   {
-    "id": 24,
+    "id": "24",
     "option_type": "brand",
     "value": "Fujifilm",
     "label": "Fujifilm",
     "display_order": 9,
     "is_active": true,
-    "created_at": "2026-11-03T09:02:19.156562+00:00",
-    "updated_at": "2026-11-03T09:02:19.156562+00:00"
+    "created_at": "2026-11-03T09:02:19.156Z",
+    "updated_at": "2026-11-03T09:02:19.156Z"
   },
   {
-    "id": 25,
+    "id": "25",
     "option_type": "brand",
     "value": "Kyocera",
     "label": "Kyocera",
     "display_order": 10,
     "is_active": true,
-    "created_at": "2026-11-03T09:02:19.156562+00:00",
-    "updated_at": "2026-11-03T09:02:19.156562+00:00"
+    "created_at": "2026-11-03T09:02:19.156Z",
+    "updated_at": "2026-11-03T09:02:19.156Z"
   },
   {
-    "id": 26,
+    "id": "26",
     "option_type": "brand",
     "value": "Other",
     "label": "อื่นๆ (กำหนดเอง)",
     "display_order": 99,
     "is_active": true,
-    "created_at": "2026-11-03T09:02:19.156562+00:00",
-    "updated_at": "2026-11-03T09:02:19.156562+00:00"
+    "created_at": "2026-11-03T09:02:19.156Z",
+    "updated_at": "2026-11-03T09:02:19.156Z"
   },
   {
-    "id": 27,
+    "id": "27",
     "option_type": "printer",
     "value": "Black & White Laser Printer",
     "label": "Black & White Laser Printer",
     "display_order": 1,
     "is_active": true,
-    "created_at": "2026-11-04T03:25:27.083553+00:00",
-    "updated_at": "2026-11-04T03:28:32.497828+00:00"
+    "created_at": "2026-11-04T03:25:27.083Z",
+    "updated_at": "2026-11-04T03:28:32.497Z"
   },
   {
-    "id": 28,
+    "id": "28",
     "option_type": "printer",
     "value": "Color Laser Printer",
     "label": "Color Laser Printer",
     "display_order": 2,
     "is_active": true,
-    "created_at": "2026-11-04T03:25:27.083553+00:00",
-    "updated_at": "2026-11-04T03:28:32.497828+00:00"
+    "created_at": "2026-11-04T03:25:27.083Z",
+    "updated_at": "2026-11-04T03:28:32.497Z"
   },
   {
-    "id": 29,
+    "id": "29",
     "option_type": "printer",
     "value": "Inkjet Printer",
     "label": "Inkjet Printer",
     "display_order": 3,
     "is_active": true,
-    "created_at": "2026-11-04T03:25:27.083553+00:00",
-    "updated_at": "2026-11-04T03:28:32.497828+00:00"
+    "created_at": "2026-11-04T03:25:27.083Z",
+    "updated_at": "2026-11-04T03:28:32.497Z"
   },
   {
-    "id": 30,
+    "id": "30",
     "option_type": "printer",
     "value": "Large Format Printer",
     "label": "Large Format Printer",
     "display_order": 4,
     "is_active": true,
-    "created_at": "2026-11-04T03:25:27.083553+00:00",
-    "updated_at": "2026-11-04T03:28:32.497828+00:00"
+    "created_at": "2026-11-04T03:25:27.083Z",
+    "updated_at": "2026-11-04T03:28:32.497Z"
   },
   {
-    "id": 31,
+    "id": "31",
     "option_type": "printer",
     "value": "Thermal Printer",
     "label": "Thermal Printer",
     "display_order": 5,
     "is_active": true,
-    "created_at": "2026-11-04T03:25:27.083553+00:00",
-    "updated_at": "2026-11-04T03:28:32.497828+00:00"
+    "created_at": "2026-11-04T03:25:27.083Z",
+    "updated_at": "2026-11-04T03:28:32.497Z"
   },
   {
-    "id": 32,
+    "id": "32",
     "option_type": "printer",
     "value": "Thermal Wristband Printer",
     "label": "Thermal Wristband Printer",
     "display_order": 6,
     "is_active": true,
-    "created_at": "2026-11-04T03:25:27.083553+00:00",
-    "updated_at": "2026-11-04T03:28:32.497828+00:00"
+    "created_at": "2026-11-04T03:25:27.083Z",
+    "updated_at": "2026-11-04T03:28:32.497Z"
   },
   {
-    "id": 33,
+    "id": "33",
     "option_type": "printer",
     "value": "Dot Matrix Printer",
     "label": "Dot Matrix Printer",
     "display_order": 7,
     "is_active": true,
-    "created_at": "2026-11-04T03:25:27.083553+00:00",
-    "updated_at": "2026-11-04T03:28:32.497828+00:00"
+    "created_at": "2026-11-04T03:25:27.083Z",
+    "updated_at": "2026-11-04T03:28:32.497Z"
   },
   {
-    "id": 34,
+    "id": "34",
     "option_type": "supply",
     "value": "Toner",
     "label": "Toner",
     "display_order": 1,
     "is_active": true,
-    "created_at": "2026-11-04T03:25:27.083553+00:00",
-    "updated_at": "2026-11-04T03:28:32.497828+00:00"
+    "created_at": "2026-11-04T03:25:27.083Z",
+    "updated_at": "2026-11-04T03:28:32.497Z"
   },
   {
-    "id": 35,
+    "id": "35",
     "option_type": "supply",
     "value": "Sticker",
     "label": "Sticker",
     "display_order": 2,
     "is_active": true,
-    "created_at": "2026-11-04T03:25:27.083553+00:00",
-    "updated_at": "2026-11-04T03:28:32.497828+00:00"
+    "created_at": "2026-11-04T03:25:27.083Z",
+    "updated_at": "2026-11-04T03:28:32.497Z"
   },
   {
-    "id": 36,
+    "id": "36",
     "option_type": "supply",
     "value": "Wristband",
     "label": "Wristband",
     "display_order": 3,
     "is_active": true,
-    "created_at": "2026-11-04T03:25:27.083553+00:00",
-    "updated_at": "2026-11-04T03:28:32.497828+00:00"
+    "created_at": "2026-11-04T03:25:27.083Z",
+    "updated_at": "2026-11-04T03:28:32.497Z"
   },
   {
-    "id": 37,
+    "id": "37",
     "option_type": "supply",
     "value": "Ribbon",
     "label": "Ribbon",
     "display_order": 4,
     "is_active": true,
-    "created_at": "2026-11-04T03:25:27.083553+00:00",
-    "updated_at": "2026-11-04T03:28:32.497828+00:00"
+    "created_at": "2026-11-04T03:25:27.083Z",
+    "updated_at": "2026-11-04T03:28:32.497Z"
   },
   {
-    "id": 38,
+    "id": "38",
     "option_type": "supply",
     "value": "Form",
     "label": "Form",
     "display_order": 5,
     "is_active": true,
-    "created_at": "2026-11-04T03:25:27.083553+00:00",
-    "updated_at": "2026-11-04T03:28:32.497828+00:00"
+    "created_at": "2026-11-04T03:25:27.083Z",
+    "updated_at": "2026-11-04T03:28:32.497Z"
   },
   {
-    "id": 51,
+    "id": "51",
     "option_type": "brand",
     "value": "Samsung",
     "label": "Samsung",
     "display_order": 12,
     "is_active": true,
-    "created_at": "2026-11-04T04:34:09.297968+00:00",
-    "updated_at": "2026-11-04T04:34:09.297968+00:00"
+    "created_at": "2026-11-04T04:34:09.297Z",
+    "updated_at": "2026-11-04T04:34:09.297Z"
   },
   {
-    "id": 52,
+    "id": "52",
     "option_type": "hardware",
     "value": "Handheld Barcode Scanner",
     "label": "Handheld Barcode Scanner",
     "display_order": 1,
     "is_active": true,
-    "created_at": "2026-11-06T03:26:35.139468+00:00",
-    "updated_at": "2026-11-06T03:26:35.139468+00:00"
+    "created_at": "2026-11-06T03:26:35.139Z",
+    "updated_at": "2026-11-06T03:26:35.139Z"
   },
   {
-    "id": 53,
+    "id": "53",
     "option_type": "hardware",
     "value": "Barcode Scanner",
     "label": "Barcode Scanner",
     "display_order": 2,
     "is_active": true,
-    "created_at": "2026-11-06T03:26:35.139468+00:00",
-    "updated_at": "2026-11-06T03:26:35.139468+00:00"
+    "created_at": "2026-11-06T03:26:35.139Z",
+    "updated_at": "2026-11-06T03:26:35.139Z"
   },
   {
-    "id": 54,
+    "id": "54",
     "option_type": "hardware",
     "value": "Scanner",
     "label": "Scanner",
     "display_order": 3,
     "is_active": true,
-    "created_at": "2026-11-06T03:26:35.139468+00:00",
-    "updated_at": "2026-11-06T03:26:35.139468+00:00"
+    "created_at": "2026-11-06T03:26:35.139Z",
+    "updated_at": "2026-11-06T03:26:35.139Z"
   },
   {
-    "id": 55,
+    "id": "55",
     "option_type": "hardware",
     "value": "UPS",
     "label": "UPS",
     "display_order": 4,
     "is_active": true,
-    "created_at": "2026-11-06T03:26:35.139468+00:00",
-    "updated_at": "2026-11-06T03:26:35.139468+00:00"
+    "created_at": "2026-11-06T03:26:35.139Z",
+    "updated_at": "2026-11-06T03:26:35.139Z"
   },
   {
-    "id": 56,
+    "id": "56",
     "option_type": "hardware",
     "value": "Computer",
     "label": "Computer",
     "display_order": 5,
     "is_active": true,
-    "created_at": "2026-11-06T03:26:35.139468+00:00",
-    "updated_at": "2026-11-06T03:26:35.139468+00:00"
+    "created_at": "2026-11-06T03:26:35.139Z",
+    "updated_at": "2026-11-06T03:26:35.139Z"
   },
   {
-    "id": 57,
+    "id": "57",
     "option_type": "hardware",
     "value": "Display",
     "label": "Display",
     "display_order": 6,
     "is_active": true,
-    "created_at": "2026-11-06T03:26:35.139468+00:00",
-    "updated_at": "2026-11-06T03:26:35.139468+00:00"
+    "created_at": "2026-11-06T03:26:35.139Z",
+    "updated_at": "2026-11-06T03:26:35.139Z"
   },
   {
-    "id": 58,
+    "id": "58",
     "option_type": "hardware",
     "value": "Projector",
     "label": "Projector",
     "display_order": 7,
     "is_active": true,
-    "created_at": "2026-11-06T03:26:35.139468+00:00",
-    "updated_at": "2026-11-06T03:26:35.139468+00:00"
+    "created_at": "2026-11-06T03:26:35.139Z",
+    "updated_at": "2026-11-06T03:26:35.139Z"
   },
   {
-    "id": 59,
+    "id": "59",
     "option_type": "hardware",
     "value": "Camera",
     "label": "Camera",
     "display_order": 8,
     "is_active": true,
-    "created_at": "2026-11-06T03:26:35.139468+00:00",
-    "updated_at": "2026-11-06T03:26:35.139468+00:00"
+    "created_at": "2026-11-06T03:26:35.139Z",
+    "updated_at": "2026-11-06T03:26:35.139Z"
   },
   {
-    "id": 60,
+    "id": "60",
     "option_type": "hardware",
     "value": "Mobile",
     "label": "Mobile",
     "display_order": 9,
     "is_active": true,
-    "created_at": "2026-11-06T03:26:35.139468+00:00",
-    "updated_at": "2026-11-06T03:26:35.139468+00:00"
+    "created_at": "2026-11-06T03:26:35.139Z",
+    "updated_at": "2026-11-06T03:26:35.139Z"
   },
   {
-    "id": 61,
+    "id": "61",
     "option_type": "brand",
     "value": "Casio",
     "label": "Casio",
     "display_order": 13,
     "is_active": true,
-    "created_at": "2026-11-06T03:36:13.882092+00:00",
-    "updated_at": "2026-11-06T03:36:13.882092+00:00"
+    "created_at": "2026-11-06T03:36:13.882Z",
+    "updated_at": "2026-11-06T03:36:13.882Z"
   },
   {
-    "id": 62,
+    "id": "62",
     "option_type": "network",
     "value": "Server",
     "label": "Server",
     "display_order": 1,
     "is_active": true,
-    "created_at": "2026-11-06T08:24:21.384896+00:00",
-    "updated_at": "2026-11-06T08:24:21.384896+00:00"
+    "created_at": "2026-11-06T08:24:21.384Z",
+    "updated_at": "2026-11-06T08:24:21.384Z"
   },
   {
-    "id": 63,
+    "id": "63",
     "option_type": "network",
     "value": "Storage",
     "label": "Storage",
     "display_order": 2,
     "is_active": true,
-    "created_at": "2026-11-06T08:24:21.384896+00:00",
-    "updated_at": "2026-11-06T08:24:21.384896+00:00"
+    "created_at": "2026-11-06T08:24:21.384Z",
+    "updated_at": "2026-11-06T08:24:21.384Z"
   },
   {
-    "id": 64,
+    "id": "64",
     "option_type": "network",
     "value": "License",
     "label": "License",
     "display_order": 3,
     "is_active": true,
-    "created_at": "2026-11-06T08:24:21.384896+00:00",
-    "updated_at": "2026-11-06T08:24:21.384896+00:00"
+    "created_at": "2026-11-06T08:24:21.384Z",
+    "updated_at": "2026-11-06T08:24:21.384Z"
   },
   {
-    "id": 65,
+    "id": "65",
     "option_type": "network",
     "value": "Software Install Client",
     "label": "Software Install Client",
     "display_order": 4,
     "is_active": true,
-    "created_at": "2026-11-06T08:24:21.384896+00:00",
-    "updated_at": "2026-11-06T08:24:21.384896+00:00"
+    "created_at": "2026-11-06T08:24:21.384Z",
+    "updated_at": "2026-11-06T08:24:21.384Z"
+  },
+  {
+    "id": "66",
+    "option_type": "job",
+    "value": "CEO",
+    "label": "CEO - ประธานเจ้าหน้าที่บริหาร (Chief Executive Officer)",
+    "display_order": 1,
+    "is_active": true,
+    "created_at": "2026-11-11T08:03:26.187Z",
+    "updated_at": "2026-11-11T08:03:26.187Z"
+  },
+  {
+    "id": "67",
+    "option_type": "job",
+    "value": "MD",
+    "label": "MD - กรรมการผู้จัดการ (Managing Director)",
+    "display_order": 2,
+    "is_active": true,
+    "created_at": "2026-11-11T08:03:26.219Z",
+    "updated_at": "2026-11-11T08:03:26.219Z"
+  },
+  {
+    "id": "68",
+    "option_type": "job",
+    "value": "CIO",
+    "label": "CIO - ประธานเจ้าหน้าที่ฝ่ายสารสนเทศ (Chief Information Officer)",
+    "display_order": 3,
+    "is_active": true,
+    "created_at": "2026-11-11T08:03:26.252Z",
+    "updated_at": "2026-11-11T08:03:26.252Z"
+  },
+  {
+    "id": "69",
+    "option_type": "job",
+    "value": "CFO",
+    "label": "CFO - ประธานเจ้าหน้าที่ฝ่ายการเงิน (Chief Financial Officer)",
+    "display_order": 4,
+    "is_active": true,
+    "created_at": "2026-11-11T08:03:26.269Z",
+    "updated_at": "2026-11-11T08:03:26.269Z"
+  },
+  {
+    "id": "70",
+    "option_type": "job",
+    "value": "CTO",
+    "label": "CTO - ประธานเจ้าหน้าที่ฝ่ายเทคโนโลยี (Chief Technology Officer)",
+    "display_order": 5,
+    "is_active": true,
+    "created_at": "2026-11-11T08:03:26.297Z",
+    "updated_at": "2026-11-11T08:03:26.297Z"
+  },
+  {
+    "id": "71",
+    "option_type": "job",
+    "value": "COO",
+    "label": "COO - ประธานเจ้าหน้าที่ฝ่ายปฏิบัติการ (Chief Operating Officer)",
+    "display_order": 6,
+    "is_active": true,
+    "created_at": "2026-11-11T08:03:26.335Z",
+    "updated_at": "2026-11-11T08:03:26.335Z"
+  },
+  {
+    "id": "72",
+    "option_type": "job",
+    "value": "VP",
+    "label": "VP - รองกรรมการผู้จัดการ / รองประธาน (Vice President)",
+    "display_order": 7,
+    "is_active": true,
+    "created_at": "2026-11-11T08:03:26.349Z",
+    "updated_at": "2026-11-11T08:03:26.349Z"
+  },
+  {
+    "id": "73",
+    "option_type": "job",
+    "value": "DEV",
+    "label": "DEV - นักพัฒนาระบบ (Software Developer / Engineer)",
+    "display_order": 8,
+    "is_active": true,
+    "created_at": "2026-11-11T08:03:26.367Z",
+    "updated_at": "2026-11-11T08:03:26.367Z"
+  },
+  {
+    "id": "74",
+    "option_type": "job",
+    "value": "IMP",
+    "label": "IMP - ผู้เชี่ยวชาญการติดตั้งระบบ (System Implementer)",
+    "display_order": 9,
+    "is_active": true,
+    "created_at": "2026-11-11T08:03:26.382Z",
+    "updated_at": "2026-11-11T08:03:26.382Z"
+  },
+  {
+    "id": "75",
+    "option_type": "job",
+    "value": "เซลล์",
+    "label": "เซลล์ - ฝ่ายขายและการตลาด (Sales & Marketing)",
+    "display_order": 10,
+    "is_active": true,
+    "created_at": "2026-11-11T08:03:26.400Z",
+    "updated_at": "2026-11-11T08:03:26.400Z"
+  },
+  {
+    "id": "76",
+    "option_type": "job",
+    "value": "จัดซื้อ",
+    "label": "จัดซื้อ - ฝ่ายจัดซื้อและพัสดุ (Procurement & Purchasing)",
+    "display_order": 11,
+    "is_active": true,
+    "created_at": "2026-11-11T08:03:26.427Z",
+    "updated_at": "2026-11-11T08:03:26.427Z"
+  },
+  {
+    "id": "77",
+    "option_type": "job",
+    "value": "hr",
+    "label": "HR - ฝ่ายทรัพยากรบุคคล (Human Resources)",
+    "display_order": 12,
+    "is_active": true,
+    "created_at": "2026-11-11T08:03:26.443Z",
+    "updated_at": "2026-11-11T08:03:26.443Z"
+  },
+  {
+    "id": "78",
+    "option_type": "job",
+    "value": "บัญชี",
+    "label": "บัญชี - ฝ่ายบัญชีและการเงิน (Accounting & Finance)",
+    "display_order": 13,
+    "is_active": true,
+    "created_at": "2026-11-11T08:03:26.462Z",
+    "updated_at": "2026-11-11T08:03:26.462Z"
   }
 ]

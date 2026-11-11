@@ -4,7 +4,7 @@ import React from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
 
-interface TeamMember {
+export interface TeamMember {
   name: string;
   role: string;
   badge: string;
@@ -43,7 +43,12 @@ const teamMembers: TeamMember[] = [
   },
 ];
 
-export function TeamSection() {
+interface TeamSectionProps {
+  initialMembers?: TeamMember[];
+}
+
+export function TeamSection({ initialMembers }: TeamSectionProps = {}) {
+  const displayMembers = initialMembers && initialMembers.length > 0 ? initialMembers : teamMembers;
   return (
     <section id="team" className="py-16 sm:py-24 bg-[#F8FAFC] border-t border-slate-200/80">
       <div className="w-[94%] max-w-[1680px] mx-auto px-2 sm:px-4 lg:px-6">
@@ -64,7 +69,7 @@ export function TeamSection() {
 
         {/* 4 Cards Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {teamMembers.map((member, idx) => (
+          {displayMembers.map((member, idx) => (
             <motion.div
               key={member.name}
               initial={{ opacity: 0, y: 20 }}
