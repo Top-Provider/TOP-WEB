@@ -46,7 +46,7 @@ export function HospitalDashboard() {
 
   return (
     <section className="py-12 sm:py-16 bg-[#F8FAFC]">
-      <div className="w-[94%] max-w-[1680px] mx-auto px-2 sm:px-4 lg:px-6">
+      <div className="w-[94%] max-w-[2200px] mx-auto px-2 sm:px-4 lg:px-6">
         {/* Section Header */}
         <div className="text-center mb-8 sm:mb-10">
           <p className="text-[10px] sm:text-[11px] font-bold uppercase tracking-[0.2em] text-[#0066FF] mb-2">

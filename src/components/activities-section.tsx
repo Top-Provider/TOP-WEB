@@ -128,7 +128,7 @@ export function ActivitiesSection({ initialActivities }: ActivitiesSectionProps 
 
   return (
     <section id="activities" className="py-16 sm:py-24 bg-white border-t border-slate-200/80">
-      <div className="w-[94%] max-w-[1680px] mx-auto px-2 sm:px-4 lg:px-6">
+      <div className="w-[94%] max-w-[2200px] mx-auto px-2 sm:px-4 lg:px-6">
         {/* Section Header */}
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-10 sm:mb-12">
           <div>

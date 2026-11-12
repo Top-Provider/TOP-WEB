@@ -1068,7 +1068,7 @@ export const StickyProjectSection: React.FC<StickyProjectSectionProps> = ({
 
   return (
     <section id="showcase" className="py-12 sm:py-16 lg:py-20 bg-[#F8FAFC] text-slate-900 relative z-20 border-b border-slate-200/80 select-none">
-      <div id="case-studies" className="w-[94%] max-w-[1680px] mx-auto px-2 sm:px-4 lg:px-6">
+      <div id="case-studies" className="w-[94%] max-w-[2200px] mx-auto px-2 sm:px-4 lg:px-6">
         {/* Section Header */}
         <div className="mb-6 sm:mb-8">
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-[#0F172A] leading-[1.2]">

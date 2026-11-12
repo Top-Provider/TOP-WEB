@@ -106,7 +106,7 @@ export default async function ActivitiesPage() {
         {/* Hero Section */}
         {/* ================================================================= */}
         <section className="relative pt-6 sm:pt-10 pb-8 sm:pb-12 bg-[#F1F5F9]">
-          <div className="w-[94%] max-w-[1580px] mx-auto px-2 sm:px-4">
+          <div className="w-[94%] max-w-[2200px] mx-auto px-2 sm:px-4">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
               {/* Left Column: Title & Description */}
               <div className="lg:col-span-6 space-y-4 sm:space-y-5 z-10 py-4 sm:py-6">
@@ -147,7 +147,7 @@ export default async function ActivitiesPage() {
         </section>
 
         {/* Content Container */}
-        <div className="w-[94%] max-w-[1580px] mx-auto px-2 sm:px-4">
+        <div className="w-[94%] max-w-[2200px] mx-auto px-2 sm:px-4">
           <ActivitiesView initialActivities={initialActivities} />
         </div>
       </main>

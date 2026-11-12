@@ -134,7 +134,7 @@ export function Navbar() {
           : "-translate-y-full opacity-0 pointer-events-none"
       }`}
     >
-      <div className="w-[94%] max-w-[1680px] mx-auto bg-white/95 backdrop-blur-md rounded-full shadow-lg shadow-slate-200/50 border border-slate-100/90 px-4 sm:px-8 py-2.5 sm:py-3 flex items-center justify-between transition-all">
+      <div className="w-[94%] max-w-[2200px] mx-auto bg-white/95 backdrop-blur-md rounded-full shadow-lg shadow-slate-200/50 border border-slate-100/90 px-4 sm:px-8 py-2.5 sm:py-3 flex items-center justify-between transition-all">
         {/* Brand Logo matching the user's uploaded image */}
         <Link
           href="/"

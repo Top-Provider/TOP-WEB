@@ -51,7 +51,7 @@ export function TeamSection({ initialMembers }: TeamSectionProps = {}) {
   const displayMembers = initialMembers && initialMembers.length > 0 ? initialMembers : teamMembers;
   return (
     <section id="team" className="py-16 sm:py-24 bg-[#F8FAFC] border-t border-slate-200/80">
-      <div className="w-[94%] max-w-[1680px] mx-auto px-2 sm:px-4 lg:px-6">
+      <div className="w-[94%] max-w-[2200px] mx-auto px-2 sm:px-4 lg:px-6">
         {/* Header: Left Title & Right Subtitle matching reference image */}
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-10 sm:mb-12">
           <div>
