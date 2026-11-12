@@ -56,23 +56,23 @@ export function Navbar() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Handle hash scrolling on page load / route change
+  // Prevent auto-scrolling to hash/bottom on page refresh; always stay at top
   useEffect(() => {
-    if (typeof window !== "undefined" && window.location.hash && pathname === "/") {
-      const targetId = window.location.hash.replace("#", "");
-      const timer = setTimeout(() => {
-        const element = document.getElementById(targetId);
-        if (element) {
-          const navOffset = 80;
-          const elementPosition = element.getBoundingClientRect().top;
-          const offsetPosition = elementPosition + window.scrollY - navOffset;
-          window.scrollTo({
-            top: Math.max(0, offsetPosition),
-            behavior: "smooth",
-          });
+    if (typeof window !== "undefined") {
+      if ("scrollRestoration" in window.history) {
+        window.history.scrollRestoration = "manual";
+      }
+
+      // If refreshed or loading home page, clear hash and ensure scroll is at the very top
+      const navEntries = performance.getEntriesByType("navigation") as PerformanceNavigationTiming[];
+      const isReload = navEntries.length > 0 && navEntries[0].type === "reload";
+
+      if (isReload || pathname === "/") {
+        if (window.location.hash) {
+          window.history.replaceState(null, "", window.location.pathname);
         }
-      }, 150);
-      return () => clearTimeout(timer);
+        window.scrollTo({ top: 0, left: 0, behavior: "instant" as ScrollBehavior });
+      }
     }
   }, [pathname]);
 
@@ -117,7 +117,7 @@ export function Navbar() {
             top: Math.max(0, offsetPosition),
             behavior: "smooth",
           });
-          window.history.pushState(null, "", href.startsWith("/") ? href : `/${href}`);
+          // Do not push hash into address bar so refreshing always stays at top
           if (onComplete) onComplete();
           return;
         }
