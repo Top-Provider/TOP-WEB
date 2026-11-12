@@ -131,7 +131,7 @@ export function ProductCatalogModal({
           exit={{ opacity: 0 }}
           transition={{ duration: 0.2 }}
           onClick={onClose}
-          className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6 overflow-y-auto"
+          className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4 md:p-6 overflow-y-auto"
         >
           <motion.div
             initial={{ opacity: 0, scale: 0.96, y: 16 }}
@@ -139,10 +139,10 @@ export function ProductCatalogModal({
             exit={{ opacity: 0, scale: 0.96, y: 16 }}
             transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
             onClick={(e) => e.stopPropagation()}
-            className="bg-white rounded-3xl w-full max-w-5xl max-h-[92vh] flex flex-col overflow-hidden shadow-2xl border border-slate-200/90 my-auto"
+            className="bg-white rounded-2xl sm:rounded-3xl w-full max-w-5xl max-h-[94vh] sm:max-h-[92vh] flex flex-col overflow-hidden shadow-2xl border border-slate-200/90 my-auto"
           >
             {/* Modal Header */}
-            <div className="px-6 py-5 bg-gradient-to-r from-slate-50 via-white to-blue-50/30 border-b border-slate-100 flex items-center justify-between gap-4 shrink-0">
+            <div className="px-4 sm:px-6 py-3.5 sm:py-5 bg-gradient-to-r from-slate-50 via-white to-blue-50/30 border-b border-slate-100 flex items-center justify-between gap-4 shrink-0">
               <div className="flex items-center gap-3">
                 <div
                   className={`w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 shadow-2xs ${
@@ -236,7 +236,7 @@ export function ProductCatalogModal({
             </div>
 
             {/* Modal Body: Products List */}
-            <div className="p-6 overflow-y-auto flex-1 space-y-4 bg-slate-50/40">
+            <div className="p-4 sm:p-6 overflow-y-auto flex-1 space-y-4 bg-slate-50/40">
               {loading ? (
                 <div className="py-20 flex flex-col items-center justify-center gap-3 text-slate-400">
                   <Loader2 className="w-6 h-6 animate-spin text-blue-600" />

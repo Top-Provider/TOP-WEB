@@ -52,7 +52,7 @@ export const ProjectModal: React.FC<ProjectModalProps> = ({ project, onClose }) 
           exit={{ opacity: 0 }}
           transition={{ duration: 0.2 }}
           onClick={onClose}
-          className="fixed inset-0 z-50 bg-slate-900/45 backdrop-blur-md flex items-center justify-center p-3 sm:p-6"
+          className="fixed inset-0 z-50 bg-slate-900/45 backdrop-blur-md flex items-center justify-center p-2 sm:p-4 md:p-6"
         >
           <motion.div
             initial={{ opacity: 0, scale: 0.96, y: 16 }}
@@ -60,10 +60,10 @@ export const ProjectModal: React.FC<ProjectModalProps> = ({ project, onClose }) 
             exit={{ opacity: 0, scale: 0.96, y: 16 }}
             transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
             onClick={(e) => e.stopPropagation()}
-            className="bg-[#F8FAFC] rounded-[24px] sm:rounded-[32px] w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden shadow-[0_25px_70px_rgba(15,23,42,0.25)] border border-slate-200/90"
+            className="bg-[#F8FAFC] rounded-2xl sm:rounded-[32px] w-full max-w-4xl max-h-[92vh] sm:max-h-[90vh] flex flex-col overflow-hidden shadow-[0_25px_70px_rgba(15,23,42,0.25)] border border-slate-200/90"
           >
             {/* 1. Sticky Top Header */}
-            <div className="px-5 sm:px-8 py-4 bg-white border-b border-slate-100 flex items-center justify-between gap-4 shrink-0">
+            <div className="px-4 sm:px-8 py-3.5 sm:py-4 bg-white border-b border-slate-100 flex items-center justify-between gap-4 shrink-0">
               <div className="flex items-center gap-3 min-w-0">
                 <span className="w-2.5 h-2.5 rounded-full bg-slate-900 shrink-0" />
                 <div className="min-w-0">
@@ -95,7 +95,7 @@ export const ProjectModal: React.FC<ProjectModalProps> = ({ project, onClose }) 
             </div>
 
             {/* 2. Scrollable Body Content */}
-            <div className="flex-1 overflow-y-auto p-5 sm:p-8 space-y-5">
+            <div className="flex-1 overflow-y-auto p-4 sm:p-6 md:p-8 space-y-4 sm:space-y-5">
               {/* Hero Media Box (Video or Image) */}
               <div className="relative rounded-2xl bg-[#0B1120] overflow-hidden aspect-video shadow-md border border-slate-200/60">
                 <span className="absolute top-3.5 left-3.5 z-10 px-3 py-1 rounded-full bg-[#0066FF] text-white text-[11px] font-medium shadow-sm pointer-events-none">

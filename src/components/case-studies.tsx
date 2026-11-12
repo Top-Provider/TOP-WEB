@@ -1132,7 +1132,7 @@ export const StickyProjectSection: React.FC<StickyProjectSectionProps> = ({
                   transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
                   style={{ top: `${topOffset}px` }}
                   suppressHydrationWarning
-                  className="sticky rounded-[24px] sm:rounded-[32px] lg:rounded-[36px] bg-[#FFFFFF] border border-blue-100/90 shadow-[0_20px_50px_rgba(0,102,255,0.06)] overflow-hidden transition-all duration-300"
+                  className="relative lg:sticky rounded-[24px] sm:rounded-[32px] lg:rounded-[36px] bg-[#FFFFFF] border border-blue-100/90 shadow-[0_20px_50px_rgba(0,102,255,0.06)] overflow-hidden transition-all duration-300"
                 >
                   {/* Top Browser Window Bar */}
                   <div className="px-6 sm:px-8 py-3.5 bg-slate-50/80 border-b border-slate-100 flex items-center justify-between gap-4">
