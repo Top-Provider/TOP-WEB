@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState, useRef, useEffect, useMemo } from "react";
+import React, { useState, useRef, useEffect, useMemo, useCallback } from "react";
+import { createPortal } from "react-dom";
 import {
   Calendar as CalendarIcon,
   ChevronLeft,
@@ -66,7 +67,57 @@ export function DatePicker({
 }: DatePickerProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [viewMode, setViewMode] = useState<"days" | "months" | "years">("days");
+  const [mounted, setMounted] = useState(false);
+  const [popoverPos, setPopoverPos] = useState<{
+    top: number;
+    left: number;
+    width: number;
+  } | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const popoverRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Update floating popover position to ensure it is never clipped
+  const updatePosition = useCallback(() => {
+    if (!containerRef.current) return;
+    const rect = containerRef.current.getBoundingClientRect();
+    const popoverHeight = popoverRef.current?.offsetHeight || 385;
+    const popoverWidth = Math.min(320, window.innerWidth - 32);
+
+    const spaceBelow = window.innerHeight - rect.bottom;
+    const openUpwards = spaceBelow < popoverHeight && rect.top > popoverHeight;
+
+    let top = openUpwards ? rect.top - popoverHeight - 6 : rect.bottom + 6;
+    let left = rect.left;
+
+    if (left + popoverWidth > window.innerWidth - 16) {
+      left = window.innerWidth - popoverWidth - 16;
+    }
+    if (left < 16) left = 16;
+
+    // Clamp top within viewport boundaries
+    if (top < 8) top = 8;
+    if (top + popoverHeight > window.innerHeight - 8) {
+      top = Math.max(8, window.innerHeight - popoverHeight - 8);
+    }
+
+    setPopoverPos({ top, left, width: popoverWidth });
+  }, []);
+
+  useEffect(() => {
+    if (isOpen) {
+      updatePosition();
+      window.addEventListener("scroll", updatePosition, true);
+      window.addEventListener("resize", updatePosition);
+    }
+    return () => {
+      window.removeEventListener("scroll", updatePosition, true);
+      window.removeEventListener("resize", updatePosition);
+    };
+  }, [isOpen, updatePosition]);
 
   // Parse current value
   const parsedDate = useMemo(() => {
@@ -115,9 +166,12 @@ export function DatePicker({
   // Close on Click Outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
+      const target = event.target as Node;
       if (
         containerRef.current &&
-        !containerRef.current.contains(event.target as Node)
+        !containerRef.current.contains(target) &&
+        popoverRef.current &&
+        !popoverRef.current.contains(target)
       ) {
         setIsOpen(false);
       }
@@ -316,9 +370,19 @@ export function DatePicker({
         </div>
       </button>
 
-      {/* Popover Calendar (Clean Modern Tailwind UI) */}
-      {isOpen && (
-        <div className="absolute left-0 mt-2 z-50 w-76 sm:w-82 bg-white rounded-2xl shadow-xl shadow-slate-200/70 border border-slate-200/90 p-4 animate-in fade-in zoom-in-95 duration-150">
+      {/* Popover Calendar (Rendered in Portal to avoid overflow clipping) */}
+      {isOpen && mounted && typeof document !== "undefined" && createPortal(
+        <div
+          ref={popoverRef}
+          style={{
+            position: "fixed",
+            top: `${popoverPos?.top ?? 0}px`,
+            left: `${popoverPos?.left ?? 0}px`,
+            width: `${popoverPos?.width ?? 320}px`,
+            zIndex: 9999,
+          }}
+          className="bg-white rounded-2xl shadow-2xl shadow-slate-900/25 border border-slate-200/90 p-4 animate-in fade-in zoom-in-95 duration-150 select-none"
+        >
           {/* Header Controls */}
           <div className="flex items-center justify-between gap-1 pb-3 mb-3 border-b border-slate-100">
             <button
@@ -354,7 +418,6 @@ export function DatePicker({
                     className="text-xs sm:text-sm font-bold text-blue-600 bg-blue-50/70 hover:bg-blue-100/70 py-1 px-2.5 rounded-lg border border-blue-100 transition-all cursor-pointer flex items-center gap-1"
                   >
                     <span>{viewYear + 543}</span>
-                    <span className="text-[10px] font-normal text-blue-400">({viewYear})</span>
                     <ChevronDown className="w-3.5 h-3.5 text-blue-400" />
                   </button>
                 </>
@@ -479,16 +542,13 @@ export function DatePicker({
                       setViewMode("days");
                     }}
                     className={cn(
-                      "py-2.5 px-2 rounded-xl text-xs font-semibold transition-all duration-150 cursor-pointer flex flex-col items-center justify-center gap-0.5",
+                      "py-2.5 px-2 rounded-xl text-xs font-semibold transition-all duration-150 cursor-pointer text-center",
                       isSelected
                         ? "bg-[#0062FF] text-white shadow-md shadow-blue-500/25 font-bold"
                         : "text-slate-700 hover:bg-blue-50 hover:text-blue-600 border border-slate-100"
                     )}
                   >
-                    <span>{y + 543}</span>
-                    <span className={cn("text-[10px]", isSelected ? "text-blue-100" : "text-slate-400")}>
-                      ({y})
-                    </span>
+                    {y + 543}
                   </button>
                 );
               })}
@@ -516,7 +576,8 @@ export function DatePicker({
               </button>
             )}
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );
