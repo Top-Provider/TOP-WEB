@@ -13,6 +13,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Select } from "@/components/ui/select";
 import { MedicalCrossLoader } from "@/components/ui/medical-cross-loader";
 import type { ProductItemResponse } from "@/app/api/products/route";
 
@@ -242,29 +243,20 @@ export function HardwareSolutionView({
       {/* ========================================================================= */}
       <div className="w-[94%] max-w-[1720px] mx-auto px-2 sm:px-4 lg:px-6 pt-6 sm:pt-8">
         {/* MOBILE CATEGORY SELECTOR (lg:hidden) */}
-        <div className="lg:hidden w-full mb-6 space-y-2">
+        <div className="lg:hidden w-full mb-6 space-y-1.5">
           <p className="text-xs font-bold text-slate-600 uppercase tracking-wider px-1">
             หมวดหมู่อุปกรณ์ฮาร์ดแวร์ :
           </p>
-          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
-            {HARDWARE_GROUPS.flatMap((g) => g.categories).map((cat) => {
-              const isSelected = selectedSubCategory === cat.value;
-              return (
-                <button
-                  key={cat.value}
-                  type="button"
-                  onClick={() => setSelectedSubCategory(cat.value)}
-                  className={`shrink-0 px-4 py-2 rounded-full text-xs font-medium transition-all ${
-                    isSelected
-                      ? "bg-[#0062FF] text-white shadow-sm shadow-blue-500/25 font-semibold"
-                      : "bg-white text-slate-700 border border-slate-200/90 shadow-2xs hover:bg-slate-50"
-                  }`}
-                >
-                  {cat.label}
-                </button>
-              );
-            })}
-          </div>
+          <Select
+            value={selectedSubCategory}
+            onChange={(val) => setSelectedSubCategory(val)}
+            options={HARDWARE_GROUPS.flatMap((g) => g.categories).map((cat) => ({
+              value: cat.value,
+              label: cat.label,
+            }))}
+            placeholder="เลือกหมวดหมู่อุปกรณ์..."
+            triggerClassName="rounded-full text-xs sm:text-sm font-semibold shadow-2xs h-10 px-4"
+          />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">

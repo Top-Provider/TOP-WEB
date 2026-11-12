@@ -291,7 +291,7 @@ export function ActivitiesView({ initialActivities = [] }: ActivitiesViewProps) 
               onChange={(val) => setSelectedCategory(val)}
               options={CATEGORY_OPTIONS}
               placeholder="เลือกหมวดหมู่กิจกรรม..."
-              className="bg-white rounded-full text-xs sm:text-sm font-semibold shadow-2xs border-slate-200/90 h-10 px-4"
+              triggerClassName="rounded-full text-xs sm:text-sm font-semibold shadow-2xs h-10 px-4"
             />
           </div>
           {selectedCategory !== "all" && (

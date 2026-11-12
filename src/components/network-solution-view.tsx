@@ -23,6 +23,7 @@ import {
   Download,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Select } from "@/components/ui/select";
 import { MedicalCrossLoader } from "@/components/ui/medical-cross-loader";
 import type { ProductItemResponse } from "@/app/api/products/route";
 
@@ -288,29 +289,20 @@ export function NetworkSolutionView({
       {/* ========================================================================= */}
       <div className="w-[94%] max-w-[1720px] mx-auto px-2 sm:px-4 lg:px-6 pt-6 sm:pt-8">
         {/* MOBILE CATEGORY SELECTOR (lg:hidden) */}
-        <div className="lg:hidden w-full mb-6 space-y-2">
+        <div className="lg:hidden w-full mb-6 space-y-1.5">
           <p className="text-xs font-bold text-slate-600 uppercase tracking-wider px-1">
             หมวดหมู่เน็ตเวิร์ก &amp; เซิร์ฟเวอร์ :
           </p>
-          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
-            {["Server", "Storage", ...dynamicOtherCategories].map((cat) => {
-              const isSelected = selectedSubCategory === cat;
-              return (
-                <button
-                  key={cat}
-                  type="button"
-                  onClick={() => setSelectedSubCategory(cat)}
-                  className={`shrink-0 px-4 py-2 rounded-full text-xs font-medium transition-all ${
-                    isSelected
-                      ? "bg-[#0062FF] text-white shadow-sm shadow-blue-500/25 font-semibold"
-                      : "bg-white text-slate-700 border border-slate-200/90 shadow-2xs hover:bg-slate-50"
-                  }`}
-                >
-                  {cat}
-                </button>
-              );
-            })}
-          </div>
+          <Select
+            value={selectedSubCategory}
+            onChange={(val) => setSelectedSubCategory(val)}
+            options={["Server", "Storage", ...dynamicOtherCategories].map((cat) => ({
+              value: cat,
+              label: cat,
+            }))}
+            placeholder="เลือกหมวดหมู่..."
+            triggerClassName="rounded-full text-xs sm:text-sm font-semibold shadow-2xs h-10 px-4"
+          />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">

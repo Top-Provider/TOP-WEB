@@ -19,6 +19,7 @@ import {
   Share2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Select } from "@/components/ui/select";
 import { Card } from "@/components/ui/card";
 import { MedicalCrossLoader } from "@/components/ui/medical-cross-loader";
 import { fetchRecords } from "@/lib/crud";
@@ -396,7 +397,7 @@ export function SoftwareSolutionView({ initialRecords, initialPrograms }: Softwa
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
             {/* MOBILE PROGRAM SELECTOR (lg:hidden) */}
-            <div className="lg:hidden col-span-1 w-full space-y-2 mb-2">
+            <div className="lg:hidden col-span-1 w-full space-y-1.5 mb-4">
               <div className="flex items-center justify-between px-1">
                 <span className="text-xs font-bold text-blue-600 uppercase tracking-wider">
                   เลือกโปรแกรมซอฟต์แวร์ :
@@ -405,26 +406,16 @@ export function SoftwareSolutionView({ initialRecords, initialPrograms }: Softwa
                   {programs.length} ระบบ
                 </span>
               </div>
-              <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
-                {programs.map((prog, idx) => {
-                  const isSelected = activeProgram ? prog.id === activeProgram.id : false;
-                  return (
-                    <button
-                      key={prog.id}
-                      type="button"
-                      onClick={() => setSelectedId(prog.id)}
-                      className={`shrink-0 px-4 py-2 rounded-full text-xs font-medium transition-all flex items-center gap-1.5 ${
-                        isSelected
-                          ? "bg-[#0062FF] text-white shadow-sm shadow-blue-500/25 font-semibold"
-                          : "bg-white text-slate-700 border border-slate-200/90 shadow-2xs hover:bg-slate-50"
-                      }`}
-                    >
-                      <span className="text-[11px] opacity-75">{idx + 1}.</span>
-                      <span>{prog.name}</span>
-                    </button>
-                  );
-                })}
-              </div>
+              <Select
+                value={selectedId}
+                onChange={(val) => setSelectedId(val)}
+                options={programs.map((prog, idx) => ({
+                  value: prog.id,
+                  label: `${idx + 1}. ${prog.name}`,
+                }))}
+                placeholder="เลือกโปรแกรมซอฟต์แวร์..."
+                triggerClassName="rounded-full text-xs sm:text-sm font-semibold shadow-2xs h-10 px-4"
+              />
             </div>
 
             {/* Left Column (3 cols on XL): Vertical Program Menu (Desktop) */}
