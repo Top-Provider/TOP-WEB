@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Prompt, Geist_Mono } from "next/font/google";
 import { LocatorProvider } from "@/components/locator-provider";
+import { PageSlideTransition } from "@/components/page-slide-transition";
 import "./globals.css";
 
 const prompt = Prompt({
@@ -66,6 +67,7 @@ export default function RootLayout({
         className="min-h-full flex flex-col bg-slate-50/50 text-slate-900 font-sans selection:bg-blue-600 selection:text-white"
       >
         <LocatorProvider />
+        <PageSlideTransition />
         {children}
       </body>
     </html>
