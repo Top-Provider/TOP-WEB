@@ -211,8 +211,8 @@ export default function AdminActivitiesPage() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (file.size > 2 * 1024 * 1024) {
-      toast.error("ขนาดไฟล์รูปภาพต้องไม่เกิน 2MB");
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error("ขนาดไฟล์รูปภาพต้องไม่เกิน 10MB");
       return;
     }
 
@@ -230,8 +230,8 @@ export default function AdminActivitiesPage() {
     if (!files || files.length === 0) return;
 
     Array.from(files).forEach((file) => {
-      if (file.size > 2 * 1024 * 1024) {
-        toast.error(`ไฟล์ ${file.name} มีขนาดเกิน 2MB`);
+      if (file.size > 10 * 1024 * 1024) {
+        toast.error(`ไฟล์ ${file.name} มีขนาดเกิน 10MB`);
         return;
       }
 
@@ -936,6 +936,9 @@ export default function AdminActivitiesPage() {
                   }
                   className="bg-white text-xs"
                 />
+                <p className="text-[11px] text-slate-500">
+                  แนะนำ: ความละเอียด 1200 x 800 px ขึ้นไป (อัตราส่วน 16:10 / 16:9) ไฟล์ JPG, PNG หรือ WebP ขนาดไม่เกิน 10MB เพื่อความคมชัดระดับ HD
+                </p>
               </div>
             </div>
           </div>
@@ -978,6 +981,9 @@ export default function AdminActivitiesPage() {
                 เพิ่ม
               </Button>
             </div>
+            <p className="text-[11px] text-slate-500">
+              รองรับการอัปโหลดครั้งละหลายรูป (ขนาดไฟล์ละไม่เกิน 10MB) แนะนำรูปถ่ายความละเอียดสูง
+            </p>
 
             {/* Gallery Thumbnails List */}
             {formData.gallery_images.length > 0 && (
