@@ -213,7 +213,7 @@ export function ActivitiesView({ initialActivities = [] }: ActivitiesViewProps) 
                 className={`px-4 sm:px-5 py-2.5 rounded-full text-xs sm:text-sm font-semibold transition-all duration-200 cursor-pointer flex items-center gap-2 ${
                   isActive
                     ? "bg-[#0062FF] text-white shadow-md shadow-blue-500/25 scale-[1.02]"
-                    : "bg-white text-slate-700 hover:bg-slate-50 hover:text-blue-600 border border-slate-200/90 shadow-2xs"
+                    : "bg-white text-slate-700 hover:bg-white hover:text-[#0062FF] border border-blue-200/80 shadow-xs"
                 }`}
               >
                 <Icon className={`w-4 h-4 shrink-0 ${isActive ? "text-white" : "text-slate-500"}`} />
@@ -233,7 +233,7 @@ export function ActivitiesView({ initialActivities = [] }: ActivitiesViewProps) 
               placeholder="ค้นหาบทความ, ข่าวสาร..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-9 pr-3 py-2 rounded-full bg-white border border-slate-200/90 text-xs sm:text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0062FF]/20 focus:border-[#0062FF] transition-all shadow-2xs"
+              className="w-full pl-9 pr-3 py-2 rounded-full bg-white border border-blue-200/80 text-xs sm:text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0062FF]/20 focus:border-[#0062FF] transition-all shadow-xs"
             />
             {searchTerm && (
               <button
@@ -251,7 +251,7 @@ export function ActivitiesView({ initialActivities = [] }: ActivitiesViewProps) 
             <button
               type="button"
               onClick={() => setIsSortOpen(!isSortOpen)}
-              className="px-4 py-2 rounded-full bg-white border border-slate-200/90 text-xs sm:text-sm text-slate-600 hover:text-slate-900 font-medium flex items-center gap-1.5 shadow-2xs cursor-pointer whitespace-nowrap"
+              className="px-4 py-2 rounded-full bg-white border border-blue-200/80 text-xs sm:text-sm text-slate-600 hover:text-slate-900 font-medium flex items-center gap-1.5 shadow-xs cursor-pointer whitespace-nowrap"
             >
               <span className="text-slate-400">เรียงตาม :</span>
               <span className="font-semibold text-slate-800">
@@ -331,7 +331,7 @@ export function ActivitiesView({ initialActivities = [] }: ActivitiesViewProps) 
               <article
                 key={act.id}
                 onClick={() => openModal(act)}
-                className="group relative bg-white rounded-[24px] overflow-hidden border border-slate-200/80 shadow-xs hover:shadow-xl hover:border-blue-300 transition-all duration-300 flex flex-col cursor-pointer"
+                className="group relative bg-white rounded-[24px] overflow-hidden border border-blue-100/90 shadow-[0_10px_30px_rgba(0,98,255,0.05)] hover:shadow-[0_20px_45px_rgba(0,98,255,0.12)] hover:border-blue-300 transition-all duration-300 flex flex-col cursor-pointer"
               >
                 {/* Image Cover Container */}
                 <div className="relative aspect-[16/10] w-full overflow-hidden bg-slate-100">
@@ -414,7 +414,7 @@ export function ActivitiesView({ initialActivities = [] }: ActivitiesViewProps) 
       {/* ========================================================================= */}
       {/* Bottom Newsletter & Social Strip (Matching Mockup Footer Strip) */}
       {/* ========================================================================= */}
-      <section className="mt-16 sm:mt-20 p-6 sm:p-8 rounded-[32px] bg-gradient-to-r from-blue-50/90 via-sky-50/60 to-blue-50/90 border border-blue-100/90 shadow-sm flex flex-col lg:flex-row items-center justify-between gap-6 sm:gap-8">
+      <section className="mt-16 sm:mt-20 p-6 sm:p-8 rounded-[32px] bg-white/95 backdrop-blur-md border border-white/90 shadow-[0_15px_40px_rgba(0,98,255,0.06)] flex flex-col lg:flex-row items-center justify-between gap-6 sm:gap-8">
         {/* Left: Newsletter Info */}
         <div className="flex items-center gap-4 shrink-0 text-left w-full lg:w-auto">
           <div className="w-12 h-12 rounded-2xl bg-[#0062FF] text-white flex items-center justify-center shadow-md shadow-blue-500/25 shrink-0">
