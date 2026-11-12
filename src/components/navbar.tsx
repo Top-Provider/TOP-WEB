@@ -134,19 +134,19 @@ export function Navbar() {
           : "-translate-y-full opacity-0 pointer-events-none"
       }`}
     >
-      <div className="w-[94%] max-w-[2200px] mx-auto bg-white/95 backdrop-blur-md rounded-full shadow-lg shadow-slate-200/50 border border-slate-100/90 px-4 sm:px-8 py-2.5 sm:py-3 flex items-center justify-between transition-all">
+      <div className="w-[94%] max-w-[2200px] mx-auto bg-white/95 backdrop-blur-md rounded-full shadow-lg shadow-slate-200/50 border border-slate-100/90 px-6 sm:px-10 py-3 sm:py-3.5 flex items-center justify-between transition-all">
         {/* Brand Logo matching the user's uploaded image */}
         <Link
           href="/"
           onClick={(e) => handleNavClick(e, "/")}
           className="flex items-center gap-2.5 shrink-0 group"
         >
-          <div className="relative h-8 sm:h-9 w-20 sm:w-24">
+          <div className="relative h-9 sm:h-10 w-24 sm:w-28">
             <Image
               src="/images/logo.png"
               alt="TOP PROVIDER SYSTEM GROUP CO., LTD."
               fill
-              sizes="(max-width: 640px) 80px, 96px"
+              sizes="(max-width: 640px) 96px, 112px"
               className="object-contain object-left group-hover:scale-105 transition-transform"
               priority
             />
@@ -154,7 +154,7 @@ export function Navbar() {
         </Link>
 
         {/* Center Desktop Navigation */}
-        <nav className="hidden lg:flex items-center gap-7">
+        <nav className="hidden lg:flex items-center gap-8 xl:gap-10">
           {navLinks.map((link) => {
             const active = isLinkActive(link.href);
             return (
@@ -162,7 +162,7 @@ export function Navbar() {
                 key={link.label}
                 href={link.href}
                 onClick={(e) => handleNavClick(e, link.href)}
-                className={`text-[13px] font-medium transition-colors whitespace-nowrap cursor-pointer ${
+                className={`text-[15px] xl:text-[16px] font-semibold transition-colors whitespace-nowrap cursor-pointer ${
                   active
                     ? "text-[#0062FF] font-bold"
                     : "text-slate-600 hover:text-blue-600"
@@ -178,14 +178,14 @@ export function Navbar() {
         <div className="flex items-center gap-2 sm:gap-3 shrink-0">
           <Button
             asChild
-            className="hidden sm:inline-flex rounded-full bg-[#0062FF] hover:bg-blue-700 text-white font-semibold text-xs px-5 py-2 shadow-sm hover:shadow-md hover:shadow-blue-500/25 transition-all h-9"
+            className="hidden sm:inline-flex rounded-full bg-[#0062FF] hover:bg-blue-700 text-white font-semibold text-sm sm:text-[15px] px-6 py-2.5 shadow-sm hover:shadow-md hover:shadow-blue-500/25 transition-all h-10 sm:h-11"
           >
             <Link
               href="/#contact"
               onClick={(e) => handleNavClick(e, "/#contact")}
               className="flex items-center gap-2 cursor-pointer"
             >
-              <Calendar className="w-3.5 h-3.5" />
+              <Calendar className="w-4 h-4" />
               <span>contact</span>
             </Link>
           </Button>
@@ -194,7 +194,7 @@ export function Navbar() {
           <div className="lg:hidden flex items-center">
             <Sheet open={isOpen} onOpenChange={setIsOpen}>
               <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-9 w-9 text-slate-700 hover:text-blue-600 hover:bg-slate-100 rounded-full cursor-pointer">
+                <Button variant="ghost" size="icon" className="h-10 w-10 text-slate-700 hover:text-blue-600 hover:bg-slate-100 rounded-full cursor-pointer">
                   <Menu className="w-5 h-5" />
                   <span className="sr-only">Open Menu</span>
                 </Button>
@@ -203,17 +203,17 @@ export function Navbar() {
                 <div className="flex flex-col h-full justify-between pt-6">
                   <div className="space-y-6">
                     <div className="pb-4 border-b border-slate-100 flex items-center">
-                      <div className="relative h-9 w-24">
+                      <div className="relative h-10 w-28">
                         <Image
                           src="/images/logo.png"
                           alt="TOP PROVIDER SYSTEM GROUP CO., LTD."
                           fill
-                          sizes="96px"
+                          sizes="112px"
                           className="object-contain object-left"
                         />
                       </div>
                     </div>
-                    <nav className="flex flex-col gap-3.5">
+                    <nav className="flex flex-col gap-4">
                       {navLinks.map((link) => {
                         const active = isLinkActive(link.href);
                         return (
@@ -221,7 +221,7 @@ export function Navbar() {
                             key={link.label}
                             href={link.href}
                             onClick={(e) => handleNavClick(e, link.href, () => setIsOpen(false))}
-                            className={`text-sm py-1 transition-colors cursor-pointer ${
+                            className={`text-base py-1.5 transition-colors cursor-pointer ${
                               active
                                 ? "text-[#0062FF] font-bold"
                                 : "text-slate-700 font-medium hover:text-blue-600"
@@ -236,7 +236,7 @@ export function Navbar() {
                   <div className="pt-6 border-t border-slate-100">
                     <Button
                       asChild
-                      className="w-full rounded-full bg-[#0062FF] hover:bg-blue-700 text-white py-2.5 font-semibold text-xs"
+                      className="w-full rounded-full bg-[#0062FF] hover:bg-blue-700 text-white py-3 font-semibold text-sm sm:text-base h-11"
                     >
                       <Link
                         href="/#contact"
