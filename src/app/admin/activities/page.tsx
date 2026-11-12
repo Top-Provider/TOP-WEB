@@ -25,6 +25,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectOption } from "@/components/ui/select";
+import { DatePicker } from "@/components/ui/date-picker";
 import { Card } from "@/components/ui/card";
 import { Modal } from "@/components/ui/modal";
 import { toast } from "@/components/ui/toast";
@@ -806,11 +807,10 @@ export default function AdminActivitiesPage() {
                 <label className="block text-xs font-medium text-slate-700 mb-1">
                   วันที่จัดกิจกรรม
                 </label>
-                <Input
-                  type="date"
+                <DatePicker
                   value={formData.event_date}
-                  onChange={(e) => setFormData((p) => ({ ...p, event_date: e.target.value }))}
-                  className="bg-white"
+                  onChange={(val) => setFormData((p) => ({ ...p, event_date: val }))}
+                  placeholder="เลือกวันที่จัดกิจกรรม..."
                 />
               </div>
 
