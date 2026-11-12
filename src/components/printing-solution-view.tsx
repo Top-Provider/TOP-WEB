@@ -14,6 +14,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { MedicalCrossLoader } from "@/components/ui/medical-cross-loader";
 import type { ProductItemResponse } from "@/app/api/products/route";
 
 export const SOLUTION_CATEGORY_TABS = [
@@ -402,29 +403,10 @@ export function PrintingSolutionView({
               </div>
             </div>
 
-            {/* Product Cards Grid: 1 แถวแสดง 3 การ์ด */}
+            {/* Product Cards Grid */}
             {loading ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
-                {Array.from({ length: 6 }).map((_, i) => (
-                  <div
-                    key={i}
-                    className="bg-white rounded-2xl sm:rounded-3xl border border-slate-200/80 p-5 space-y-4 animate-pulse shadow-2xs"
-                  >
-                    <div className="w-full aspect-[4/3] bg-slate-100 rounded-2xl flex items-center justify-center">
-                      <Loader2 className="w-6 h-6 animate-spin text-slate-300" />
-                    </div>
-                    <div className="h-4 bg-slate-200 rounded w-3/4" />
-                    <div className="h-3 bg-slate-100 rounded w-1/2" />
-                    <div className="space-y-1.5 pt-2">
-                      <div className="h-2.5 bg-slate-100 rounded w-full" />
-                      <div className="h-2.5 bg-slate-100 rounded w-4/5" />
-                    </div>
-                    <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
-                      <div className="h-8 w-24 bg-slate-100 rounded-lg" />
-                      <div className="h-8 w-16 bg-slate-100 rounded-lg" />
-                    </div>
-                  </div>
-                ))}
+              <div className="min-h-[460px] rounded-3xl bg-white border border-slate-200/90 shadow-sm p-8 flex flex-col items-center justify-center text-center my-6">
+                <MedicalCrossLoader size="md" />
               </div>
             ) : filteredProducts.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
