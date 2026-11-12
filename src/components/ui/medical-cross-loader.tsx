@@ -13,39 +13,39 @@ export function MedicalCrossLoader({
 }: MedicalCrossLoaderProps) {
   const sizeMap = {
     sm: {
-      orbitBox: "w-72 h-72 sm:w-[400px] sm:h-[400px] max-w-[94vw] max-h-[94vw]",
-      innerInset: "inset-3 sm:inset-5",
-      logoBox: "w-48 sm:w-64",
+      orbitBox: "w-[min(65vmin,300px)] h-[min(65vmin,300px)] max-w-full max-h-full",
+      innerInset: "inset-[9%]",
+      logoBox: "w-[58%] max-w-[190px] px-3.5 py-2.5 rounded-2xl",
+      dot1: "w-3 h-3 -top-1.5",
+      dot2: "w-2.5 h-2.5 -bottom-1.25",
+    },
+    md: {
+      orbitBox: "w-[min(70vmin,420px)] h-[min(70vmin,420px)] max-w-full max-h-full",
+      innerInset: "inset-[9%]",
+      logoBox: "w-[60%] max-w-[260px] px-4 sm:px-6 py-3 sm:py-4 rounded-2xl sm:rounded-3xl",
       dot1: "w-3.5 h-3.5 -top-1.75",
       dot2: "w-3 h-3 -bottom-1.5",
     },
-    md: {
-      orbitBox: "w-80 h-80 sm:w-[500px] sm:h-[500px] md:w-[600px] md:h-[600px] max-w-[94vw] max-h-[94vw]",
-      innerInset: "inset-4 sm:inset-7 md:inset-9",
-      logoBox: "w-56 sm:w-[350px] md:w-[420px]",
+    lg: {
+      orbitBox: "w-[min(72vmin,500px)] h-[min(72vmin,500px)] max-w-full max-h-full",
+      innerInset: "inset-[9%]",
+      logoBox: "w-[62%] max-w-[320px] px-5 sm:px-8 py-3.5 sm:py-5 rounded-2xl sm:rounded-3xl",
       dot1: "w-4.5 h-4.5 -top-2.25",
       dot2: "w-4 h-4 -bottom-2",
     },
-    lg: {
-      orbitBox: "w-[330px] h-[330px] sm:w-[560px] sm:h-[560px] md:w-[680px] md:h-[680px] lg:w-[740px] lg:h-[740px] max-w-[94vw] max-h-[94vw]",
-      innerInset: "inset-4 sm:inset-8 md:inset-11",
-      logoBox: "w-[250px] sm:w-[400px] md:w-[480px] lg:w-[520px]",
+    xl: {
+      orbitBox: "w-[min(76vmin,580px)] h-[min(76vmin,580px)] max-w-full max-h-full",
+      innerInset: "inset-[10%]",
+      logoBox: "w-[62%] max-w-[380px] px-6 sm:px-9 py-4 sm:py-6 rounded-3xl",
       dot1: "w-5 h-5 -top-2.5",
       dot2: "w-4.5 h-4.5 -bottom-2.25",
-    },
-    xl: {
-      orbitBox: "w-[350px] h-[350px] sm:w-[620px] sm:h-[620px] md:w-[760px] md:h-[760px] lg:w-[840px] lg:h-[840px] max-w-[94vw] max-h-[94vw]",
-      innerInset: "inset-5 sm:inset-10 md:inset-14",
-      logoBox: "w-[270px] sm:w-[440px] md:w-[540px] lg:w-[600px]",
-      dot1: "w-6 h-6 -top-3",
-      dot2: "w-5 h-5 -bottom-2.5",
     },
   };
 
   const current = sizeMap[size] || sizeMap.lg;
 
   return (
-    <div className={`flex flex-col items-center justify-center text-center select-none py-6 px-2 overflow-hidden ${className}`}>
+    <div className={`flex flex-col items-center justify-center text-center select-none p-2 overflow-hidden ${className}`}>
       {/* 1. Orbit Stage with Grand Expanded Circles surrounding the Logo */}
       <div className={`relative ${current.orbitBox} flex items-center justify-center shrink-0`}>
         {/* Soft Ambient Radial Glow */}
