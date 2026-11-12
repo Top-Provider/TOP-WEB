@@ -279,9 +279,6 @@ export function DatePicker({
               <X className="w-3.5 h-3.5" />
             </span>
           )}
-          <span className="text-[11px] font-medium text-slate-400 uppercase tracking-wider bg-slate-50 border border-slate-200/70 px-1.5 py-0.5 rounded-md">
-            {parsedDate ? String(parsedDate.getFullYear()) : "ว/ด/ป"}
-          </span>
         </div>
       </button>
 
