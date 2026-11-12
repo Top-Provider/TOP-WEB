@@ -259,8 +259,8 @@ export default function AdminActivitiesPage() {
   };
 
   // บันทึกกิจกรรม (POST / PUT ผ่าน /api/activities)
-  const handleSave = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSave = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
 
     if (!formData.title.trim()) {
       toast.error("กรุณากรอกชื่อกิจกรรมภาษาไทย");
@@ -752,8 +752,29 @@ export default function AdminActivitiesPage() {
         onClose={() => setShowModal(false)}
         title={editingId ? "แก้ไขข้อมูลกิจกรรม" : "เพิ่มกิจกรรมใหม่"}
         maxWidth="5xl"
+        footer={
+          <div className="flex items-center justify-end gap-3 w-full">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setShowModal(false)}
+              disabled={saving}
+              className="rounded-xl px-5"
+            >
+              ยกเลิก
+            </Button>
+            <Button
+              type="submit"
+              form="activity-form"
+              disabled={saving}
+              className="rounded-xl bg-blue-600 hover:bg-blue-700 text-white min-w-[120px]"
+            >
+              {saving ? "กำลังบันทึก..." : editingId ? "บันทึกการแก้ไข" : "เพิ่มกิจกรรม"}
+            </Button>
+          </div>
+        }
       >
-        <form onSubmit={handleSave} className="space-y-4 py-2">
+        <form id="activity-form" onSubmit={handleSave} className="space-y-4 py-2">
           {/* ข้อมูลพื้นฐาน */}
           <div className="bg-slate-50/70 p-4 rounded-xl border border-slate-200/80 space-y-3">
             <h3 className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
@@ -931,9 +952,6 @@ export default function AdminActivitiesPage() {
                   }
                   className="bg-white text-xs"
                 />
-                <p className="text-[11px] text-slate-500">
-                  แนะนำ: ความละเอียด 1200 x 800 px ขึ้นไป (อัตราส่วน 16:10 / 16:9) ไฟล์ JPG, PNG หรือ WebP ขนาดไม่เกิน 10MB เพื่อความคมชัดระดับ HD
-                </p>
               </div>
             </div>
           </div>
@@ -976,9 +994,6 @@ export default function AdminActivitiesPage() {
                 เพิ่ม
               </Button>
             </div>
-            <p className="text-[11px] text-slate-500">
-              รองรับการอัปโหลดครั้งละหลายรูป (ขนาดไฟล์ละไม่เกิน 10MB) แนะนำรูปถ่ายความละเอียดสูง
-            </p>
 
             {/* Gallery Thumbnails List */}
             {formData.gallery_images.length > 0 && (
@@ -1049,26 +1064,6 @@ export default function AdminActivitiesPage() {
                 <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
               </label>
             </div>
-          </div>
-
-          {/* Footer Buttons */}
-          <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setShowModal(false)}
-              disabled={saving}
-              className="rounded-xl"
-            >
-              ยกเลิก
-            </Button>
-            <Button
-              type="submit"
-              disabled={saving}
-              className="rounded-xl bg-blue-600 hover:bg-blue-700 text-white min-w-[120px]"
-            >
-              {saving ? "กำลังบันทึก..." : editingId ? "บันทึกการแก้ไข" : "เพิ่มกิจกรรม"}
-            </Button>
           </div>
         </form>
       </Modal>
