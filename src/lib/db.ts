@@ -111,7 +111,7 @@ export async function pgInsert(table: string, data: Record<string, unknown>) {
 }
 
 export async function pgUpdate(table: string, data: Record<string, unknown>, id: string | number, idColumn = 'id') {
-  const keys = Object.keys(data).filter(k => k !== idColumn && k !== 'created_at');
+  const keys = Object.keys(data).filter(k => k !== idColumn && k !== 'created_at' && k !== 'updated_at');
   const setClauses = keys.map((k, i) => `"${k}" = $${i + 1}`).join(', ');
   const values = keys.map(k => {
     const v = data[k];
@@ -121,7 +121,9 @@ export async function pgUpdate(table: string, data: Record<string, unknown>, id:
   });
 
   values.push(id);
-  const sql = `UPDATE public."${table}" SET ${setClauses}, "updated_at" = now() WHERE "${idColumn}" = $${values.length} RETURNING *;`;
+  const sql = keys.length > 0
+    ? `UPDATE public."${table}" SET ${setClauses}, "updated_at" = now() WHERE "${idColumn}" = $${values.length} RETURNING *;`
+    : `UPDATE public."${table}" SET "updated_at" = now() WHERE "${idColumn}" = $${values.length} RETURNING *;`;
   const res = await query(sql, values);
   return res.rows[0];
 }
