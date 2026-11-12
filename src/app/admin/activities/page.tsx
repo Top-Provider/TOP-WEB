@@ -26,6 +26,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectOption } from "@/components/ui/select";
 import { DatePicker } from "@/components/ui/date-picker";
+import { ImageUpload } from "@/components/ui/image-upload";
+import { GalleryUpload } from "@/components/ui/gallery-upload";
 import { Card } from "@/components/ui/card";
 import { Modal } from "@/components/ui/modal";
 import { toast } from "@/components/ui/toast";
@@ -78,7 +80,6 @@ export default function AdminActivitiesPage() {
   const [editingId, setEditingId] = useState<number | null>(null);
   const [formData, setFormData] = useState<Omit<ActivityItem, "id">>(DEFAULT_FORM);
   const [tagsInput, setTagsInput] = useState("");
-  const [newGalleryUrl, setNewGalleryUrl] = useState("");
   const [saving, setSaving] = useState(false);
   const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null);
   const [viewActivity, setViewActivity] = useState<ActivityItem | null>(null);
@@ -175,7 +176,6 @@ export default function AdminActivitiesPage() {
       event_date: new Date().toISOString().split("T")[0],
     });
     setTagsInput("");
-    setNewGalleryUrl("");
     setShowModal(true);
   };
 
@@ -197,65 +197,7 @@ export default function AdminActivitiesPage() {
       sort_order: act.sort_order ?? 0,
     });
     setTagsInput((act.tags || []).join(", "));
-    setNewGalleryUrl("");
     setShowModal(true);
-  };
-
-  // Image Upload helper (แปลงเป็น Base64 สำหรับรูปหน้าปก)
-  const handleCoverUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    if (file.size > 10 * 1024 * 1024) {
-      toast.error("ขนาดไฟล์รูปภาพต้องไม่เกิน 10MB");
-      return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const base64 = event.target?.result as string;
-      setFormData((prev) => ({ ...prev, cover_image_url: base64 }));
-    };
-    reader.readAsDataURL(file);
-  };
-
-  // อัปโหลดรูปภาพเข้าอัลบั้ม Gallery
-  const handleGalleryUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files || files.length === 0) return;
-
-    Array.from(files).forEach((file) => {
-      if (file.size > 10 * 1024 * 1024) {
-        toast.error(`ไฟล์ ${file.name} มีขนาดเกิน 10MB`);
-        return;
-      }
-
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        const base64 = event.target?.result as string;
-        setFormData((prev) => ({
-          ...prev,
-          gallery_images: [...prev.gallery_images, base64],
-        }));
-      };
-      reader.readAsDataURL(file);
-    });
-  };
-
-  const handleAddGalleryUrl = () => {
-    if (!newGalleryUrl.trim()) return;
-    setFormData((prev) => ({
-      ...prev,
-      gallery_images: [...prev.gallery_images, newGalleryUrl.trim()],
-    }));
-    setNewGalleryUrl("");
-  };
-
-  const handleRemoveGalleryImage = (index: number) => {
-    setFormData((prev) => ({
-      ...prev,
-      gallery_images: prev.gallery_images.filter((_, i) => i !== index),
-    }));
   };
 
   // บันทึกกิจกรรม (POST / PUT ผ่าน /api/activities)
@@ -901,121 +843,23 @@ export default function AdminActivitiesPage() {
           </div>
 
           {/* รูปภาพหน้าปก (Cover Image) */}
-          <div className="bg-slate-50/70 p-4 rounded-xl border border-slate-200/80 space-y-3">
-            <h3 className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
-              <ImageIcon className="w-3.5 h-3.5 text-blue-600" />
-              2. รูปภาพหน้าปกกิจกรรม (Cover Image)
-            </h3>
-
-            <div className="flex flex-col sm:flex-row items-start gap-4">
-              {formData.cover_image_url ? (
-                <div className="relative group w-32 h-20 rounded-xl overflow-hidden border border-slate-300 shadow-sm shrink-0">
-                  <img
-                    src={formData.cover_image_url}
-                    alt="Cover preview"
-                    className="w-full h-full object-cover"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setFormData((p) => ({ ...p, cover_image_url: "" }))}
-                    className="absolute top-1 right-1 bg-red-600 text-white rounded-full p-1 text-xs hover:bg-red-700 shadow"
-                    title="ลบรูป"
-                  >
-                    <X className="w-3 h-3" />
-                  </button>
-                </div>
-              ) : (
-                <div className="w-32 h-20 rounded-xl bg-slate-100 border border-dashed border-slate-300 flex items-center justify-center text-slate-400 shrink-0">
-                  <ImageIcon className="w-6 h-6" />
-                </div>
-              )}
-
-              <div className="flex-1 space-y-2 w-full">
-                <div className="flex items-center gap-2">
-                  <label className="inline-flex items-center gap-2 px-3 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-xl text-xs font-semibold cursor-pointer transition-colors">
-                    <Upload className="w-3.5 h-3.5" />
-                    อัปโหลดรูปภาพ
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleCoverUpload}
-                      className="hidden"
-                    />
-                  </label>
-                  <span className="text-xs text-slate-400">หรือวาง URL:</span>
-                </div>
-                <Input
-                  placeholder="https://images.unsplash.com/..."
-                  value={formData.cover_image_url}
-                  onChange={(e) =>
-                    setFormData((p) => ({ ...p, cover_image_url: e.target.value }))
-                  }
-                  className="bg-white text-xs"
-                />
-              </div>
-            </div>
+          <div className="bg-slate-50/70 p-4 rounded-xl border border-slate-200/80">
+            <ImageUpload
+              label="2. รูปภาพหน้าปกกิจกรรม (Cover Image)"
+              description="คลิกเพื่อเลือกไฟล์ หรือลากรูปภาพมาวางที่นี่ (รองรับ JPG, PNG, WebP)"
+              value={formData.cover_image_url || ""}
+              onChange={(val) => setFormData((p) => ({ ...p, cover_image_url: val }))}
+            />
           </div>
 
           {/* อัลบั้มรูปภาพกิจกรรม (Gallery Images) */}
-          <div className="bg-slate-50/70 p-4 rounded-xl border border-slate-200/80 space-y-3">
-            <div className="flex items-center justify-between">
-              <h3 className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
-                <Layers className="w-3.5 h-3.5 text-indigo-600" />
-                3. อัลบั้มภาพกิจกรรม (Photo Gallery - {formData.gallery_images.length} รูป)
-              </h3>
-              <label className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-lg text-xs font-semibold cursor-pointer transition-colors">
-                <Upload className="w-3 h-3" />
-                อัปโหลดหลายรูป
-                <input
-                  type="file"
-                  accept="image/*"
-                  multiple
-                  onChange={handleGalleryUpload}
-                  className="hidden"
-                />
-              </label>
-            </div>
-
-            {/* เพิ่มผ่าน URL */}
-            <div className="flex gap-2">
-              <Input
-                placeholder="วาง URL รูปภาพเพิ่มเติม..."
-                value={newGalleryUrl}
-                onChange={(e) => setNewGalleryUrl(e.target.value)}
-                className="bg-white text-xs"
-              />
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={handleAddGalleryUrl}
-                className="rounded-xl shrink-0"
-              >
-                เพิ่ม
-              </Button>
-            </div>
-
-            {/* Gallery Thumbnails List */}
-            {formData.gallery_images.length > 0 && (
-              <div className="grid grid-cols-4 sm:grid-cols-6 gap-2 pt-2">
-                {formData.gallery_images.map((img, i) => (
-                  <div
-                    key={i}
-                    className="relative group rounded-lg overflow-hidden border border-slate-200 aspect-video bg-slate-100"
-                  >
-                    <img src={img} alt={`Gallery ${i}`} className="w-full h-full object-cover" />
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveGalleryImage(i)}
-                      className="absolute top-1 right-1 bg-red-600/90 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
-                      title="ลบรูป"
-                    >
-                      <X className="w-3 h-3" />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
+          <div className="bg-slate-50/70 p-4 rounded-xl border border-slate-200/80">
+            <GalleryUpload
+              label="3. อัลบั้มภาพกิจกรรม (Photo Gallery)"
+              description="คลิกเพื่อเลือกไฟล์ หรือลากรูปภาพมาวางที่นี่ (เลือกได้หลายไฟล์พร้อมกัน)"
+              images={formData.gallery_images || []}
+              onChange={(imgs) => setFormData((p) => ({ ...p, gallery_images: imgs }))}
+            />
           </div>
 
           {/* สวิตช์เปิดใช้งาน & ปักหมุดไฮไลต์ */}

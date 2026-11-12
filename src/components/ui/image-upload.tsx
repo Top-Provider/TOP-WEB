@@ -5,14 +5,14 @@ import { UploadCloud, X, RefreshCw, Link as LinkIcon, Image as ImageIcon } from 
 import { cn } from "cn";
 
 interface ImageUploadProps {
-  value: string;
+  value?: string;
   onChange: (value: string) => void;
   label?: string;
   description?: string;
 }
 
 export function ImageUpload({
-  value,
+  value = "",
   onChange,
   label = "รูปภาพ (Image)",
   description = "รองรับไฟล์ PNG, JPG, WebP หรือ SVG",
@@ -44,8 +44,8 @@ export function ImageUpload({
     reader.onload = (event) => {
       const img = document.createElement("img");
       img.onload = () => {
-        const maxWidth = 1200;
-        const maxHeight = 1200;
+        const maxWidth = 1920;
+        const maxHeight = 1920;
         let width = img.width;
         let height = img.height;
 
@@ -65,7 +65,7 @@ export function ImageUpload({
         const ctx = canvas.getContext("2d");
         if (ctx) {
           ctx.drawImage(img, 0, 0, width, height);
-          const compressedDataUrl = canvas.toDataURL("image/webp", 0.82);
+          const compressedDataUrl = canvas.toDataURL("image/webp", 0.9);
           onChange(compressedDataUrl);
         } else {
           onChange(event.target?.result as string);
