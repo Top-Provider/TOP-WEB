@@ -103,30 +103,13 @@ export default async function ActivitiesPage() {
 
       <main className="flex-1 pb-20 sm:pb-28">
         {/* ================================================================= */}
-        {/* Hero Section (Matching User's Reference Mockup) */}
+        {/* Hero Section */}
         {/* ================================================================= */}
-        <section className="relative pt-6 sm:pt-10 pb-16 sm:pb-20 overflow-hidden bg-gradient-to-b from-[#E2ECF8] via-[#EAEFF6] to-[#F1F5F9]">
-          {/* Floating Translucent Medical Crosses (+) */}
-          <div className="absolute top-10 left-[8%] text-blue-200/60 select-none pointer-events-none hidden sm:block">
-            <svg className="w-10 h-10" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M10 3a2 2 0 0 1 4 0v5h5a2 2 0 1 1 0 4h-5v5a2 2 0 1 1-4 0v-5H5a2 2 0 1 1 0-4h5V3z" />
-            </svg>
-          </div>
-          <div className="absolute top-28 left-[45%] text-blue-200/70 select-none pointer-events-none">
-            <svg className="w-16 h-16" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M10 3a2 2 0 0 1 4 0v5h5a2 2 0 1 1 0 4h-5v5a2 2 0 1 1-4 0v-5H5a2 2 0 1 1 0-4h5V3z" />
-            </svg>
-          </div>
-          <div className="absolute top-8 right-[44%] text-blue-200/50 select-none pointer-events-none hidden lg:block">
-            <svg className="w-12 h-12" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M10 3a2 2 0 0 1 4 0v5h5a2 2 0 1 1 0 4h-5v5a2 2 0 1 1-4 0v-5H5a2 2 0 1 1 0-4h5V3z" />
-            </svg>
-          </div>
-
+        <section className="relative pt-6 sm:pt-10 pb-8 sm:pb-12 bg-[#F1F5F9]">
           <div className="w-[94%] max-w-[1580px] mx-auto px-2 sm:px-4">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
               {/* Left Column: Title & Description */}
-              <div className="lg:col-span-6 space-y-4 sm:space-y-5 z-10 py-6 sm:py-10">
+              <div className="lg:col-span-6 space-y-4 sm:space-y-5 z-10 py-4 sm:py-6">
                 <div className="flex items-center gap-3">
                   <span className="text-xs sm:text-sm font-extrabold tracking-[0.2em] text-[#0062FF] uppercase">
                     NEWS &amp; ACTIVITY
@@ -145,18 +128,15 @@ export default async function ActivitiesPage() {
 
               {/* Right Column: Hospital Building Render / Visual */}
               <div className="lg:col-span-6 relative">
-                <div className="relative w-full h-[280px] sm:h-[360px] lg:h-[400px] rounded-[32px] overflow-hidden shadow-2xl shadow-blue-500/10 border border-white/90 bg-gradient-to-tr from-blue-100/60 via-white to-slate-100">
+                <div className="relative w-full h-[280px] sm:h-[360px] lg:h-[400px] rounded-[32px] overflow-hidden shadow-xl shadow-slate-300/40 border border-slate-200/90 bg-white">
                   <img
                     src="https://images.unsplash.com/photo-1586773860418-d37222d8fce3?auto=format&fit=crop&w=1200&q=80"
                     alt="Modern Smart Hospital Architecture - TOP PROVIDER"
                     className="w-full h-full object-cover object-center"
                   />
-                  {/* Subtle edge blend gradients */}
-                  <div className="absolute inset-0 bg-gradient-to-r from-[#E2ECF8]/50 via-transparent to-transparent pointer-events-none" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#F1F5F9] via-transparent to-transparent pointer-events-none" />
 
                   {/* Hospital Ecosystem Badge */}
-                  <div className="absolute top-4 right-4 bg-white/95 backdrop-blur-md px-4 py-1.5 rounded-full border border-blue-100 text-xs font-bold text-[#0062FF] flex items-center gap-2 shadow-sm">
+                  <div className="absolute top-4 right-4 bg-white/95 backdrop-blur-md px-4 py-1.5 rounded-full border border-slate-200/80 text-xs font-bold text-[#0062FF] flex items-center gap-2 shadow-sm">
                     <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                     <span>SMART HOSPITAL ECOSYSTEM</span>
                   </div>
@@ -164,9 +144,6 @@ export default async function ActivitiesPage() {
               </div>
             </div>
           </div>
-
-          {/* Bottom Wave Curve Transition */}
-          <div className="absolute -bottom-1 left-0 right-0 h-12 bg-[#F1F5F9] [clip-path:ellipse(65%_100%_at_50%_100%)] pointer-events-none" />
         </section>
 
         {/* Content Container */}
