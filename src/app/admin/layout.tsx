@@ -181,16 +181,16 @@ export default function AdminLayout({
 
       {/* Sidebar */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 bg-slate-900 text-slate-100 flex flex-col justify-between transition-all duration-300 ease-in-out lg:static lg:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-50 bg-slate-900 text-slate-100 flex flex-col justify-between transition-all duration-300 ease-in-out lg:sticky lg:top-0 lg:h-screen lg:translate-x-0 ${
           sidebarOpen
             ? "translate-x-0 w-64 shadow-2xl"
             : "-translate-x-full lg:translate-x-0"
         } ${isCollapsed ? "lg:w-20" : "lg:w-64"}`}
       >
-        <div>
+        <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
           {/* Logo & Header */}
           <div
-            className={`h-16 flex items-center border-b border-slate-800 transition-all duration-300 ${
+            className={`h-16 flex items-center border-b border-slate-800 shrink-0 transition-all duration-300 ${
               isCollapsed ? "px-3 justify-center" : "px-5 justify-between"
             }`}
           >
@@ -246,7 +246,7 @@ export default function AdminLayout({
 
           {/* Desktop Uncollapse Button when collapsed */}
           {isCollapsed && (
-            <div className="hidden lg:flex justify-center py-2 border-b border-slate-800/60">
+            <div className="hidden lg:flex justify-center py-2 border-b border-slate-800/60 shrink-0">
               <Button
                 variant="ghost"
                 size="icon-sm"
@@ -260,7 +260,7 @@ export default function AdminLayout({
           )}
 
           {/* Navigation Menu */}
-          <nav className="p-3 space-y-1.5">
+          <nav className="flex-1 p-3 space-y-1.5 overflow-y-auto">
             {!isCollapsed ? (
               <p className="px-3 text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-2">
                 จัดการระบบ
@@ -296,7 +296,16 @@ export default function AdminLayout({
         </div>
 
         {/* Footer Actions */}
-        <div className="p-3 border-t border-slate-800 space-y-2">
+        <div className="p-3 border-t border-slate-800 space-y-2 shrink-0 bg-slate-900">
+          {!isCollapsed && (
+            <div className="px-3 py-1.5 rounded-lg bg-slate-800/60 flex items-center justify-between text-[11px] text-slate-400">
+              <span className="truncate">เข้าสู่ระบบโดย</span>
+              <span className="font-semibold text-emerald-400 flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                {displayUsername}
+              </span>
+            </div>
+          )}
           <Link
             href="/"
             target="_blank"
