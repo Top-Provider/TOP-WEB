@@ -1,60 +1,95 @@
 "use client";
 
 import React, { useEffect, useState, useRef, useCallback } from "react";
-import { usePathname, useSearchParams } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { MedicalCrossLoader } from "@/components/ui/medical-cross-loader";
 
-type CurtainPhase = "idle" | "entering" | "active" | "exiting";
+type CurtainState = "idle" | "entering" | "covered" | "exiting";
 
 export function PageTransitionCurtain() {
+  const router = useRouter();
   const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const [phase, setPhase] = useState<CurtainPhase>("idle");
 
-  const enterStartTime = useRef<number>(0);
+  const [state, setState] = useState<CurtainState>("idle");
+  const pendingHref = useRef<string | null>(null);
+  const targetPath = useRef<string | null>(null);
   const isNavigating = useRef<boolean>(false);
-  const currentPathRef = useRef<string>(pathname);
+  const transitionStartRef = useRef<number>(0);
 
   // Trigger Slide-In from Left
-  const startTransition = useCallback(() => {
-    enterStartTime.current = Date.now();
+  const triggerNavigation = useCallback((href: string) => {
+    if (isNavigating.current) return;
     isNavigating.current = true;
-    setPhase("entering");
+    pendingHref.current = href;
+    targetPath.current = href.split("?")[0].split("#")[0];
+    transitionStartRef.current = Date.now();
+
+    // 1. Start sliding in from the left to 0
+    setState("entering");
   }, []);
 
-  // Trigger Slide-Out to Right
-  const finishTransition = useCallback(() => {
-    const elapsed = Date.now() - enterStartTime.current;
-    const minDisplayTime = 380; // Ensure slide-in completes smoothly
-    const remainingTime = Math.max(0, minDisplayTime - elapsed);
+  // When state changes to 'entering', after 380ms (slide-in complete), execute navigation
+  useEffect(() => {
+    if (state === "entering") {
+      const enterTimer = setTimeout(() => {
+        setState("covered");
+        if (pendingHref.current) {
+          router.push(pendingHref.current);
+        }
+      }, 380);
 
-    const timer = setTimeout(() => {
-      setPhase("exiting");
-    }, remainingTime);
+      return () => clearTimeout(enterTimer);
+    }
+  }, [state, router]);
 
-    return () => clearTimeout(timer);
-  }, []);
+  // When pathname changes, new page is rendered! Start sliding out to right
+  useEffect(() => {
+    if (isNavigating.current && (state === "covered" || state === "entering")) {
+      const elapsed = Date.now() - transitionStartRef.current;
+      const minDisplayTime = 420; // Ensure user clearly sees the logo and slide-in
+      const delay = Math.max(80, minDisplayTime - elapsed);
 
-  // Listen to clicks on internal <a> links
+      const exitTimer = setTimeout(() => {
+        setState("exiting");
+      }, delay);
+
+      return () => clearTimeout(exitTimer);
+    }
+  }, [pathname, state]);
+
+  // When exiting, after 400ms, reset back to idle offscreen left
+  useEffect(() => {
+    if (state === "exiting") {
+      const finishTimer = setTimeout(() => {
+        setState("idle");
+        isNavigating.current = false;
+        pendingHref.current = null;
+        targetPath.current = null;
+      }, 420);
+
+      return () => clearTimeout(finishTimer);
+    }
+  }, [state]);
+
+  // Intercept internal link clicks
   useEffect(() => {
     const handleDocumentClick = (e: MouseEvent) => {
-      // Find closest anchor tag
+      // Find closest anchor
       const target = e.target as HTMLElement | null;
       const anchor = target?.closest("a") as HTMLAnchorElement | null;
       if (!anchor) return;
 
-      const href = anchor.getAttribute("href");
-      if (!href) return;
+      const rawHref = anchor.getAttribute("href");
+      if (!rawHref) return;
 
-      // Ignore external, target blank, modified keys, download, mailto, tel, hash-only
+      // Ignore external, target blank, modified keys, mailto, tel, downloads
       if (
         anchor.target === "_blank" ||
         anchor.hasAttribute("download") ||
-        href.startsWith("http://") ||
-        href.startsWith("https://") ||
-        href.startsWith("mailto:") ||
-        href.startsWith("tel:") ||
-        href.startsWith("#") ||
+        rawHref.startsWith("http://") ||
+        rawHref.startsWith("https://") ||
+        rawHref.startsWith("mailto:") ||
+        rawHref.startsWith("tel:") ||
         e.ctrlKey ||
         e.metaKey ||
         e.altKey ||
@@ -63,74 +98,73 @@ export function PageTransitionCurtain() {
         return;
       }
 
-      // Check if target is a different route
-      const targetUrl = new URL(anchor.href, window.location.href);
-      const currentUrl = new URL(window.location.href);
+      // Check URL destination
+      try {
+        const dest = new URL(anchor.href, window.location.href);
+        const curr = new URL(window.location.href);
 
-      // Same page anchor jump (e.g. /#team or /#capabilities)
-      if (
-        targetUrl.pathname === currentUrl.pathname &&
-        targetUrl.search === currentUrl.search
-      ) {
-        return;
+        // Same page anchor jump (e.g. /#team or /#contact or #overview)
+        if (dest.pathname === curr.pathname && (rawHref.startsWith("#") || rawHref.startsWith("/#"))) {
+          return;
+        }
+
+        // Only transition if path or search differs
+        if (dest.pathname === curr.pathname && dest.search === curr.search) {
+          return;
+        }
+
+        // Prevent instant page jump so the slide animation plays!
+        e.preventDefault();
+        e.stopPropagation();
+
+        triggerNavigation(rawHref);
+      } catch {
+        // Fallback for invalid URLs
       }
+    };
 
-      // Trigger the slide-in curtain
-      startTransition();
+    // Also handle browser Back/Forward buttons (popstate)
+    const handlePopState = () => {
+      setState("entering");
+      setTimeout(() => {
+        setState("exiting");
+      }, 350);
     };
 
     document.addEventListener("click", handleDocumentClick, { capture: true });
+    window.addEventListener("popstate", handlePopState);
+
     return () => {
       document.removeEventListener("click", handleDocumentClick, { capture: true });
+      window.removeEventListener("popstate", handlePopState);
     };
-  }, [startTransition]);
+  }, [triggerNavigation]);
 
-  // When pathname or searchParams change, the new page has arrived!
-  useEffect(() => {
-    if (isNavigating.current) {
-      isNavigating.current = false;
-      currentPathRef.current = pathname;
-      finishTransition();
-    }
-  }, [pathname, searchParams, finishTransition]);
-
-  // Handle animation phase resets
-  const handleTransitionEnd = (e: React.TransitionEvent<HTMLDivElement>) => {
-    if (e.target !== e.currentTarget) return;
-
-    if (phase === "entering") {
-      setPhase("active");
-    } else if (phase === "exiting") {
-      // Finished sliding out to the right -> instantly reset to idle offscreen left
-      setPhase("idle");
-    }
-  };
-
-  // Determine inline styles for each animation phase
-  const getCurtainStyle = (): React.CSSProperties => {
-    switch (phase) {
+  // Inline transform styles for buttery-smooth performance
+  const getTransformStyle = (): React.CSSProperties => {
+    switch (state) {
       case "entering":
         return {
-          transform: "translateX(0)",
-          transition: "transform 400ms cubic-bezier(0.16, 1, 0.3, 1)",
+          transform: "translate3d(0, 0, 0)",
+          transition: "transform 380ms cubic-bezier(0.16, 1, 0.3, 1)",
           pointerEvents: "auto",
         };
-      case "active":
+      case "covered":
         return {
-          transform: "translateX(0)",
+          transform: "translate3d(0, 0, 0)",
           transition: "none",
           pointerEvents: "auto",
         };
       case "exiting":
         return {
-          transform: "translateX(100%)",
-          transition: "transform 420ms cubic-bezier(0.5, 0, 0.75, 0)",
+          transform: "translate3d(100%, 0, 0)",
+          transition: "transform 400ms cubic-bezier(0.5, 0, 0.75, 0)",
           pointerEvents: "auto",
         };
       case "idle":
       default:
         return {
-          transform: "translateX(-100%)",
+          transform: "translate3d(-100%, 0, 0)",
           transition: "none",
           pointerEvents: "none",
         };
@@ -138,24 +172,23 @@ export function PageTransitionCurtain() {
   };
 
   return (
-    <div
-      onTransitionEnd={handleTransitionEnd}
-      style={getCurtainStyle()}
-      className="fixed inset-0 z-[9999] bg-[#F8FAFC] flex flex-col items-center justify-center select-none shadow-[25px_0_70px_rgba(0,98,255,0.14)] will-change-transform"
-      aria-hidden={phase === "idle"}
+    <aside
+      aria-hidden={state === "idle"}
+      style={getTransformStyle()}
+      className="fixed inset-0 z-[999999] bg-[#F8FAFC] flex flex-col items-center justify-center select-none shadow-[25px_0_60px_rgba(0,98,255,0.18)] will-change-transform"
     >
-      {/* Soft Ambient Glow */}
-      <div className="absolute inset-0 bg-gradient-to-r from-blue-50/60 via-[#F8FAFC] to-blue-50/60 pointer-events-none" />
+      {/* Soft Ambient Radial Background */}
+      <div className="absolute inset-0 bg-gradient-to-r from-blue-100/40 via-[#F8FAFC] to-blue-100/40 pointer-events-none" />
 
-      {/* Decorative vertical trailing edge bar on slide-in/out */}
-      <div className="absolute right-0 top-0 bottom-0 w-1.5 bg-gradient-to-b from-blue-500/20 via-[#0062FF] to-blue-500/20" />
-      <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-gradient-to-b from-blue-500/20 via-[#0062FF] to-blue-500/20" />
+      {/* Trailing and Leading Edge Glowing Accent Bars */}
+      <div className="absolute right-0 top-0 bottom-0 w-2 bg-gradient-to-b from-blue-400 via-[#0062FF] to-amber-400 shadow-[0_0_15px_rgba(0,98,255,0.5)]" />
+      <div className="absolute left-0 top-0 bottom-0 w-2 bg-gradient-to-b from-blue-400 via-[#0062FF] to-amber-400" />
 
-      {/* Centered TOP PROVIDER Orbital Loader */}
+      {/* Centered Grand TOP PROVIDER Orbital Loader */}
       <div className="relative z-10 flex flex-col items-center justify-center">
         <MedicalCrossLoader size="lg" />
       </div>
-    </div>
+    </aside>
   );
 }
 
