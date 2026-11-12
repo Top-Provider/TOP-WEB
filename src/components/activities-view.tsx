@@ -17,6 +17,20 @@ import {
   Tag,
   X,
   Share2,
+  Sparkles,
+  GraduationCap,
+  Handshake,
+  Users,
+  Presentation,
+  Building2,
+  HeartHandshake,
+  Compass,
+  Trophy,
+  BadgeCheck,
+  ShieldCheck,
+  Landmark,
+  PartyPopper,
+  Briefcase,
 } from "lucide-react";
 import { ActivityItem } from "@/app/api/activities/route";
 import { Modal } from "@/components/ui/modal";
@@ -28,9 +42,21 @@ interface ActivitiesViewProps {
 
 const CATEGORIES = [
   { id: "all", label: "ทั้งหมด", icon: LayoutGrid },
+  { id: "product_innovation", label: "Product Innovation", icon: Sparkles },
+  { id: "hr_development", label: "การพัฒนาบุคลากร", icon: GraduationCap },
+  { id: "partner", label: "Partner", icon: Handshake },
+  { id: "customer", label: "Customer", icon: Users },
+  { id: "seminar", label: "การสัมมนา", icon: Presentation },
+  { id: "activity_partner", label: "กิจกรรม & Partner", icon: Building2 },
+  { id: "activity_customer", label: "กิจกรรม & Customer", icon: HeartHandshake },
+  { id: "orientation", label: "Orientation", icon: Compass },
+  { id: "workshop", label: "Workshop", icon: Briefcase },
+  { id: "awards", label: "งานรับรางวัล", icon: Trophy },
+  { id: "distributor", label: "แต่งตั้งเป็นตัวแทนจำหน่าย", icon: BadgeCheck },
+  { id: "certification", label: "แต่งตั้งรับรองผลิตภัณฑ์", icon: ShieldCheck },
+  { id: "religious", label: "พิธีทางศาสนา", icon: Landmark },
+  { id: "company_internal", label: "กิจกรรมภายในบริษัท", icon: PartyPopper },
   { id: "news", label: "ข่าวประชาสัมพันธ์", icon: Megaphone },
-  { id: "event", label: "กิจกรรม & อีเวนต์", icon: Calendar },
-  { id: "tech", label: "ความรู้และเทคโนโลยี", icon: Lightbulb },
   { id: "video", label: "วิดีโอ", icon: PlayCircle },
 ];
 
@@ -76,22 +102,22 @@ export function ActivitiesView({ initialActivities = [] }: ActivitiesViewProps) 
   // Filter & sort activities
   const filteredActivities = useMemo(() => {
     let list = initialActivities.filter((act) => {
-      // Category filter (mapping culture/exhibition/csr to event/tech/news if needed)
+      // Category filter
       if (selectedCategory !== "all") {
-        if (selectedCategory === "event") {
-          if (act.category !== "event" && act.category !== "culture" && act.category !== "csr") {
+        if (
+          act.category !== selectedCategory &&
+          act.category !== getCategoryLabel(selectedCategory)
+        ) {
+          // Compatibility fallbacks for older legacy categories
+          if (selectedCategory === "company_internal" && act.category === "culture") {
+            // match
+          } else if (selectedCategory === "seminar" && (act.category === "exhibition" || act.category === "การสัมนา")) {
+            // match
+          } else if (selectedCategory === "hr_development" && act.category === "training") {
+            // match
+          } else {
             return false;
           }
-        } else if (selectedCategory === "tech") {
-          if (act.category !== "tech" && act.category !== "training") {
-            return false;
-          }
-        } else if (selectedCategory === "news") {
-          if (act.category !== "news" && act.category !== "exhibition") {
-            return false;
-          }
-        } else if (act.category !== selectedCategory) {
-          return false;
         }
       }
 
@@ -128,19 +154,66 @@ export function ActivitiesView({ initialActivities = [] }: ActivitiesViewProps) 
 
   const getCategoryLabel = (category: string) => {
     switch (category) {
+      case "product_innovation":
+      case "Product Innovation":
+        return "Product Innovation";
+      case "hr_development":
+      case "การพัฒนาบุคลากร":
+        return "การพัฒนาบุคลากร";
+      case "partner":
+      case "Partner":
+        return "Partner";
+      case "customer":
+      case "Customer":
+        return "Customer";
+      case "seminar":
+      case "การสัมมนา":
+      case "การสัมนา":
+        return "การสัมมนา";
+      case "activity_partner":
+      case "กิจกรรม & Partner":
+        return "กิจกรรม & Partner";
+      case "activity_customer":
+      case "กิจกรรม & Customer":
+        return "กิจกรรม & Customer";
+      case "orientation":
+      case "Orientation":
+      case "Orieantation":
+        return "Orientation";
+      case "workshop":
+      case "Workshop":
+        return "Workshop";
+      case "awards":
+      case "งานรับรางวัล":
+        return "งานรับรางวัล";
+      case "distributor":
+      case "แต่งตั้งเป็นตัวแทนจำหน่าย":
+        return "แต่งตั้งเป็นตัวแทนจำหน่าย";
+      case "certification":
+      case "แต่งตั้งรับรองผลิตภัณฑ์":
+      case "แต่งตั้งรับรองผลัตภัณฑ์":
+        return "แต่งตั้งรับรองผลิตภัณฑ์";
+      case "religious":
+      case "พิธีทางศาสนา":
+        return "พิธีทางศาสนา";
+      case "company_internal":
+      case "culture":
+      case "กิจกรรมภายในบริษัท":
+        return "กิจกรรมภายในบริษัท";
       case "news":
         return "ข่าวประชาสัมพันธ์";
       case "event":
-      case "culture":
-      case "csr":
         return "กิจกรรม & อีเวนต์";
       case "tech":
-      case "training":
         return "ความรู้และเทคโนโลยี";
       case "video":
         return "วิดีโอ";
       case "exhibition":
         return "งานสัมมนา & นิทรรศการ";
+      case "training":
+        return "อบรมและพัฒนาทักษะ";
+      case "csr":
+        return "เพื่อสังคม (CSR)";
       default:
         return category;
     }
@@ -148,19 +221,62 @@ export function ActivitiesView({ initialActivities = [] }: ActivitiesViewProps) 
 
   const getCategoryBadgeClass = (category: string) => {
     switch (category) {
-      case "news":
-        return "bg-sky-500/90 text-white";
-      case "event":
+      case "product_innovation":
+      case "Product Innovation":
+        return "bg-blue-600 text-white";
+      case "hr_development":
+      case "การพัฒนาบุคลากร":
+        return "bg-emerald-600 text-white";
+      case "partner":
+      case "Partner":
+        return "bg-indigo-600 text-white";
+      case "customer":
+      case "Customer":
+        return "bg-teal-600 text-white";
+      case "seminar":
+      case "การสัมมนา":
+      case "การสัมนา":
+        return "bg-violet-600 text-white";
+      case "activity_partner":
+      case "กิจกรรม & Partner":
+        return "bg-purple-600 text-white";
+      case "activity_customer":
+      case "กิจกรรม & Customer":
+        return "bg-cyan-600 text-white";
+      case "orientation":
+      case "Orientation":
+      case "Orieantation":
+        return "bg-amber-600 text-white";
+      case "workshop":
+      case "Workshop":
+        return "bg-orange-600 text-white";
+      case "awards":
+      case "งานรับรางวัล":
+        return "bg-yellow-600 text-white";
+      case "distributor":
+      case "แต่งตั้งเป็นตัวแทนจำหน่าย":
+        return "bg-rose-600 text-white";
+      case "certification":
+      case "แต่งตั้งรับรองผลิตภัณฑ์":
+      case "แต่งตั้งรับรองผลัตภัณฑ์":
+        return "bg-green-600 text-white";
+      case "religious":
+      case "พิธีทางศาสนา":
+        return "bg-amber-800 text-white";
+      case "company_internal":
       case "culture":
-      case "csr":
-        return "bg-blue-600/90 text-white";
+      case "กิจกรรมภายในบริษัท":
+        return "bg-pink-600 text-white";
+      case "news":
+        return "bg-sky-500 text-white";
+      case "event":
+        return "bg-blue-600 text-white";
       case "tech":
-      case "training":
-        return "bg-indigo-600/90 text-white";
+        return "bg-indigo-600 text-white";
       case "video":
-        return "bg-cyan-600/90 text-white";
+        return "bg-cyan-600 text-white";
       default:
-        return "bg-slate-700/90 text-white";
+        return "bg-slate-700 text-white";
     }
   };
 

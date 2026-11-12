@@ -32,20 +32,31 @@ import { fetchRecords, saveRecord } from "@/lib/crud";
 import { ActivityItem } from "@/app/api/activities/route";
 
 const DEFAULT_CATEGORY_OPTIONS: SelectOption[] = [
+  { value: "product_innovation", label: "Product Innovation" },
+  { value: "hr_development", label: "การพัฒนาบุคลากร" },
+  { value: "partner", label: "Partner" },
+  { value: "customer", label: "Customer" },
+  { value: "seminar", label: "การสัมมนา" },
+  { value: "activity_partner", label: "กิจกรรม & Partner" },
+  { value: "activity_customer", label: "กิจกรรม & Customer" },
+  { value: "orientation", label: "Orientation" },
+  { value: "workshop", label: "Workshop" },
+  { value: "awards", label: "งานรับรางวัล" },
+  { value: "distributor", label: "แต่งตั้งเป็นตัวแทนจำหน่าย" },
+  { value: "certification", label: "แต่งตั้งรับรองผลิตภัณฑ์" },
+  { value: "religious", label: "พิธีทางศาสนา" },
+  { value: "company_internal", label: "กิจกรรมภายในบริษัท" },
   { value: "news", label: "ข่าวประชาสัมพันธ์ (News & PR)" },
   { value: "event", label: "กิจกรรม & อีเวนต์ (Events & Activities)" },
   { value: "tech", label: "ความรู้และเทคโนโลยี (Tech & Knowledge)" },
   { value: "video", label: "วิดีโอ (Video & Media)" },
-  { value: "culture", label: "วัฒนธรรมภายในองค์กร (Company Culture & Outing)" },
-  { value: "exhibition", label: "งานสัมมนาและนิทรรศการ (Exhibition & Tech Conferences)" },
-  { value: "csr", label: "เพื่อสังคมและสาธารณประโยชน์ (CSR & Healthcare Support)" },
-  { value: "training", label: "อบรมและพัฒนาทักษะ (Training & Certification)" },
+  { value: "csr", label: "เพื่อสังคมและสาธารณประโยชน์ (CSR)" },
 ];
 
 const DEFAULT_FORM: Omit<ActivityItem, "id"> = {
   title: "",
   title_en: "",
-  category: "culture",
+  category: "product_innovation",
   event_date: "",
   location: "",
   short_description: "",
