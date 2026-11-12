@@ -138,3 +138,11 @@
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+/* Hide fallback loading screens while page-transition curtain is actively sliding/covering */
+html[data-navigating="true"] [data-page-loader],
+html[data-navigating="true"] .page-loading-fallback {
+  opacity: 0 !important;
+  pointer-events: none !important;
+  visibility: hidden !important;
+}

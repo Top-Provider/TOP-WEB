@@ -12,61 +12,92 @@ export function PageTransitionCurtain() {
 
   const [status, setStatus] = useState<AnimStatus>("idle");
   const pendingHrefRef = useRef<string | null>(null);
-  const routeLoadedRef = useRef<boolean>(false);
+  const isPageReadyRef = useRef<boolean>(false);
   const currentPathRef = useRef<string>(pathname);
 
   // Trigger Slide In
   const triggerNavigation = useCallback((href: string) => {
+    // Flag navigating attribute on html to hide any background loading.tsx duplicate spinners
+    if (typeof document !== "undefined") {
+      document.documentElement.setAttribute("data-navigating", "true");
+    }
     pendingHrefRef.current = href;
-    routeLoadedRef.current = false;
+    isPageReadyRef.current = false;
     setStatus("in");
   }, []);
 
-  // When pathname changes, mark route as loaded
+  // Listen for the new page being fully mounted via template.tsx
   useEffect(() => {
-    if (status !== "idle" && pathname !== currentPathRef.current) {
-      currentPathRef.current = pathname;
-      routeLoadedRef.current = true;
+    const handlePageReady = () => {
+      isPageReadyRef.current = true;
 
-      // If we are currently waiting (slide-in already finished), trigger slide-out immediately!
-      if (status === "waiting") {
-        const timer = setTimeout(() => {
-          setStatus("out");
-        }, 150);
-        return () => clearTimeout(timer);
-      }
+      // If curtain is waiting (slide-in already finished), proceed to slide out!
+      setStatus((curr) => {
+        if (curr === "waiting") {
+          setTimeout(() => {
+            setStatus("out");
+          }, 150);
+          return "waiting";
+        }
+        return curr;
+      });
+    };
+
+    window.addEventListener("top-web:page-ready", handlePageReady);
+    return () => {
+      window.removeEventListener("top-web:page-ready", handlePageReady);
+    };
+  }, []);
+
+  // Secondary fallback: when pathname changes, record it
+  useEffect(() => {
+    if (pathname !== currentPathRef.current) {
+      currentPathRef.current = pathname;
+      // Mark ready if not already marked
+      const timer = setTimeout(() => {
+        isPageReadyRef.current = true;
+        setStatus((curr) => {
+          if (curr === "waiting") {
+            return "out";
+          }
+          return curr;
+        });
+      }, 250);
+      return () => clearTimeout(timer);
     }
-  }, [pathname, status]);
+  }, [pathname]);
 
   // Handle Animation End from browser compositor
   const handleAnimationEnd = (e: React.AnimationEvent<HTMLDivElement>) => {
     if (e.target !== e.currentTarget) return;
 
     if (e.animationName === "curtainSlideIn") {
-      // 1. Slide-in from left is complete! Execute the route change
+      // 1. Slide-in from left is complete! Now execute the route change
       if (pendingHrefRef.current) {
         router.push(pendingHrefRef.current);
       }
 
-      // Check if the new page has already arrived
-      if (routeLoadedRef.current) {
-        // Wait a small beat so user sees the logo, then slide out!
+      // If the target page is already mounted and ready, slide out after a pleasant beat
+      if (isPageReadyRef.current) {
         setTimeout(() => {
           setStatus("out");
-        }, 180);
+        }, 160);
       } else {
-        // Wait for pathname to change
+        // Wait for template.tsx to fire top-web:page-ready
         setStatus("waiting");
       }
     } else if (e.animationName === "curtainSlideOut") {
-      // 2. Slide-out to right is complete! Reset to idle
+      // 2. Slide-out to right is complete! Remove navigating attribute and reset
+      if (typeof document !== "undefined") {
+        document.documentElement.removeAttribute("data-navigating");
+      }
       setStatus("idle");
       pendingHrefRef.current = null;
-      routeLoadedRef.current = false;
+      isPageReadyRef.current = false;
     }
   };
 
-  // Fallback watchdog: if a route change takes too long or fails, always slide out after 2.5s
+  // Fallback watchdog: if waiting for new page exceeds 2.5s, always slide out
   useEffect(() => {
     if (status === "waiting") {
       const timeout = setTimeout(() => {
@@ -105,8 +136,8 @@ export function PageTransitionCurtain() {
         const dest = new URL(anchor.href, window.location.href);
         const curr = new URL(window.location.href);
 
-        // Same page anchor jump
-        if (dest.pathname === curr.pathname && (rawHref.startsWith("#") || rawHref.startsWith("/#"))) {
+        // Same page anchor jump (e.g. #contact)
+        if (dest.pathname === curr.pathname && (rawHref.startsWith("#") || rawHref.startsWith("/#") || dest.hash)) {
           return;
         }
 
@@ -125,9 +156,21 @@ export function PageTransitionCurtain() {
       }
     };
 
+    // Handle browser Back/Forward buttons (popstate)
+    const handlePopState = () => {
+      if (typeof document !== "undefined") {
+        document.documentElement.setAttribute("data-navigating", "true");
+      }
+      isPageReadyRef.current = false;
+      setStatus("in");
+    };
+
     document.addEventListener("click", handleDocumentClick, { capture: true });
+    window.addEventListener("popstate", handlePopState);
+
     return () => {
       document.removeEventListener("click", handleDocumentClick, { capture: true });
+      window.removeEventListener("popstate", handlePopState);
     };
   }, [triggerNavigation]);
 
@@ -162,11 +205,11 @@ export function PageTransitionCurtain() {
               : status === "out"
               ? "curtainSlideOut"
               : "none",
-          animationDuration: "450ms",
+          animationDuration: "420ms",
           animationTimingFunction:
             status === "in"
               ? "cubic-bezier(0.16, 1, 0.3, 1)"
-              : "cubic-bezier(0.5, 0, 0.75, 0)",
+              : "cubic-bezier(0.4, 0, 0.2, 1)",
           animationFillMode: "forwards",
           transform: status === "waiting" ? "translate3d(0, 0, 0)" : undefined,
         }}
@@ -187,5 +230,3 @@ export function PageTransitionCurtain() {
     </>
   );
 }
-
-export default PageTransitionCurtain;
