@@ -2,7 +2,6 @@
 
 import React, { useState, useMemo } from "react";
 import {
-  LayoutGrid,
   Megaphone,
   Calendar,
   Lightbulb,
@@ -17,20 +16,6 @@ import {
   Tag,
   X,
   Share2,
-  Sparkles,
-  GraduationCap,
-  Handshake,
-  Users,
-  Presentation,
-  Building2,
-  HeartHandshake,
-  Compass,
-  Trophy,
-  BadgeCheck,
-  ShieldCheck,
-  Landmark,
-  PartyPopper,
-  Briefcase,
 } from "lucide-react";
 import { ActivityItem } from "@/app/api/activities/route";
 import { Modal } from "@/components/ui/modal";
@@ -42,23 +27,21 @@ interface ActivitiesViewProps {
 }
 
 const CATEGORY_OPTIONS: SelectOption[] = [
-  { value: "all", label: "ทุกหมวดหมู่ (ทั้งหมด)", icon: <LayoutGrid className="w-4 h-4 text-blue-600" /> },
-  { value: "product_innovation", label: "Product Innovation", icon: <Sparkles className="w-4 h-4 text-blue-500" /> },
-  { value: "hr_development", label: "การพัฒนาบุคลากร", icon: <GraduationCap className="w-4 h-4 text-emerald-500" /> },
-  { value: "partner", label: "Partner", icon: <Handshake className="w-4 h-4 text-indigo-500" /> },
-  { value: "customer", label: "Customer", icon: <Users className="w-4 h-4 text-teal-500" /> },
-  { value: "seminar", label: "การสัมมนา", icon: <Presentation className="w-4 h-4 text-violet-500" /> },
-  { value: "activity_partner", label: "กิจกรรม & Partner", icon: <Building2 className="w-4 h-4 text-purple-500" /> },
-  { value: "activity_customer", label: "กิจกรรม & Customer", icon: <HeartHandshake className="w-4 h-4 text-cyan-500" /> },
-  { value: "orientation", label: "Orientation", icon: <Compass className="w-4 h-4 text-amber-500" /> },
-  { value: "workshop", label: "Workshop", icon: <Briefcase className="w-4 h-4 text-orange-500" /> },
-  { value: "awards", label: "งานรับรางวัล", icon: <Trophy className="w-4 h-4 text-yellow-500" /> },
-  { value: "distributor", label: "แต่งตั้งเป็นตัวแทนจำหน่าย", icon: <BadgeCheck className="w-4 h-4 text-rose-500" /> },
-  { value: "certification", label: "แต่งตั้งรับรองผลิตภัณฑ์", icon: <ShieldCheck className="w-4 h-4 text-green-500" /> },
-  { value: "religious", label: "พิธีทางศาสนา", icon: <Landmark className="w-4 h-4 text-amber-700" /> },
-  { value: "company_internal", label: "กิจกรรมภายในบริษัท", icon: <PartyPopper className="w-4 h-4 text-pink-500" /> },
-  { value: "news", label: "ข่าวประชาสัมพันธ์", icon: <Megaphone className="w-4 h-4 text-sky-500" /> },
-  { value: "video", label: "วิดีโอ", icon: <PlayCircle className="w-4 h-4 text-blue-500" /> },
+  { value: "all", label: "ทุกหมวดหมู่ (ทั้งหมด)" },
+  { value: "product_innovation", label: "Product Innovation" },
+  { value: "hr_development", label: "การพัฒนาบุคลากร" },
+  { value: "partner", label: "Partner" },
+  { value: "customer", label: "Customer" },
+  { value: "seminar", label: "การสัมมนา" },
+  { value: "activity_partner", label: "กิจกรรม & Partner" },
+  { value: "activity_customer", label: "กิจกรรม & Customer" },
+  { value: "orientation", label: "Orientation" },
+  { value: "workshop", label: "Workshop" },
+  { value: "awards", label: "งานรับรางวัล" },
+  { value: "distributor", label: "แต่งตั้งเป็นตัวแทนจำหน่าย" },
+  { value: "certification", label: "แต่งตั้งรับรองผลิตภัณฑ์" },
+  { value: "religious", label: "พิธีทางศาสนา" },
+  { value: "company_internal", label: "กิจกรรมภายในบริษัท" },
 ];
 
 const THAI_MONTHS = [
