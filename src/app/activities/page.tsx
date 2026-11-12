@@ -97,7 +97,7 @@ export default async function ActivitiesPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#F8FAFC] selection:bg-blue-600 selection:text-white">
+    <div className="min-h-screen flex flex-col bg-[#F1F5F9] selection:bg-blue-600 selection:text-white">
       {/* Sticky Navigation Bar */}
       <Navbar />
 
@@ -105,19 +105,19 @@ export default async function ActivitiesPage() {
         {/* ================================================================= */}
         {/* Hero Section (Matching User's Reference Mockup) */}
         {/* ================================================================= */}
-        <section className="relative pt-6 sm:pt-10 pb-16 sm:pb-20 overflow-hidden bg-gradient-to-b from-[#EBF2FC] via-[#F2F7FD] to-[#F8FAFC]">
+        <section className="relative pt-6 sm:pt-10 pb-16 sm:pb-20 overflow-hidden bg-gradient-to-b from-[#E2ECF8] via-[#EAEFF6] to-[#F1F5F9]">
           {/* Floating Translucent Medical Crosses (+) */}
-          <div className="absolute top-10 left-[8%] text-blue-200/50 select-none pointer-events-none hidden sm:block">
+          <div className="absolute top-10 left-[8%] text-blue-200/60 select-none pointer-events-none hidden sm:block">
             <svg className="w-10 h-10" viewBox="0 0 24 24" fill="currentColor">
               <path d="M10 3a2 2 0 0 1 4 0v5h5a2 2 0 1 1 0 4h-5v5a2 2 0 1 1-4 0v-5H5a2 2 0 1 1 0-4h5V3z" />
             </svg>
           </div>
-          <div className="absolute top-28 left-[45%] text-blue-200/60 select-none pointer-events-none">
+          <div className="absolute top-28 left-[45%] text-blue-200/70 select-none pointer-events-none">
             <svg className="w-16 h-16" viewBox="0 0 24 24" fill="currentColor">
               <path d="M10 3a2 2 0 0 1 4 0v5h5a2 2 0 1 1 0 4h-5v5a2 2 0 1 1-4 0v-5H5a2 2 0 1 1 0-4h5V3z" />
             </svg>
           </div>
-          <div className="absolute top-8 right-[44%] text-blue-200/40 select-none pointer-events-none hidden lg:block">
+          <div className="absolute top-8 right-[44%] text-blue-200/50 select-none pointer-events-none hidden lg:block">
             <svg className="w-12 h-12" viewBox="0 0 24 24" fill="currentColor">
               <path d="M10 3a2 2 0 0 1 4 0v5h5a2 2 0 1 1 0 4h-5v5a2 2 0 1 1-4 0v-5H5a2 2 0 1 1 0-4h5V3z" />
             </svg>
@@ -145,15 +145,15 @@ export default async function ActivitiesPage() {
 
               {/* Right Column: Hospital Building Render / Visual */}
               <div className="lg:col-span-6 relative">
-                <div className="relative w-full h-[280px] sm:h-[360px] lg:h-[400px] rounded-[32px] overflow-hidden shadow-2xl shadow-blue-500/10 border border-white/90 bg-gradient-to-tr from-blue-100/60 via-white to-slate-50">
+                <div className="relative w-full h-[280px] sm:h-[360px] lg:h-[400px] rounded-[32px] overflow-hidden shadow-2xl shadow-blue-500/10 border border-white/90 bg-gradient-to-tr from-blue-100/60 via-white to-slate-100">
                   <img
                     src="https://images.unsplash.com/photo-1586773860418-d37222d8fce3?auto=format&fit=crop&w=1200&q=80"
                     alt="Modern Smart Hospital Architecture - TOP PROVIDER"
                     className="w-full h-full object-cover object-center"
                   />
                   {/* Subtle edge blend gradients */}
-                  <div className="absolute inset-0 bg-gradient-to-r from-[#EBF2FC]/50 via-transparent to-transparent pointer-events-none" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#F8FAFC] via-transparent to-transparent pointer-events-none" />
+                  <div className="absolute inset-0 bg-gradient-to-r from-[#E2ECF8]/50 via-transparent to-transparent pointer-events-none" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#F1F5F9] via-transparent to-transparent pointer-events-none" />
 
                   {/* Hospital Ecosystem Badge */}
                   <div className="absolute top-4 right-4 bg-white/95 backdrop-blur-md px-4 py-1.5 rounded-full border border-blue-100 text-xs font-bold text-[#0062FF] flex items-center gap-2 shadow-sm">
@@ -166,7 +166,7 @@ export default async function ActivitiesPage() {
           </div>
 
           {/* Bottom Wave Curve Transition */}
-          <div className="absolute -bottom-1 left-0 right-0 h-12 bg-[#F8FAFC] [clip-path:ellipse(65%_100%_at_50%_100%)] pointer-events-none" />
+          <div className="absolute -bottom-1 left-0 right-0 h-12 bg-[#F1F5F9] [clip-path:ellipse(65%_100%_at_50%_100%)] pointer-events-none" />
         </section>
 
         {/* Content Container */}

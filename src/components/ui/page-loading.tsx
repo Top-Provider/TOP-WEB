@@ -8,13 +8,11 @@ interface PageLoadingProps {
 
 export function PageLoading({ size = "lg", className = "" }: PageLoadingProps = {}) {
   return (
-    <div
-      data-page-loader
-      className={`page-loading-fallback min-h-screen bg-[#F8FAFC] flex flex-col items-center justify-center px-4 animate-in fade-in duration-300 ${className}`}
-    >
+    <div className={`min-h-screen bg-[#F8FAFC] flex flex-col items-center justify-center px-4 ${className}`}>
       <MedicalCrossLoader size={size} />
     </div>
   );
 }
 
 export default PageLoading;
+
