@@ -987,7 +987,7 @@ export default function AdminProductsPage() {
         onClose={() => setIsModalOpen(false)}
         title={editingId ? "แก้ไขข้อมูลสินค้า" : "เพิ่มสินค้าใหม่ (Master Product)"}
         description="กรอกข้อมูลสเปก รูปภาพ และลิงก์ดาวน์โหลด Datasheet / TOR"
-        maxWidth="3xl"
+        maxWidth="5xl"
         footer={
           <>
             <Button

@@ -673,7 +673,7 @@ VALUES
         isOpen={showSqlModal}
         onClose={() => setShowSqlModal(false)}
         title="คำสั่ง SQL สร้างตาราง TB_SOLUTION_TOPICS"
-        maxWidth="3xl"
+        maxWidth="5xl"
       >
         <div className="space-y-3">
           <p className="text-xs text-slate-600">

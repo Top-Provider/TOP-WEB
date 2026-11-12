@@ -744,7 +744,7 @@ export default function AdminActivitiesPage() {
         isOpen={showModal}
         onClose={() => setShowModal(false)}
         title={editingId ? "แก้ไขข้อมูลกิจกรรม" : "เพิ่มกิจกรรมใหม่"}
-        maxWidth="3xl"
+        maxWidth="5xl"
       >
         <form onSubmit={handleSave} className="space-y-4 py-2">
           {/* ข้อมูลพื้นฐาน */}
@@ -1069,7 +1069,7 @@ export default function AdminActivitiesPage() {
           isOpen={!!viewActivity}
           onClose={() => setViewActivity(null)}
           title="ตัวอย่างกิจกรรม"
-          maxWidth="3xl"
+          maxWidth="5xl"
         >
           <div className="py-2 space-y-4">
             {/* Main Image Display */}

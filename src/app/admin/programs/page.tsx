@@ -749,7 +749,7 @@ export default function AdminProgramsPage() {
         onClose={() => setIsModalOpen(false)}
         title={editingId ? "แก้ไขโปรแกรมซอฟต์แวร์" : "เพิ่มโปรแกรมใหม่ (Product Program)"}
         description="กรอกข้อความอธิบาย (Text), รูปภาพหน้าจอ, ลิงก์คลิปวิดีโอ (YouTube/MP4)"
-        maxWidth="3xl"
+        maxWidth="5xl"
       >
         <form onSubmit={handleSubmit} noValidate className="space-y-6">
           {/* Quick Template Selector */}
