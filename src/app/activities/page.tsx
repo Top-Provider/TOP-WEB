@@ -106,7 +106,7 @@ export default async function ActivitiesPage() {
         {/* Hero Section */}
         {/* ================================================================= */}
         <section className="relative pt-6 sm:pt-10 pb-8 sm:pb-12 bg-[#F1F5F9]">
-          <div className="w-[94%] max-w-[2200px] mx-auto px-2 sm:px-4">
+          <div className="w-[94%] max-w-[1720px] mx-auto px-2 sm:px-4 lg:px-6">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
               {/* Left Column: Title & Description */}
               <div className="lg:col-span-6 space-y-4 sm:space-y-5 z-10 py-4 sm:py-6">
@@ -117,18 +117,18 @@ export default async function ActivitiesPage() {
                   <span className="w-12 h-0.5 bg-[#0062FF]/50 rounded-full" />
                 </div>
 
-                <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-slate-900 tracking-tight leading-[1.12]">
+                <h1 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-black text-slate-900 tracking-tight leading-[1.15]">
                   News &amp; Activity
                 </h1>
 
-                <p className="text-sm sm:text-base text-slate-600 leading-relaxed max-w-xl font-normal">
+                <p className="text-xs sm:text-sm lg:text-base text-slate-600 leading-relaxed max-w-xl font-normal">
                   อัปเดตข่าวสาร กิจกรรม และความเคลื่อนไหวล่าสุด จาก บริษัท ท็อป โปรไวเดอร์ ซิสเต็ม กรุ๊ป จำกัด
                 </p>
               </div>
 
               {/* Right Column: Hospital Building Render / Visual */}
               <div className="lg:col-span-6 relative">
-                <div className="relative w-full h-[280px] sm:h-[360px] lg:h-[400px] rounded-[32px] overflow-hidden shadow-xl shadow-slate-300/40 border border-slate-200/90 bg-white">
+                <div className="relative w-full h-[240px] sm:h-[320px] lg:h-[380px] rounded-2xl sm:rounded-[32px] overflow-hidden shadow-xl shadow-slate-300/40 border border-slate-200/90 bg-white">
                   <img
                     src="https://images.unsplash.com/photo-1586773860418-d37222d8fce3?auto=format&fit=crop&w=1200&q=80"
                     alt="Modern Smart Hospital Architecture - TOP PROVIDER"
@@ -136,7 +136,7 @@ export default async function ActivitiesPage() {
                   />
 
                   {/* Hospital Ecosystem Badge */}
-                  <div className="absolute top-4 right-4 bg-white/95 backdrop-blur-md px-4 py-1.5 rounded-full border border-slate-200/80 text-xs font-bold text-[#0062FF] flex items-center gap-2 shadow-sm">
+                  <div className="absolute top-3 sm:top-4 right-3 sm:right-4 bg-white/95 backdrop-blur-md px-3 sm:px-4 py-1 sm:py-1.5 rounded-full border border-slate-200/80 text-[11px] sm:text-xs font-bold text-[#0062FF] flex items-center gap-1.5 sm:gap-2 shadow-sm">
                     <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                     <span>SMART HOSPITAL ECOSYSTEM</span>
                   </div>
@@ -147,7 +147,7 @@ export default async function ActivitiesPage() {
         </section>
 
         {/* Content Container */}
-        <div className="w-[94%] max-w-[2200px] mx-auto px-2 sm:px-4">
+        <div className="w-[94%] max-w-[1720px] mx-auto px-2 sm:px-4 lg:px-6 pt-6 sm:pt-8 pb-12 sm:pb-16">
           <ActivitiesView initialActivities={initialActivities} />
         </div>
       </main>

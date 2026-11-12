@@ -113,18 +113,36 @@ export function HospitalDashboard() {
           </button>
         </div>
 
-        {/* Pagination Dots */}
-        <div className="flex items-center justify-center gap-2 mt-6">
-          {slides.map((slide, idx) => (
-            <button
-              key={slide.id}
-              onClick={() => setActiveSlide(idx)}
-              aria-label={`Go to slide ${idx + 1}`}
-              className={`h-2 rounded-full transition-all duration-300 cursor-pointer ${
-                activeSlide === idx ? "w-7 bg-[#0066FF]" : "w-2 bg-slate-300 hover:bg-slate-400"
-              }`}
-            />
-          ))}
+        {/* Pagination Dots & Mobile Controls */}
+        <div className="flex items-center justify-center gap-3 mt-5 sm:mt-6">
+          <button
+            onClick={prevSlide}
+            aria-label="Previous slide"
+            className="sm:hidden w-8 h-8 rounded-full bg-white border border-slate-200 text-slate-700 flex items-center justify-center shadow-xs active:bg-slate-100 cursor-pointer"
+          >
+            <ChevronLeft className="w-4 h-4" />
+          </button>
+
+          <div className="flex items-center gap-2">
+            {slides.map((slide, idx) => (
+              <button
+                key={slide.id}
+                onClick={() => setActiveSlide(idx)}
+                aria-label={`Go to slide ${idx + 1}`}
+                className={`h-2 rounded-full transition-all duration-300 cursor-pointer ${
+                  activeSlide === idx ? "w-7 bg-[#0066FF]" : "w-2 bg-slate-300 hover:bg-slate-400"
+                }`}
+              />
+            ))}
+          </div>
+
+          <button
+            onClick={nextSlide}
+            aria-label="Next slide"
+            className="sm:hidden w-8 h-8 rounded-full bg-white border border-slate-200 text-slate-700 flex items-center justify-center shadow-xs active:bg-slate-100 cursor-pointer"
+          >
+            <ChevronRight className="w-4 h-4" />
+          </button>
         </div>
       </div>
     </section>

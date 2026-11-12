@@ -238,15 +238,41 @@ export function HardwareSolutionView({
       </div>
 
       {/* ========================================================================= */}
-      {/* 2. MAIN CATALOG LAYOUT (SIDEBAR + 3-COLUMN PRODUCT GRID)                  */}
+      {/* 2. MAIN CATALOG LAYOUT (SIDEBAR + PRODUCT GRID)                           */}
       {/* ========================================================================= */}
       <div className="w-[94%] max-w-[1720px] mx-auto px-2 sm:px-4 lg:px-6 pt-6 sm:pt-8">
+        {/* MOBILE CATEGORY SELECTOR (lg:hidden) */}
+        <div className="lg:hidden w-full mb-6 space-y-2">
+          <p className="text-xs font-bold text-slate-600 uppercase tracking-wider px-1">
+            หมวดหมู่อุปกรณ์ฮาร์ดแวร์ :
+          </p>
+          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
+            {HARDWARE_GROUPS.flatMap((g) => g.categories).map((cat) => {
+              const isSelected = selectedSubCategory === cat.value;
+              return (
+                <button
+                  key={cat.value}
+                  type="button"
+                  onClick={() => setSelectedSubCategory(cat.value)}
+                  className={`shrink-0 px-4 py-2 rounded-full text-xs font-medium transition-all ${
+                    isSelected
+                      ? "bg-[#0062FF] text-white shadow-sm shadow-blue-500/25 font-semibold"
+                      : "bg-white text-slate-700 border border-slate-200/90 shadow-2xs hover:bg-slate-50"
+                  }`}
+                >
+                  {cat.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           
           {/* ===================================================================== */}
-          {/* LEFT SIDEBAR: HARDWARE SUB-CATEGORIES LIST                            */}
+          {/* LEFT SIDEBAR: HARDWARE SUB-CATEGORIES LIST (DESKTOP)                  */}
           {/* ===================================================================== */}
-          <div className="lg:col-span-3 bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs space-y-6">
+          <div className="hidden lg:block lg:col-span-3 bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs space-y-6 lg:sticky lg:top-24">
             {HARDWARE_GROUPS.map((group, groupIdx) => (
               <div
                 key={group.title}
@@ -279,7 +305,7 @@ export function HardwareSolutionView({
           </div>
 
           {/* ===================================================================== */}
-          {/* RIGHT PRODUCT DISPLAY AREA (3-COLUMN PRODUCT CARDS GRID)              */}
+          {/* RIGHT PRODUCT DISPLAY AREA (PRODUCT CARDS GRID)                       */}
           {/* ===================================================================== */}
           <div className="lg:col-span-9 space-y-6">
             
@@ -322,7 +348,7 @@ export function HardwareSolutionView({
                 <MedicalCrossLoader size="md" />
               </div>
             ) : filteredProducts.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5 sm:gap-6">
                 {filteredProducts.map((prod) => (
                   <CatalogProductCard
                     key={prod.id}

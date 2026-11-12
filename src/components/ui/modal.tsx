@@ -64,20 +64,20 @@ export const Modal: React.FC<ModalProps> = ({
           onClose();
         }
       }}
-      className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-6 overflow-y-auto"
+      className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-2 sm:p-4 md:p-6 overflow-y-auto"
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className={`bg-white rounded-3xl w-full ${maxWidthClasses[maxWidth]} max-h-[92vh] flex flex-col overflow-hidden shadow-2xl border border-slate-200/90 animate-in fade-in zoom-in-95 duration-200 my-auto`}
+        className={`bg-white rounded-2xl sm:rounded-3xl w-full ${maxWidthClasses[maxWidth]} max-h-[94vh] sm:max-h-[90vh] flex flex-col overflow-hidden shadow-2xl border border-slate-200/90 animate-in fade-in zoom-in-95 duration-200 my-auto`}
       >
         {/* Modal Header */}
-        <div className="px-6 py-4.5 bg-white border-b border-slate-100 flex items-center justify-between gap-4 shrink-0">
-          <div>
-            <h3 className="text-base sm:text-lg font-bold text-slate-900 leading-tight">
+        <div className="px-4 sm:px-6 py-3.5 sm:py-4.5 bg-white border-b border-slate-100 flex items-center justify-between gap-3 sm:gap-4 shrink-0">
+          <div className="min-w-0">
+            <h3 className="text-sm sm:text-base md:text-lg font-bold text-slate-900 leading-tight truncate">
               {title}
             </h3>
             {description && (
-              <p className="text-xs text-slate-500 mt-0.5">{description}</p>
+              <p className="text-[11px] sm:text-xs text-slate-500 mt-0.5 line-clamp-1 sm:line-clamp-none">{description}</p>
             )}
           </div>
           <button
@@ -90,13 +90,13 @@ export const Modal: React.FC<ModalProps> = ({
         </div>
 
         {/* Modal Body */}
-        <div className="flex-1 overflow-y-auto p-6 sm:p-8">
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6 md:p-8">
           {children}
         </div>
 
         {/* Modal Footer */}
         {footer && (
-          <div className="px-6 py-4 bg-slate-50/80 border-t border-slate-100 flex items-center justify-end gap-3 shrink-0">
+          <div className="px-4 sm:px-6 py-3 sm:py-4 bg-slate-50/80 border-t border-slate-100 flex flex-wrap items-center justify-end gap-2.5 sm:gap-3 shrink-0">
             {footer}
           </div>
         )}

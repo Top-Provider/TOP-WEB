@@ -395,8 +395,40 @@ export function SoftwareSolutionView({ initialRecords, initialPrograms }: Softwa
           </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-            {/* Left Column (3 cols on XL): Vertical Program Menu */}
-            <div className="lg:col-span-4 xl:col-span-3 bg-white rounded-3xl border border-slate-200/90 p-4 sm:p-5 shadow-xs">
+            {/* MOBILE PROGRAM SELECTOR (lg:hidden) */}
+            <div className="lg:hidden col-span-1 w-full space-y-2 mb-2">
+              <div className="flex items-center justify-between px-1">
+                <span className="text-xs font-bold text-blue-600 uppercase tracking-wider">
+                  เลือกโปรแกรมซอฟต์แวร์ :
+                </span>
+                <span className="text-[11px] font-mono text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">
+                  {programs.length} ระบบ
+                </span>
+              </div>
+              <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
+                {programs.map((prog, idx) => {
+                  const isSelected = activeProgram ? prog.id === activeProgram.id : false;
+                  return (
+                    <button
+                      key={prog.id}
+                      type="button"
+                      onClick={() => setSelectedId(prog.id)}
+                      className={`shrink-0 px-4 py-2 rounded-full text-xs font-medium transition-all flex items-center gap-1.5 ${
+                        isSelected
+                          ? "bg-[#0062FF] text-white shadow-sm shadow-blue-500/25 font-semibold"
+                          : "bg-white text-slate-700 border border-slate-200/90 shadow-2xs hover:bg-slate-50"
+                      }`}
+                    >
+                      <span className="text-[11px] opacity-75">{idx + 1}.</span>
+                      <span>{prog.name}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Left Column (3 cols on XL): Vertical Program Menu (Desktop) */}
+            <div className="hidden lg:block lg:col-span-4 xl:col-span-3 bg-white rounded-3xl border border-slate-200/90 p-4 sm:p-5 shadow-xs lg:sticky lg:top-24">
               <div className="pb-3 border-b border-slate-100 mb-3 flex items-center justify-between">
                 <div>
                   <p className="text-[11px] font-bold text-blue-600 uppercase tracking-wider">

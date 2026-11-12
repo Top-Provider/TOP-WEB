@@ -154,7 +154,7 @@ export function Navbar() {
         </Link>
 
         {/* Center Desktop Navigation */}
-        <nav className="hidden lg:flex items-center gap-8 xl:gap-10">
+        <nav className="hidden lg:flex items-center gap-5 xl:gap-8 2xl:gap-10">
           {navLinks.map((link) => {
             const active = isLinkActive(link.href);
             return (
@@ -162,7 +162,7 @@ export function Navbar() {
                 key={link.label}
                 href={link.href}
                 onClick={(e) => handleNavClick(e, link.href)}
-                className={`text-[15px] xl:text-[16px] font-semibold transition-colors whitespace-nowrap cursor-pointer ${
+                className={`text-[13.5px] lg:text-[14px] xl:text-[15px] 2xl:text-[16px] font-semibold transition-colors whitespace-nowrap cursor-pointer ${
                   active
                     ? "text-[#0062FF] font-bold"
                     : "text-slate-600 hover:text-blue-600"

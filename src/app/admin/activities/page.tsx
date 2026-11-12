@@ -492,7 +492,7 @@ export default function AdminActivitiesPage() {
       {/* Table List */}
       <Card className="border-slate-200/80 overflow-hidden shadow-sm">
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm">
+          <table className="w-full min-w-[850px] text-left text-sm">
             <thead className="bg-slate-50 border-b border-slate-200 text-slate-600 font-semibold text-xs uppercase tracking-wider">
               <tr>
                 <th className="py-3.5 px-4 w-12 text-center">#</th>
