@@ -1,8 +1,34 @@
 "use client";
 
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useCallback } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { MedicalCrossLoader } from "@/components/ui/medical-cross-loader";
+
+// --- Global Route Loading Pub-Sub Manager ---
+// ช่วยประสานงานระหว่าง Next.js Suspense (loading.tsx) กับ PageSlideTransition
+// เพื่อให้หน้าจอแสดงผล Loader เพียงอันเดียวเสมอ (ไม่มี loading ซ้อนกัน)
+let activeLoadersCount = 0;
+const listeners = new Set<(isLoading: boolean) => void>();
+
+export function registerRouteLoading() {
+  activeLoadersCount++;
+  listeners.forEach((cb) => cb(activeLoadersCount > 0));
+  return () => {
+    activeLoadersCount = Math.max(0, activeLoadersCount - 1);
+    listeners.forEach((cb) => cb(activeLoadersCount > 0));
+  };
+}
+
+export function getActiveLoadersCount() {
+  return activeLoadersCount;
+}
+
+export function subscribeRouteLoading(cb: (isLoading: boolean) => void) {
+  listeners.add(cb);
+  return () => {
+    listeners.delete(cb);
+  };
+}
 
 export function PageSlideTransition() {
   const pathname = usePathname();
@@ -13,61 +39,93 @@ export function PageSlideTransition() {
   // position: 'left' (-100%) | 'center' (0%) | 'right' (100%)
   const [active, setActive] = useState(true);
   const [position, setPosition] = useState<"left" | "center" | "right">("center");
-  const isNavigating = useRef(false);
+
+  const isNavigatingRef = useRef(false);
   const safetyTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const exitAnimationTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const isSuspendedRef = useRef(false);
 
-  // 1. ตอนโหลดหน้าเว็บครั้งแรก หรือตอนกด Refresh (F5):
-  // เริ่มต้นอยู่ที่กลางจอ (center) แล้วสไลด์ออกไปทางขวา (right)
-  useEffect(() => {
-    if (pathname.startsWith("/admin")) {
-      setActive(false);
-      return;
+  // ฟังก์ชันสั่งสไลด์ออกไปทางขวาอย่างนุ่มนวล
+  const triggerSlideOut = useCallback(() => {
+    if (exitAnimationTimeoutRef.current) {
+      clearTimeout(exitAnimationTimeoutRef.current);
     }
-
-    const initialTimer = setTimeout(() => {
-      setPosition("right");
-      setTimeout(() => {
-        setActive(false);
-        setPosition("left"); // รีเซ็ตไปฝั่งซ้าย เตรียมสำหรับคลิกครั้งถัดไป
-      }, 550);
-    }, 450);
-
-    return () => clearTimeout(initialTimer);
-  }, []);
-
-  // 2. เมื่อหน้าใหม่โหลดเสร็จแล้ว (pathname เปลี่ยนแปลง):
-  // สั่งให้สไลด์ออกไปทางขวา (right) เพื่อเปิดเผยหน้าใหม่
-  useEffect(() => {
-    if (!isNavigating.current) return;
-
-    if (pathname.startsWith("/admin")) {
-      setActive(false);
-      isNavigating.current = false;
-      return;
-    }
-
     if (safetyTimeoutRef.current) {
       clearTimeout(safetyTimeoutRef.current);
       safetyTimeoutRef.current = null;
     }
 
-    // หน้าใหม่พร้อมแล้ว ให้สไลด์ออกขวาอย่างนุ่มนวล
-    const exitTimer = setTimeout(() => {
-      setPosition("right");
-      setTimeout(() => {
-        setActive(false);
-        setPosition("left");
-        isNavigating.current = false;
-      }, 550);
+    setPosition("right");
+    exitAnimationTimeoutRef.current = setTimeout(() => {
+      setActive(false);
+      setPosition("left"); // รีเซ็ตไปฝั่งซ้าย เตรียมพร้อมสำหรับการคลิกครั้งต่อไป
+      isNavigatingRef.current = false;
+    }, 550);
+  }, []);
+
+  // 1. ตอนเปิดเว็บครั้งแรก หรือกดรีเฟรช (F5):
+  // หน้าจอเริ่มที่ center แล้วรอให้หน้าพร้อม จากนั้นสไลด์ออกขวา
+  useEffect(() => {
+    if (pathname.startsWith("/admin")) {
+      setActive(false);
+      return;
+    }
+
+    // รอให้หน้าเว็บแสดงตัวอย่างน้อย 400ms เพื่อความสมูท
+    const initialTimer = setTimeout(() => {
+      // ถ้าไม่มี Suspense ค้างอยู่ ให้สไลด์ออกขวาได้เลย
+      if (activeLoadersCount === 0) {
+        triggerSlideOut();
+      }
+    }, 450);
+
+    return () => clearTimeout(initialTimer);
+  }, [pathname, triggerSlideOut]);
+
+  // 2. ติดตามสถานะ Suspense จาก loading.tsx ทั่วทั้งระบบ
+  useEffect(() => {
+    if (pathname.startsWith("/admin")) return;
+
+    const unsubscribe = subscribeRouteLoading((isLoading) => {
+      isSuspendedRef.current = isLoading;
+      if (isLoading) {
+        // เมื่อมีหน้ากำลัง Suspense ให้แสดงหน้า Transition ที่กึ่งกลาง
+        setActive(true);
+        setPosition("center");
+      } else {
+        // เมื่อหน้าโหลดเสร็จสมบูรณ์ ให้สไลด์ออกขวา
+        setTimeout(() => {
+          triggerSlideOut();
+        }, 100);
+      }
+    });
+
+    return () => unsubscribe();
+  }, [pathname, triggerSlideOut]);
+
+  // 3. เมื่อ pathname เปลี่ยน (กรณีไม่ได้ติด Suspense หรือเป็น Static Route)
+  useEffect(() => {
+    if (!isNavigatingRef.current) return;
+    if (pathname.startsWith("/admin")) {
+      setActive(false);
+      isNavigatingRef.current = false;
+      return;
+    }
+
+    // ถ้าไม่มี Suspense ค้างอยู่ ให้สไลด์ออกได้เลย
+    const timer = setTimeout(() => {
+      if (!isSuspendedRef.current && activeLoadersCount === 0) {
+        triggerSlideOut();
+      }
     }, 200);
 
-    return () => clearTimeout(exitTimer);
-  }, [pathname]);
+    return () => clearTimeout(timer);
+  }, [pathname, triggerSlideOut]);
 
-  // 3. ดักจับการคลิกลิงก์เพื่อสไลด์เข้าจากทางซ้าย (left -> center) แล้วจึงนำทางไปหน้าใหม่
+  // 4. ดักจับการคลิกลิงก์เพื่อสไลด์เข้าจากซ้าย (left -> center)
   useEffect(() => {
     const handleLinkClick = (e: MouseEvent) => {
-      if (pathname.startsWith("/admin") || isNavigating.current) return;
+      if (pathname.startsWith("/admin") || isNavigatingRef.current) return;
 
       const target = (e.target as HTMLElement).closest("a");
       if (!target) return;
@@ -100,9 +158,9 @@ export function PageSlideTransition() {
       // ข้ามลิงก์ฝั่งแอดมิน
       if (href.startsWith("/admin")) return;
 
-      // ป้องกันการเปลี่ยนหน้าแบบกะทันหัน เพื่อให้แอนิเมชันสไลด์จากซ้ายเล่นได้อย่างสมบูรณ์
+      // ป้องกันการโหลดหน้าทันที เพื่อให้แอนิเมชันสไลด์เข้าจากซ้ายทำงานก่อน
       e.preventDefault();
-      isNavigating.current = true;
+      isNavigatingRef.current = true;
 
       // ตั้งต้นที่ฝั่งซ้ายและเปิดใช้งาน Overlay
       setPosition("left");
@@ -115,43 +173,39 @@ export function PageSlideTransition() {
         });
       });
 
-      // เมื่อสไลด์เข้ามาปิดหน้าจอเรียบร้อยแล้ว (~380ms) จึงสั่งให้เปลี่ยนหน้า
+      // เมื่อสไลด์เข้ามาปิดหน้าจอเรียบร้อยแล้ว (~360ms) จึงสั่งเปลี่ยนหน้า
       setTimeout(() => {
         router.push(href);
-      }, 380);
+      }, 360);
 
-      // Safety timeout: เผื่อหน้าเว็บค้างเกิน 4 วินาที ให้สไลด์ออกขวาอัตโนมัติ
+      // Safety timeout: เผื่อเกิดข้อผิดพลาดหรือเน็ตช้าเกิน 4.5 วินาที ให้สไลด์ออกขวาอัตโนมัติ
       safetyTimeoutRef.current = setTimeout(() => {
-        setPosition("right");
-        setTimeout(() => {
-          setActive(false);
-          setPosition("left");
-          isNavigating.current = false;
-        }, 550);
-      }, 4000);
+        triggerSlideOut();
+      }, 4500);
     };
 
     document.addEventListener("click", handleLinkClick, { capture: true });
     return () => {
       document.removeEventListener("click", handleLinkClick, { capture: true });
       if (safetyTimeoutRef.current) clearTimeout(safetyTimeoutRef.current);
+      if (exitAnimationTimeoutRef.current) clearTimeout(exitAnimationTimeoutRef.current);
     };
-  }, [pathname, router]);
+  }, [pathname, router, triggerSlideOut]);
 
   if (!active) return null;
 
-  let transformClass = "-translate-x-full";
+  let transformClass = "-translate-x-full pointer-events-none";
   if (position === "center") {
-    transformClass = "translate-x-0";
+    transformClass = "translate-x-0 pointer-events-auto";
   } else if (position === "right") {
-    transformClass = "translate-x-full";
+    transformClass = "translate-x-full pointer-events-none";
   }
 
   return (
     <div
       aria-hidden="true"
       style={{ willChange: "transform" }}
-      className={`fixed inset-0 z-[99999] pointer-events-auto bg-[#F8FAFC] flex flex-col items-center justify-center shadow-2xl shadow-blue-950/20 transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${transformClass}`}
+      className={`fixed inset-0 z-[99999] bg-[#F8FAFC] flex flex-col items-center justify-center shadow-2xl shadow-blue-950/20 transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${transformClass}`}
     >
       <MedicalCrossLoader size="lg" />
     </div>
