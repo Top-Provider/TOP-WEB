@@ -1,76 +1,73 @@
 "use client";
 
-import React, { useEffect, useState, useRef, useCallback } from "react";
-import { usePathname } from "next/navigation";
+import React, { useEffect, useState, useRef } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import { MedicalCrossLoader } from "@/components/ui/medical-cross-loader";
-
-type TransitionPhase = "idle" | "prepare" | "slide-in" | "slide-out";
 
 export function PageSlideTransition() {
   const pathname = usePathname();
-  const [phase, setPhase] = useState<TransitionPhase>("idle");
-  const isFirstMount = useRef(true);
+  const router = useRouter();
+
+  // สถานะการแสดงผล:
+  // active: แสดง Overlay ใน DOM
+  // position: 'left' (-100%) | 'center' (0%) | 'right' (100%)
+  const [active, setActive] = useState(true);
+  const [position, setPosition] = useState<"left" | "center" | "right">("center");
+  const isNavigating = useRef(false);
   const safetyTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  const clearSafetyTimeout = () => {
+  // 1. ตอนโหลดหน้าเว็บครั้งแรก หรือตอนกด Refresh (F5):
+  // เริ่มต้นอยู่ที่กลางจอ (center) แล้วสไลด์ออกไปทางขวา (right)
+  useEffect(() => {
+    if (pathname.startsWith("/admin")) {
+      setActive(false);
+      return;
+    }
+
+    const initialTimer = setTimeout(() => {
+      setPosition("right");
+      setTimeout(() => {
+        setActive(false);
+        setPosition("left"); // รีเซ็ตไปฝั่งซ้าย เตรียมสำหรับคลิกครั้งถัดไป
+      }, 550);
+    }, 450);
+
+    return () => clearTimeout(initialTimer);
+  }, []);
+
+  // 2. เมื่อหน้าใหม่โหลดเสร็จแล้ว (pathname เปลี่ยนแปลง):
+  // สั่งให้สไลด์ออกไปทางขวา (right) เพื่อเปิดเผยหน้าใหม่
+  useEffect(() => {
+    if (!isNavigating.current) return;
+
+    if (pathname.startsWith("/admin")) {
+      setActive(false);
+      isNavigating.current = false;
+      return;
+    }
+
     if (safetyTimeoutRef.current) {
       clearTimeout(safetyTimeoutRef.current);
       safetyTimeoutRef.current = null;
     }
-  };
 
-  // เมื่อเปลี่ยนหน้าสำเร็จ (pathname เปลี่ยนแปลง) ให้สไลด์ออกไปทางขวา
-  useEffect(() => {
-    if (isFirstMount.current) {
-      isFirstMount.current = false;
-      return;
-    }
-
-    if (pathname.startsWith("/admin")) {
-      setPhase("idle");
-      return;
-    }
-
-    // หน้าใหม่โหลดเสร็จแล้ว -> สไลด์ออกขวา
-    setPhase("slide-out");
-    clearSafetyTimeout();
-
+    // หน้าใหม่พร้อมแล้ว ให้สไลด์ออกขวาอย่างนุ่มนวล
     const exitTimer = setTimeout(() => {
-      setPhase("idle");
-    }, 450);
+      setPosition("right");
+      setTimeout(() => {
+        setActive(false);
+        setPosition("left");
+        isNavigating.current = false;
+      }, 550);
+    }, 200);
 
-    return () => {
-      clearTimeout(exitTimer);
-      clearSafetyTimeout();
-    };
+    return () => clearTimeout(exitTimer);
   }, [pathname]);
 
-  // ฟังก์ชันเริ่มสไลด์เข้าจากทางซ้าย
-  const triggerSlideIn = useCallback(() => {
-    if (pathname.startsWith("/admin")) return;
-
-    clearSafetyTimeout();
-    // 1. ตั้งต้นที่ตำแหน่งนอกจอฝั่งซ้าย (-100%)
-    setPhase("prepare");
-
-    // 2. ให้เริ่มเคลื่อนที่เข้ามาที่ 0% (ซ้าย -> กลาง)
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        setPhase("slide-in");
-      });
-    });
-
-    // Safety timeout: ถ้าโหลดนานเกิน 4 วินาที ให้สไลด์ออกอัตโนมัติ ไม่ให้ค้าง
-    safetyTimeoutRef.current = setTimeout(() => {
-      setPhase("slide-out");
-      setTimeout(() => setPhase("idle"), 450);
-    }, 4000);
-  }, [pathname]);
-
-  // ดักจับการคลิกลิงก์ภายในเว็บทั้งหมดเพื่อเริ่มสไลด์จากซ้าย
+  // 3. ดักจับการคลิกลิงก์เพื่อสไลด์เข้าจากทางซ้าย (left -> center) แล้วจึงนำทางไปหน้าใหม่
   useEffect(() => {
     const handleLinkClick = (e: MouseEvent) => {
-      if (pathname.startsWith("/admin")) return;
+      if (pathname.startsWith("/admin") || isNavigating.current) return;
 
       const target = (e.target as HTMLElement).closest("a");
       if (!target) return;
@@ -78,7 +75,7 @@ export function PageSlideTransition() {
       const href = target.getAttribute("href");
       if (!href) return;
 
-      // ข้ามลิงก์ภายนอก, อีเมล, เบอร์โทร, ลิงก์ที่เปิดแท็บใหม่
+      // ข้ามลิงก์ภายนอก, อีเมล, เบอร์โทร, เปิดแท็บใหม่
       if (
         href.startsWith("http") ||
         href.startsWith("mailto:") ||
@@ -95,69 +92,68 @@ export function PageSlideTransition() {
       }
 
       // ข้ามลิงก์ Hash ในหน้าเดียวกัน เช่น /#contact, #team
-      if (href.startsWith("#") || href.startsWith("/#")) {
-        return;
-      }
+      if (href.startsWith("#") || href.startsWith("/#")) return;
 
       // ข้ามลิงก์ที่ไปยังหน้าเดิมที่เปิดอยู่แล้ว
-      if (href === pathname || href === `${pathname}/`) {
-        return;
-      }
+      if (href === pathname || href === `${pathname}/`) return;
 
       // ข้ามลิงก์ฝั่งแอดมิน
-      if (href.startsWith("/admin")) {
-        return;
-      }
+      if (href.startsWith("/admin")) return;
 
-      // เป็นการนำทางเปลี่ยนหน้าในฝั่งหน้าบ้าน -> สไลด์เข้าจากซ้ายทันที!
-      triggerSlideIn();
-    };
+      // ป้องกันการเปลี่ยนหน้าแบบกะทันหัน เพื่อให้แอนิเมชันสไลด์จากซ้ายเล่นได้อย่างสมบูรณ์
+      e.preventDefault();
+      isNavigating.current = true;
 
-    const handlePopState = () => {
-      if (!pathname.startsWith("/admin")) {
-        triggerSlideIn();
-      }
+      // ตั้งต้นที่ฝั่งซ้ายและเปิดใช้งาน Overlay
+      setPosition("left");
+      setActive(true);
+
+      // สไลด์จากซ้ายเข้ามากลางจอ
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          setPosition("center");
+        });
+      });
+
+      // เมื่อสไลด์เข้ามาปิดหน้าจอเรียบร้อยแล้ว (~380ms) จึงสั่งให้เปลี่ยนหน้า
+      setTimeout(() => {
+        router.push(href);
+      }, 380);
+
+      // Safety timeout: เผื่อหน้าเว็บค้างเกิน 4 วินาที ให้สไลด์ออกขวาอัตโนมัติ
+      safetyTimeoutRef.current = setTimeout(() => {
+        setPosition("right");
+        setTimeout(() => {
+          setActive(false);
+          setPosition("left");
+          isNavigating.current = false;
+        }, 550);
+      }, 4000);
     };
 
     document.addEventListener("click", handleLinkClick, { capture: true });
-    window.addEventListener("popstate", handlePopState);
-
     return () => {
       document.removeEventListener("click", handleLinkClick, { capture: true });
-      window.removeEventListener("popstate", handlePopState);
-      clearSafetyTimeout();
+      if (safetyTimeoutRef.current) clearTimeout(safetyTimeoutRef.current);
     };
-  }, [pathname, triggerSlideIn]);
+  }, [pathname, router]);
 
-  if (phase === "idle") {
-    return null;
-  }
+  if (!active) return null;
 
-  // คำนวณคลาสของ CSS Transition:
-  // prepare: อยู่นอกจอฝั่งซ้าย (-translate-x-full) ยังไม่มีแอนิเมชัน
-  // slide-in: วิ่งจากซ้ายเข้ามากลางจอ (translate-x-0)
-  // slide-out: วิ่งจากกลางจอออกไปทางขวา (translate-x-full)
   let transformClass = "-translate-x-full";
-  let transitionClass = "transition-none";
-
-  if (phase === "prepare") {
-    transformClass = "-translate-x-full";
-    transitionClass = "transition-none";
-  } else if (phase === "slide-in") {
+  if (position === "center") {
     transformClass = "translate-x-0";
-    transitionClass = "transition-transform duration-400 ease-[cubic-bezier(0.16,1,0.3,1)]";
-  } else if (phase === "slide-out") {
+  } else if (position === "right") {
     transformClass = "translate-x-full";
-    transitionClass = "transition-transform duration-450 ease-[cubic-bezier(0.16,1,0.3,1)]";
   }
 
   return (
     <div
       aria-hidden="true"
-      className={`fixed inset-0 z-[99999] pointer-events-auto bg-[#F8FAFC] flex flex-col items-center justify-center shadow-2xl shadow-blue-950/20 ${transformClass} ${transitionClass}`}
+      style={{ willChange: "transform" }}
+      className={`fixed inset-0 z-[99999] pointer-events-auto bg-[#F8FAFC] flex flex-col items-center justify-center shadow-2xl shadow-blue-950/20 transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${transformClass}`}
     >
       <MedicalCrossLoader size="lg" />
     </div>
   );
 }
-
