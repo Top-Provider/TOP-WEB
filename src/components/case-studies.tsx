@@ -7,7 +7,7 @@ import { ArrowUpRight, CheckCircle2, Play, Pause, Package, Loader2 } from 'lucid
 import { motion } from 'framer-motion';
 import type { Project } from '../types';
 import { ProjectModal } from './project-modal';
-import { fetchRecords } from '@/lib/crud';
+import { fetchPublicRecords } from '@/lib/crud';
 import { MedicalCrossLoader } from './ui/medical-cross-loader';
 
 interface StickyProjectSectionProps {
@@ -50,9 +50,10 @@ export const ALL_SOLUTION_CARDS: SolutionCardItem[] = [
     id: 'printing-printer',
     tabCategory: 'printing',
     counterText: '01 / 02',
-    urlPath: 'Topprovider.co.th / Printing & Supply Solution',
-    clientSubtitle: '2026 • Printing & Supply Solution',
+    urlPath: 'Topprovider.co.th / Printer',
+    clientSubtitle: 'Printing & Supply Solution',
     ctaText: 'ดูสินค้า Printer ทั้งหมด',
+    ctaLink: '/solutions/printing?type=printer',
     isProductPhoto: true,
     project: {
       id: 'printing-printer',
@@ -62,9 +63,9 @@ export const ALL_SOLUTION_CARDS: SolutionCardItem[] = [
       category: 'Printing',
       subCategory: 'Printer Overview',
       shortDescription:
-        'ศูนย์รวมเครื่องพิมพ์คุณภาพสูงครบวงจรสำหรับองค์กรและสถานพยาบาล รองรับตั้งแต่การพิมพ์เอกสารสำนักงานความเร็วสูง ฉลากยา บาร์โค้ด ไปจนถึงสายรัดข้อมือผู้ป่วย (Wristband) ช่วยเพิ่มความแม่นยำในการระบุตัวตน ลดต้นทุนการพิมพ์ และรองรับการทำงานร่วมกับระบบสารสนเทศได้อย่างไร้รอยต่อ',
+        'ศูนย์รวมเครื่องพิมพ์คุณภาพสูงครบวงจรสำหรับองค์กรและสถานพยาบาล รองรับตั้งแต่ Laser, Inkjet, Thermal, Wristband ไปจนถึง Dot Matrix',
       fullDescription:
-        'ศูนย์รวมเครื่องพิมพ์คุณภาพสูงครบวงจรสำหรับองค์กรและสถานพยาบาล รองรับตั้งแต่การพิมพ์เอกสารสำนักงานความเร็วสูง ฉลากยา บาร์โค้ด ไปจนถึงสายรัดข้อมือผู้ป่วย (Wristband) ช่วยเพิ่มความแม่นยำในการระบุตัวตน ลดต้นทุนการพิมพ์ และรองรับการทำงานร่วมกับระบบสารสนเทศได้อย่างไร้รอยต่อ พร้อมบริการติดตั้ง ดูแลบำรุงรักษา และจัดจำหน่ายวัสดุสิ้นเปลืองครบวงจร',
+        'ศูนย์รวมเครื่องพิมพ์คุณภาพสูงครบวงจรสำหรับองค์กรและสถานพยาบาล รองรับตั้งแต่ Laser, Inkjet, Thermal, Wristband ไปจนถึง Dot Matrix',
       challenge:
         'องค์กรและสถานพยาบาลต้องการเครื่องพิมพ์หลากหลายประเภท ทั้งงานพิมพ์เอกสารทั่วไป งานพิมพ์ฉลากยาความเร็วสูง และสายรัดข้อมือผู้ป่วยที่ต้องเชื่อมต่อกับระบบเครือข่ายโรงพยาบาลได้เสถียร',
       solution:
@@ -76,8 +77,8 @@ export const ALL_SOLUTION_CARDS: SolutionCardItem[] = [
       ],
       metrics: [],
       technologies: ['Laser Printing', 'Thermal Wristband', 'High-Speed Inkjet', 'Network Fleet'],
-      coverImage: `${BASE_URL}images/printer-product.png`,
-      galleryImages: [`${BASE_URL}images/printer-product.png`],
+      coverImage: `${BASE_URL}images/printer-podium-showcase.png`,
+      galleryImages: [`${BASE_URL}images/printer-podium-showcase.png`],
       testimonial: {
         quote:
           'เครื่องพิมพ์ของ Top Provider มีครบทุกประเภทที่โรงพยาบาลต้องการ ใช้งานทนทานและมีทีมช่างคอยดูแลรวดเร็วมาก',
@@ -786,12 +787,13 @@ function mapTopicRecordToCardItem(
     : 'printing';
 
   const title = String(t.title || 'Solution');
-  const subtitle = String(t.subtitle || '');
+  const isPrinter = title.toLowerCase() === 'printer' || String(t.id) === '1';
+  const subtitle = String(t.subtitle || (isPrinter ? 'Printing & Supply Solution' : ''));
   const shortDesc = String(t.short_description || t.full_description || '');
   const fullDesc = String(t.full_description || shortDesc);
-  const coverImage = String(t.cover_image_url || '/images/printer-product.png');
-  const ctaText = String(t.cta_text || 'ดูสินค้าทั้งหมด');
-  const ctaLink = String(t.cta_link || `/solutions/${tabCategory}`);
+  const coverImage = String(t.cover_image_url || (isPrinter ? '/images/printer-podium-showcase.png' : '/images/printer-product.png'));
+  const ctaText = String(t.cta_text || (isPrinter ? 'ดูสินค้า Printer ทั้งหมด' : 'ดูสินค้าทั้งหมด'));
+  const ctaLink = String(t.cta_link || (isPrinter ? '/solutions/printing?type=printer' : `/solutions/${tabCategory}`));
   const counterText = `${String(index + 1).padStart(2, '0')} / ${String(total).padStart(2, '0')}`;
 
   return {
@@ -799,7 +801,7 @@ function mapTopicRecordToCardItem(
     tabCategory,
     counterText,
     urlPath: `Topprovider.co.th / ${title}`,
-    clientSubtitle: subtitle || `2026 • ${title}`,
+    clientSubtitle: subtitle || (tabCategory === 'printing' ? 'Printing & Supply Solution' : `2026 • ${title}`),
     ctaText,
     ctaLink,
     isProductPhoto: true,
@@ -814,7 +816,11 @@ function mapTopicRecordToCardItem(
       fullDescription: fullDesc,
       challenge: '',
       solution: '',
-      deliverables,
+      deliverables: deliverables.length > 0 ? deliverables : [
+        'Laser & Inkjet Printer',
+        'Thermal & Wristband Printer',
+        'Large Format & Dot Matrix',
+      ],
       metrics: [],
       technologies: deliverables.slice(0, 4),
       coverImage,
@@ -905,7 +911,7 @@ export const StickyProjectSection: React.FC<StickyProjectSectionProps> = ({
   useEffect(() => {
     if (dynamicRecords.length === 0) {
       setDbLoading(true);
-      fetchRecords<SoftwareRecord>({
+      fetchPublicRecords<SoftwareRecord>({
         table: 'TB_PRODUCT_SOFTWARE',
         orderBy: 'id',
         orderDir: 'asc',
@@ -945,7 +951,7 @@ export const StickyProjectSection: React.FC<StickyProjectSectionProps> = ({
   // Client-side fetch fallback for TB_SOLUTION_TOPICS
   useEffect(() => {
     if (dynamicTopics.length === 0) {
-      fetchRecords({
+      fetchPublicRecords({
         table: 'TB_SOLUTION_TOPICS',
         orderBy: 'sort_order',
         orderDir: 'asc',
@@ -1148,8 +1154,8 @@ export const StickyProjectSection: React.FC<StickyProjectSectionProps> = ({
                     </div>
 
                     <div className="flex items-center gap-2">
-                      <span className="text-[11px] font-mono text-slate-400 bg-white px-2.5 py-1 rounded-md border border-slate-200/80">
-                        {project.category}
+                      <span className="text-[11px] font-mono lowercase text-slate-500 bg-slate-100/90 px-3 py-0.5 rounded-full border border-slate-200/60 shadow-xs">
+                        {project.category.toLowerCase()}
                       </span>
                       {project.videoUrl && (
                         <button
@@ -1315,64 +1321,85 @@ export const StickyProjectSection: React.FC<StickyProjectSectionProps> = ({
                     </div>
 
                     {/* Right Column: Preview / Media */}
-                    <div
-                      onClick={() => handleSelectCard(cardItem)}
-                      className={`w-full lg:w-[62%] relative overflow-hidden group cursor-pointer flex items-center justify-center p-6 sm:p-8 lg:p-10 min-h-[360px] sm:min-h-[420px] lg:min-h-full ${
-                        cardItem.isProductPhoto
-                          ? 'bg-white'
-                          : 'bg-gradient-to-br from-slate-50/80 to-blue-50/20'
-                      }`}
-                    >
-                      {isPlaying && project.videoUrl ? (
-                        <div className="relative w-full aspect-[16/10] rounded-xl overflow-hidden shadow-2xl bg-black">
-                          <iframe
-                            src={project.videoUrl}
-                            title={project.name}
-                            className="w-full h-full border-0"
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                            allowFullScreen
-                          />
-                        </div>
-                      ) : cardItem.isProductPhoto ? (
-                        <div className="relative w-full max-w-[740px] xl:max-w-[780px] my-auto flex items-center justify-center p-2 sm:p-4 lg:p-6">
-                          <img
-                            src={project.coverImage}
-                            alt={project.name}
-                            className="w-full max-w-[440px] sm:max-w-[560px] md:max-w-[640px] lg:max-w-[720px] max-h-[440px] sm:max-h-[480px] lg:max-h-[520px] h-auto object-contain transition-transform duration-500 ease-out group-hover:scale-[1.03] drop-shadow-[0_18px_35px_rgba(0,0,0,0.12)]"
-                            loading="lazy"
-                          />
-                        </div>
-                      ) : (
-                        <div className="relative w-full max-w-[760px] my-auto transition-transform duration-500 ease-out group-hover:scale-[1.015] flex flex-col items-center justify-center">
-                          <div className="relative w-full rounded-t-xl bg-[#0F172A] border-[6px] sm:border-[8px] border-slate-900 shadow-[0_20px_50px_rgba(0,102,255,0.12)] overflow-hidden aspect-[16/10] flex items-center justify-center">
-                            <img
-                              src={project.coverImage}
-                              alt={project.name}
-                              className="w-full h-full object-cover object-top"
-                              loading="lazy"
-                            />
+                    {(() => {
+                      const isPrinterCard =
+                        cardItem.id === 'printing-printer' ||
+                        project.name.toLowerCase() === 'printer' ||
+                        project.coverImage?.includes('printer-podium') ||
+                        project.coverImage?.includes('printer-product');
 
-                            {project.videoUrl && (
-                              <button
-                                type="button"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleSelectProject(project);
-                                }}
-                                className="absolute bottom-3 right-3 px-3 py-1.5 rounded-full bg-black/60 hover:bg-black/80 backdrop-blur-md text-white text-[11px] font-medium flex items-center gap-1.5 transition-transform hover:scale-105 active:scale-95 shadow-lg border border-white/20 cursor-pointer"
-                              >
-                                <Play className="w-3.5 h-3.5 fill-white" />
-                                <span>ดูคลิปสาธิต</span>
-                              </button>
-                            )}
-                          </div>
+                      return (
+                        <div
+                          onClick={() => handleSelectCard(cardItem)}
+                          className={`w-full lg:w-[62%] relative overflow-hidden group cursor-pointer flex items-center justify-center min-h-[360px] sm:min-h-[420px] lg:min-h-full ${
+                            isPrinterCard
+                              ? 'p-0 bg-gradient-to-b from-[#F2F7FF] via-[#E8F2FD] to-white'
+                              : cardItem.isProductPhoto
+                              ? 'bg-white p-6 sm:p-8 lg:p-10'
+                              : 'bg-gradient-to-br from-slate-50/80 to-blue-50/20 p-6 sm:p-8 lg:p-10'
+                          }`}
+                        >
+                          {isPlaying && project.videoUrl ? (
+                            <div className="relative w-full aspect-[16/10] rounded-xl overflow-hidden shadow-2xl bg-black">
+                              <iframe
+                                src={project.videoUrl}
+                                title={project.name}
+                                className="w-full h-full border-0"
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                allowFullScreen
+                              />
+                            </div>
+                          ) : isPrinterCard ? (
+                            <div className="relative w-full h-full min-h-[360px] sm:min-h-[420px] lg:min-h-[480px] flex items-center justify-center overflow-hidden">
+                              <img
+                                src={project.coverImage || '/images/printer-podium-showcase.png'}
+                                alt="Printer Solution Showcase"
+                                className="w-full h-full object-cover object-center transition-transform duration-700 ease-out group-hover:scale-[1.03]"
+                                loading="lazy"
+                              />
+                            </div>
+                          ) : cardItem.isProductPhoto ? (
+                            <div className="relative w-full max-w-[740px] xl:max-w-[780px] my-auto flex items-center justify-center p-2 sm:p-4 lg:p-6">
+                              <img
+                                src={project.coverImage}
+                                alt={project.name}
+                                className="w-full max-w-[440px] sm:max-w-[560px] md:max-w-[640px] lg:max-w-[720px] max-h-[440px] sm:max-h-[480px] lg:max-h-[520px] h-auto object-contain transition-transform duration-500 ease-out group-hover:scale-[1.03] drop-shadow-[0_18px_35px_rgba(0,0,0,0.12)]"
+                                loading="lazy"
+                              />
+                            </div>
+                          ) : (
+                            <div className="relative w-full max-w-[760px] my-auto transition-transform duration-500 ease-out group-hover:scale-[1.015] flex flex-col items-center justify-center">
+                              <div className="relative w-full rounded-t-xl bg-[#0F172A] border-[6px] sm:border-[8px] border-slate-900 shadow-[0_20px_50px_rgba(0,102,255,0.12)] overflow-hidden aspect-[16/10] flex items-center justify-center">
+                                <img
+                                  src={project.coverImage}
+                                  alt={project.name}
+                                  className="w-full h-full object-cover object-top"
+                                  loading="lazy"
+                                />
 
-                          <div className="relative w-full h-3 sm:h-3.5 bg-gradient-to-b from-slate-200 to-slate-300 rounded-b-xl border-t border-slate-400/80 shadow-md flex justify-center items-start">
-                            <div className="w-20 h-1.5 rounded-b-sm bg-slate-400" />
-                          </div>
+                                {project.videoUrl && (
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleSelectProject(project);
+                                    }}
+                                    className="absolute bottom-3 right-3 px-3 py-1.5 rounded-full bg-black/60 hover:bg-black/80 backdrop-blur-md text-white text-[11px] font-medium flex items-center gap-1.5 transition-transform hover:scale-105 active:scale-95 shadow-lg border border-white/20 cursor-pointer"
+                                  >
+                                    <Play className="w-3.5 h-3.5 fill-white" />
+                                    <span>เล่นวิดีโอ</span>
+                                  </button>
+                                )}
+                              </div>
+
+                              <div className="relative w-full h-3 sm:h-3.5 bg-gradient-to-b from-slate-200 to-slate-300 rounded-b-xl border-t border-slate-400/80 shadow-md flex justify-center items-start">
+                                <div className="w-20 h-1.5 rounded-b-sm bg-slate-400" />
+                              </div>
+                            </div>
+                          )}
                         </div>
-                      )}
-                    </div>
+                      );
+                    })()}
                   </div>
                 </motion.div>
               );
