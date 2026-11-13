@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ArrowUpRight, CheckCircle2, Play, Pause, Package, Loader2 } from 'lucide-react';
+import { ArrowUpRight, CheckCircle2, Play, Pause, Package, Loader2, Droplets, FileText, Sparkles } from 'lucide-react';
 import { motion } from 'framer-motion';
 import type { Project } from '../types';
 import { ProjectModal } from './project-modal';
@@ -65,7 +65,7 @@ export const ALL_SOLUTION_CARDS: SolutionCardItem[] = [
       shortDescription:
         'ศูนย์รวมเครื่องพิมพ์คุณภาพสูงครบวงจรสำหรับองค์กรและสถานพยาบาล รองรับตั้งแต่ Laser, Inkjet, Thermal, Wristband ไปจนถึง Dot Matrix',
       fullDescription:
-        'ศูนย์รวมเครื่องพิมพ์คุณภาพสูงครบวงจรสำหรับองค์กรและสถานพยาบาล รองรับตั้งแต่ Laser, Inkjet, Thermal, Wristband ไปจนถึง Dot Matrix',
+        'ศูนย์รวมเครื่องพิมพ์คุณภาพสูงครบวงจรสำหรับองค์กรและสถานพยาบาล รองรับตั้งแต่ Laser, Inkjet, Thermal, Wristband ไปจนถึง Dot Matrix พร้อมบริการติดตั้ง ดูแลบำรุงรักษา และจัดจำหน่ายวัสดุสิ้นเปลืองครบวงจร',
       challenge:
         'องค์กรและสถานพยาบาลต้องการเครื่องพิมพ์หลากหลายประเภท ทั้งงานพิมพ์เอกสารทั่วไป งานพิมพ์ฉลากยาความเร็วสูง และสายรัดข้อมือผู้ป่วยที่ต้องเชื่อมต่อกับระบบเครือข่ายโรงพยาบาลได้เสถียร',
       solution:
@@ -77,8 +77,8 @@ export const ALL_SOLUTION_CARDS: SolutionCardItem[] = [
       ],
       metrics: [],
       technologies: ['Laser Printing', 'Thermal Wristband', 'High-Speed Inkjet', 'Network Fleet'],
-      coverImage: `${BASE_URL}images/printer-podium-showcase.png`,
-      galleryImages: [`${BASE_URL}images/printer-podium-showcase.png`],
+      coverImage: `${BASE_URL}images/printer-podium-showcase.jpg`,
+      galleryImages: [`${BASE_URL}images/printer-podium-showcase.jpg`],
       testimonial: {
         quote:
           'เครื่องพิมพ์ของ Top Provider มีครบทุกประเภทที่โรงพยาบาลต้องการ ใช้งานทนทานและมีทีมช่างคอยดูแลรวดเร็วมาก',
@@ -787,13 +787,12 @@ function mapTopicRecordToCardItem(
     : 'printing';
 
   const title = String(t.title || 'Solution');
-  const isPrinter = title.toLowerCase() === 'printer' || String(t.id) === '1';
-  const subtitle = String(t.subtitle || (isPrinter ? 'Printing & Supply Solution' : ''));
+  const subtitle = String(t.subtitle || '');
   const shortDesc = String(t.short_description || t.full_description || '');
   const fullDesc = String(t.full_description || shortDesc);
-  const coverImage = String(t.cover_image_url || (isPrinter ? '/images/printer-podium-showcase.png' : '/images/printer-product.png'));
-  const ctaText = String(t.cta_text || (isPrinter ? 'ดูสินค้า Printer ทั้งหมด' : 'ดูสินค้าทั้งหมด'));
-  const ctaLink = String(t.cta_link || (isPrinter ? '/solutions/printing?type=printer' : `/solutions/${tabCategory}`));
+  const coverImage = String(t.cover_image_url || '/images/printer-product.png');
+  const ctaText = String(t.cta_text || 'ดูสินค้าทั้งหมด');
+  const ctaLink = String(t.cta_link || `/solutions/${tabCategory}`);
   const counterText = `${String(index + 1).padStart(2, '0')} / ${String(total).padStart(2, '0')}`;
 
   return {
@@ -801,7 +800,7 @@ function mapTopicRecordToCardItem(
     tabCategory,
     counterText,
     urlPath: `Topprovider.co.th / ${title}`,
-    clientSubtitle: subtitle || (tabCategory === 'printing' ? 'Printing & Supply Solution' : `2026 • ${title}`),
+    clientSubtitle: subtitle || `2026 • ${title}`,
     ctaText,
     ctaLink,
     isProductPhoto: true,
@@ -816,11 +815,7 @@ function mapTopicRecordToCardItem(
       fullDescription: fullDesc,
       challenge: '',
       solution: '',
-      deliverables: deliverables.length > 0 ? deliverables : [
-        'Laser & Inkjet Printer',
-        'Thermal & Wristband Printer',
-        'Large Format & Dot Matrix',
-      ],
+      deliverables,
       metrics: [],
       technologies: deliverables.slice(0, 4),
       coverImage,
@@ -1154,8 +1149,8 @@ export const StickyProjectSection: React.FC<StickyProjectSectionProps> = ({
                     </div>
 
                     <div className="flex items-center gap-2">
-                      <span className="text-[11px] font-mono lowercase text-slate-500 bg-slate-100/90 px-3 py-0.5 rounded-full border border-slate-200/60 shadow-xs">
-                        {project.category.toLowerCase()}
+                      <span className="text-[11px] font-mono text-slate-400 bg-white px-2.5 py-1 rounded-md border border-slate-200/80">
+                        {project.category}
                       </span>
                       {project.videoUrl && (
                         <button
@@ -1321,85 +1316,108 @@ export const StickyProjectSection: React.FC<StickyProjectSectionProps> = ({
                     </div>
 
                     {/* Right Column: Preview / Media */}
-                    {(() => {
-                      const isPrinterCard =
-                        cardItem.id === 'printing-printer' ||
-                        project.name.toLowerCase() === 'printer' ||
-                        project.coverImage?.includes('printer-podium') ||
-                        project.coverImage?.includes('printer-product');
-
-                      return (
-                        <div
-                          onClick={() => handleSelectCard(cardItem)}
-                          className={`w-full lg:w-[62%] relative overflow-hidden group cursor-pointer flex items-center justify-center min-h-[360px] sm:min-h-[420px] lg:min-h-full ${
-                            isPrinterCard
-                              ? 'p-0 bg-gradient-to-b from-[#F2F7FF] via-[#E8F2FD] to-white'
-                              : cardItem.isProductPhoto
-                              ? 'bg-white p-6 sm:p-8 lg:p-10'
-                              : 'bg-gradient-to-br from-slate-50/80 to-blue-50/20 p-6 sm:p-8 lg:p-10'
-                          }`}
-                        >
-                          {isPlaying && project.videoUrl ? (
-                            <div className="relative w-full aspect-[16/10] rounded-xl overflow-hidden shadow-2xl bg-black">
-                              <iframe
-                                src={project.videoUrl}
-                                title={project.name}
-                                className="w-full h-full border-0"
-                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                allowFullScreen
-                              />
-                            </div>
-                          ) : isPrinterCard ? (
-                            <div className="relative w-full h-full min-h-[360px] sm:min-h-[420px] lg:min-h-[480px] flex items-center justify-center overflow-hidden">
-                              <img
-                                src={project.coverImage || '/images/printer-podium-showcase.png'}
-                                alt="Printer Solution Showcase"
-                                className="w-full h-full object-cover object-center transition-transform duration-700 ease-out group-hover:scale-[1.03]"
-                                loading="lazy"
-                              />
-                            </div>
-                          ) : cardItem.isProductPhoto ? (
-                            <div className="relative w-full max-w-[740px] xl:max-w-[780px] my-auto flex items-center justify-center p-2 sm:p-4 lg:p-6">
-                              <img
-                                src={project.coverImage}
-                                alt={project.name}
-                                className="w-full max-w-[440px] sm:max-w-[560px] md:max-w-[640px] lg:max-w-[720px] max-h-[440px] sm:max-h-[480px] lg:max-h-[520px] h-auto object-contain transition-transform duration-500 ease-out group-hover:scale-[1.03] drop-shadow-[0_18px_35px_rgba(0,0,0,0.12)]"
-                                loading="lazy"
-                              />
-                            </div>
-                          ) : (
-                            <div className="relative w-full max-w-[760px] my-auto transition-transform duration-500 ease-out group-hover:scale-[1.015] flex flex-col items-center justify-center">
-                              <div className="relative w-full rounded-t-xl bg-[#0F172A] border-[6px] sm:border-[8px] border-slate-900 shadow-[0_20px_50px_rgba(0,102,255,0.12)] overflow-hidden aspect-[16/10] flex items-center justify-center">
-                                <img
-                                  src={project.coverImage}
-                                  alt={project.name}
-                                  className="w-full h-full object-cover object-top"
-                                  loading="lazy"
-                                />
-
-                                {project.videoUrl && (
-                                  <button
-                                    type="button"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleSelectProject(project);
-                                    }}
-                                    className="absolute bottom-3 right-3 px-3 py-1.5 rounded-full bg-black/60 hover:bg-black/80 backdrop-blur-md text-white text-[11px] font-medium flex items-center gap-1.5 transition-transform hover:scale-105 active:scale-95 shadow-lg border border-white/20 cursor-pointer"
-                                  >
-                                    <Play className="w-3.5 h-3.5 fill-white" />
-                                    <span>เล่นวิดีโอ</span>
-                                  </button>
-                                )}
-                              </div>
-
-                              <div className="relative w-full h-3 sm:h-3.5 bg-gradient-to-b from-slate-200 to-slate-300 rounded-b-xl border-t border-slate-400/80 shadow-md flex justify-center items-start">
-                                <div className="w-20 h-1.5 rounded-b-sm bg-slate-400" />
-                              </div>
-                            </div>
-                          )}
+                    <div
+                      onClick={() => handleSelectCard(cardItem)}
+                      className={`w-full lg:w-[62%] relative overflow-hidden group cursor-pointer flex items-center justify-center p-6 sm:p-8 lg:p-10 min-h-[360px] sm:min-h-[420px] lg:min-h-full ${
+                        cardItem.isProductPhoto
+                          ? 'bg-white'
+                          : 'bg-gradient-to-br from-slate-50/80 to-blue-50/20'
+                      }`}
+                    >
+                      {isPlaying && project.videoUrl ? (
+                        <div className="relative w-full aspect-[16/10] rounded-xl overflow-hidden shadow-2xl bg-black">
+                          <iframe
+                            src={project.videoUrl}
+                            title={project.name}
+                            className="w-full h-full border-0"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowFullScreen
+                          />
                         </div>
-                      );
-                    })()}
+                      ) : cardItem.isProductPhoto ? (
+                        cardItem.id === 'printing-printer' ? (
+                          <div className="relative w-full max-w-[780px] my-auto rounded-2xl sm:rounded-3xl overflow-hidden border border-blue-100/90 shadow-lg shadow-blue-500/5 group/printer">
+                            <img
+                              src={project.coverImage}
+                              alt={project.name}
+                              className="w-full h-auto max-h-[460px] sm:max-h-[500px] object-cover transition-transform duration-500 ease-out group-hover/printer:scale-[1.02]"
+                              loading="lazy"
+                            />
+
+                            {/* Badge 1: Inkjet Printer (Top-Left) */}
+                            <div className="absolute top-3 sm:top-5 left-3 sm:left-5 bg-white/95 backdrop-blur-md px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl sm:rounded-2xl border border-blue-100 shadow-md flex items-center gap-2 sm:gap-2.5 z-10 transition-transform duration-300 hover:scale-105">
+                              <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg sm:rounded-xl bg-blue-50 text-[#0062FF] flex items-center justify-center shrink-0">
+                                <Droplets className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#0062FF]" />
+                              </div>
+                              <div className="text-left">
+                                <p className="text-[11px] sm:text-xs font-bold text-slate-900 leading-tight">Inkjet Printer</p>
+                                <p className="text-[9px] sm:text-[10px] text-slate-500 font-medium leading-tight mt-0.5">เติมหมึกคุ้มค่า</p>
+                              </div>
+                            </div>
+
+                            {/* Badge 2: Thermal Printer (Top-Right) */}
+                            <div className="absolute top-3 sm:top-5 right-3 sm:right-5 bg-white/95 backdrop-blur-md px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl sm:rounded-2xl border border-blue-100 shadow-md flex items-center gap-2 sm:gap-2.5 z-10 transition-transform duration-300 hover:scale-105">
+                              <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg sm:rounded-xl bg-blue-50 text-[#0062FF] flex items-center justify-center shrink-0">
+                                <FileText className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#0062FF]" />
+                              </div>
+                              <div className="text-left">
+                                <p className="text-[11px] sm:text-xs font-bold text-slate-900 leading-tight">Thermal Printer</p>
+                                <p className="text-[9px] sm:text-[10px] text-slate-500 font-medium leading-tight mt-0.5">สำหรับฉลากและข้อมือ</p>
+                              </div>
+                            </div>
+
+                            {/* Badge 3: Laser Printer (Center-Right / Bottom) */}
+                            <div className="absolute bottom-3 sm:bottom-5 right-3 sm:right-8 bg-white/95 backdrop-blur-md px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl sm:rounded-2xl border border-blue-100 shadow-md flex items-center gap-2 sm:gap-2.5 z-10 transition-transform duration-300 hover:scale-105">
+                              <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg sm:rounded-xl bg-blue-50 text-[#0062FF] flex items-center justify-center shrink-0">
+                                <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#0062FF]" />
+                              </div>
+                              <div className="text-left">
+                                <p className="text-[11px] sm:text-xs font-bold text-slate-900 leading-tight">Laser Printer</p>
+                                <p className="text-[9px] sm:text-[10px] text-slate-500 font-medium leading-tight mt-0.5">พิมพ์เร็ว คมชัด ประหยัด</p>
+                              </div>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="relative w-full max-w-[740px] xl:max-w-[780px] my-auto flex items-center justify-center p-2 sm:p-4 lg:p-6">
+                            <img
+                              src={project.coverImage}
+                              alt={project.name}
+                              className="w-full max-w-[440px] sm:max-w-[560px] md:max-w-[640px] lg:max-w-[720px] max-h-[440px] sm:max-h-[480px] lg:max-h-[520px] h-auto object-contain transition-transform duration-500 ease-out group-hover:scale-[1.03] drop-shadow-[0_18px_35px_rgba(0,0,0,0.12)]"
+                              loading="lazy"
+                            />
+                          </div>
+                        )
+                      ) : (
+                        <div className="relative w-full max-w-[760px] my-auto transition-transform duration-500 ease-out group-hover:scale-[1.015] flex flex-col items-center justify-center">
+                          <div className="relative w-full rounded-t-xl bg-[#0F172A] border-[6px] sm:border-[8px] border-slate-900 shadow-[0_20px_50px_rgba(0,102,255,0.12)] overflow-hidden aspect-[16/10] flex items-center justify-center">
+                            <img
+                              src={project.coverImage}
+                              alt={project.name}
+                              className="w-full h-full object-cover object-top"
+                              loading="lazy"
+                            />
+
+                            {project.videoUrl && (
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleSelectProject(project);
+                                }}
+                                className="absolute bottom-3 right-3 px-3 py-1.5 rounded-full bg-black/60 hover:bg-black/80 backdrop-blur-md text-white text-[11px] font-medium flex items-center gap-1.5 transition-transform hover:scale-105 active:scale-95 shadow-lg border border-white/20 cursor-pointer"
+                              >
+                                <Play className="w-3.5 h-3.5 fill-white" />
+                                <span>ดูคลิปสาธิต</span>
+                              </button>
+                            )}
+                          </div>
+
+                          <div className="relative w-full h-3 sm:h-3.5 bg-gradient-to-b from-slate-200 to-slate-300 rounded-b-xl border-t border-slate-400/80 shadow-md flex justify-center items-start">
+                            <div className="w-20 h-1.5 rounded-b-sm bg-slate-400" />
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </motion.div>
               );
