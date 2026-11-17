@@ -854,8 +854,29 @@ export default function AdminUsersPage() {
         onClose={() => setShowModal(false)}
         title={editingId ? "แก้ไขข้อมูลบุคลากร" : "เพิ่มบุคลากรใหม่"}
         maxWidth="5xl"
+        footer={
+          <>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setShowModal(false)}
+              disabled={saving}
+              className="rounded-xl px-5 h-10 text-sm font-medium cursor-pointer"
+            >
+              ยกเลิก
+            </Button>
+            <Button
+              type="submit"
+              form="user-form"
+              disabled={saving}
+              className="rounded-xl bg-blue-600 hover:bg-blue-700 text-white px-6 h-10 text-sm font-semibold shadow-sm shadow-blue-600/20 cursor-pointer"
+            >
+              {saving ? "กำลังบันทึก..." : editingId ? "บันทึกการแก้ไข" : "เพิ่มบุคลากร"}
+            </Button>
+          </>
+        }
       >
-        <form onSubmit={handleSave} className="space-y-4 py-2">
+        <form id="user-form" onSubmit={handleSave} className="space-y-4">
           {/* ส่วนที่ 1: ข้อมูลภาษาไทย */}
           <div className="bg-slate-50/70 p-4 rounded-xl border border-slate-200/80 space-y-3">
             <h3 className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
@@ -1202,26 +1223,6 @@ export default function AdminUsersPage() {
               <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
             </label>
           </div>
-
-          {/* Footer Buttons */}
-          <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setShowModal(false)}
-              disabled={saving}
-              className="rounded-xl"
-            >
-              ยกเลิก
-            </Button>
-            <Button
-              type="submit"
-              disabled={saving}
-              className="rounded-xl bg-blue-600 hover:bg-blue-700 text-white min-w-[120px]"
-            >
-              {saving ? "กำลังบันทึก..." : editingId ? "บันทึกการแก้ไข" : "เพิ่มบุคลากร"}
-            </Button>
-          </div>
         </form>
       </Modal>
 
@@ -1233,6 +1234,15 @@ export default function AdminUsersPage() {
           isOpen={!!viewUser}
           onClose={() => setViewUser(null)}
           title="รายละเอียดบุคลากร"
+          footer={
+            <Button
+              variant="outline"
+              onClick={() => setViewUser(null)}
+              className="rounded-xl px-6 h-10 text-sm font-medium cursor-pointer"
+            >
+              ปิด
+            </Button>
+          }
           maxWidth="md"
         >
           <div className="py-4 space-y-4 text-center">
@@ -1317,14 +1327,6 @@ export default function AdminUsersPage() {
                 </span>
               </div>
             </div>
-
-            <Button
-              variant="outline"
-              onClick={() => setViewUser(null)}
-              className="w-full rounded-xl"
-            >
-              ปิด
-            </Button>
           </div>
         </Modal>
       )}
@@ -1337,33 +1339,30 @@ export default function AdminUsersPage() {
         onClose={() => setDeleteConfirmId(null)}
         title="ยืนยันการลบข้อมูลบุคลากร"
         maxWidth="sm"
-      >
-        <div className="py-2 space-y-4">
-          <p className="text-sm text-slate-600">
-            คุณต้องการลบข้อมูลบุคลากรนี้ออกจากฐานข้อมูลใช่หรือไม่?
-            การดำเนินการนี้ไม่สามารถยกเลิกได้
-          </p>
-
-          <div className="flex items-center justify-end gap-2 pt-2">
+        footer={
+          <>
             <Button
               variant="outline"
-              size="sm"
               onClick={() => setDeleteConfirmId(null)}
               disabled={saving}
-              className="rounded-xl"
+              className="rounded-xl px-5 h-10 text-sm font-medium cursor-pointer"
             >
               ยกเลิก
             </Button>
             <Button
-              size="sm"
               onClick={handleDelete}
               disabled={saving}
-              className="rounded-xl bg-red-600 hover:bg-red-700 text-white"
+              className="rounded-xl bg-rose-600 hover:bg-rose-700 text-white px-5 h-10 text-sm font-semibold shadow-sm shadow-rose-600/20 cursor-pointer"
             >
               {saving ? "กำลังลบ..." : "ยืนยันลบ"}
             </Button>
-          </div>
-        </div>
+          </>
+        }
+      >
+        <p className="text-sm text-slate-600 py-1">
+          คุณต้องการลบข้อมูลบุคลากรนี้ออกจากฐานข้อมูลใช่หรือไม่?
+          การดำเนินการนี้ไม่สามารถยกเลิกได้
+        </p>
       </Modal>
     </div>
   );

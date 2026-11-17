@@ -1,135 +1,81 @@
-import { Pool, PoolConfig } from 'pg';
-
-let pool: Pool | null = null;
-
+﻿import { Pool } from "pg";
+import { databaseConfig } from "./db-config";
+import { columnName, selectColumns, tableName, validateData } from "./data-validation";
+import { HttpError } from "./api-error";
+const globalDb = globalThis as typeof globalThis & { topDbPool?: Pool };
 export function getDbPool(): Pool {
-  if (!pool) {
-    let config: PoolConfig;
-
-    if (process.env.DB_PASSWORD !== undefined && process.env.DB_NAME) {
-      config = {
-        host: process.env.DB_HOST || 'localhost',
-        port: parseInt(process.env.DB_PORT || '15432', 10),
-        user: process.env.DB_USER || 'claim',
-        password: process.env.DB_PASSWORD,
-        database: process.env.DB_NAME,
-        ssl: false,
-        max: 10,
-        idleTimeoutMillis: 30000,
-        connectionTimeoutMillis: 5000,
-      };
-    } else if (process.env.DATABASE_URL) {
-      config = {
-        connectionString: process.env.DATABASE_URL,
-        ssl: false,
-        max: 10,
-        idleTimeoutMillis: 30000,
-        connectionTimeoutMillis: 5000,
-      };
-    } else {
-      throw new Error('DATABASE_URL or DB_* credentials are not defined in .env.local');
-    }
-
-    pool = new Pool(config);
-
-    pool.on('error', (err) => {
-      console.error('[PostgreSQL Pool Unexpected Error]:', err);
-    });
+  if (!globalDb.topDbPool) {
+    globalDb.topDbPool = new Pool(databaseConfig());
+    globalDb.topDbPool.on("error", err => console.error("[PostgreSQL pool]", err));
   }
-
-  return pool;
+  return globalDb.topDbPool;
 }
-
-export async function query(text: string, params?: unknown[]) {
-  const p = getDbPool();
-  return p.query(text, params);
-}
-
-// -----------------------------------------------------------------------------
-// High-Level PostgreSQL Helpers for CRUD
-// -----------------------------------------------------------------------------
-
+export async function query(text: string, params?: unknown[]) { return getDbPool().query(text, params); }
 export async function pgSelect(options: {
-  table: string;
-  select?: string;
-  id?: string | number;
-  idColumn?: string;
-  orderBy?: string;
-  orderDir?: 'asc' | 'desc';
-  limit?: number;
-  where?: Record<string, unknown>;
+  table: string; select?: string; id?: string | number; idColumn?: string;
+  orderBy?: string; orderDir?: "asc" | "desc"; limit?: number; offset?: number; where?: Record<string, unknown>;
 }) {
-  const { table, select = '*', id, idColumn = 'id', orderBy, orderDir = 'asc', limit, where } = options;
-  const whereClauses: string[] = [];
+  const { select = "*", id, idColumn = "id", orderBy, orderDir = "asc", limit, offset = 0, where = {} } = options;
+  const table = tableName(options.table);
   const params: unknown[] = [];
-
-  if (id !== undefined) {
-    params.push(id);
-    whereClauses.push(`"${idColumn}" = $${params.length}`);
+  const conditions = Object.entries({ ...where, ...(id !== undefined ? { [idColumn]: id } : {}) }).map(([key, value]) => {
+    params.push(value); return `${columnName(table, key)} = $${params.length}`;
+  });
+  let sql = `SELECT ${selectColumns(table, select)} FROM public."${table}"`;
+  if (conditions.length) sql += ` WHERE ${conditions.join(" AND ")}`;
+  if (orderBy) sql += ` ORDER BY ${columnName(table, orderBy)} ${orderDir === "desc" ? "DESC" : "ASC"}`;
+  if (limit !== undefined) {
+    if (!Number.isSafeInteger(limit) || limit < 1 || limit > 1000) throw new HttpError(400, "จำนวนรายการไม่ถูกต้อง");
+    params.push(limit); sql += ` LIMIT $${params.length}`;
   }
-
-  if (where) {
-    for (const [key, value] of Object.entries(where)) {
-      params.push(value);
-      whereClauses.push(`"${key}" = $${params.length}`);
-    }
-  }
-
-  let sql = `SELECT ${select === '*' ? '*' : select} FROM public."${table}"`;
-  if (whereClauses.length > 0) {
-    sql += ` WHERE ${whereClauses.join(' AND ')}`;
-  }
-
-  if (orderBy) {
-    const dir = orderDir.toLowerCase() === 'desc' ? 'DESC' : 'ASC';
-    sql += ` ORDER BY "${orderBy}" ${dir}`;
-  }
-
-  if (limit) {
-    params.push(limit);
-    sql += ` LIMIT $${params.length}`;
-  }
-
-  const res = await query(sql, params);
-  return res.rows;
+  if (!Number.isSafeInteger(offset) || offset < 0) throw new HttpError(400, "ตำแหน่งรายการไม่ถูกต้อง");
+  if (offset) { params.push(offset); sql += ` OFFSET $${params.length}`; }
+  return (await query(sql, params)).rows;
 }
-
+function sqlValue(value: unknown) { return value !== null && typeof value === "object" ? JSON.stringify(value) : value ?? null; }
 export async function pgInsert(table: string, data: Record<string, unknown>) {
-  const keys = Object.keys(data);
-  const columns = keys.map(k => `"${k}"`).join(', ');
-  const placeholders = keys.map((_, i) => `$${i + 1}`).join(', ');
-  const values = keys.map(k => {
-    const v = data[k];
-    if (v === null || v === undefined) return null;
-    if (typeof v === 'object') return JSON.stringify(v);
-    return v;
-  });
-
-  const sql = `INSERT INTO public."${table}" (${columns}) VALUES (${placeholders}) RETURNING *;`;
-  const res = await query(sql, values);
-  return res.rows[0];
+  return (await pgWrite(table, "insert", data, {}))[0];
 }
-
-export async function pgUpdate(table: string, data: Record<string, unknown>, id: string | number, idColumn = 'id') {
-  const keys = Object.keys(data).filter(k => k !== idColumn && k !== 'created_at' && k !== 'updated_at');
-  const setClauses = keys.map((k, i) => `"${k}" = $${i + 1}`).join(', ');
-  const values = keys.map(k => {
-    const v = data[k];
-    if (v === null || v === undefined) return null;
-    if (typeof v === 'object') return JSON.stringify(v);
-    return v;
-  });
-
-  values.push(id);
-  const sql = keys.length > 0
-    ? `UPDATE public."${table}" SET ${setClauses}, "updated_at" = now() WHERE "${idColumn}" = $${values.length} RETURNING *;`
-    : `UPDATE public."${table}" SET "updated_at" = now() WHERE "${idColumn}" = $${values.length} RETURNING *;`;
-  const res = await query(sql, values);
-  return res.rows[0];
+export async function pgUpdate(table: string, data: Record<string, unknown>, id: string | number, idColumn = "id") {
+  return (await pgWrite(table, "update", data, { [idColumn]: id }))[0];
 }
-
-export async function pgDelete(table: string, id: string | number, idColumn = 'id') {
-  const sql = `DELETE FROM public."${table}" WHERE "${idColumn}" = $1 RETURNING *;`;
-  const res = await query(sql, [id]);
-  return res.rows[0];
+export async function pgDelete(table: string, id: string | number, idColumn = "id") {
+  return (await pgWrite(table, "delete", undefined, { [idColumn]: id }))[0];
+}
+// Every mutation is atomic; neither failed writes nor empty reads switch databases.
+export async function pgWrite(tableInput: string, action: "insert" | "update" | "upsert" | "delete", data: Record<string, unknown> | Record<string, unknown>[] | undefined, match: Record<string, unknown>, conflict = "id") {
+  const table = tableName(tableInput);
+  Object.keys(match).forEach(k => columnName(table, k));
+  columnName(table, conflict);
+  if ((action === "update" || action === "delete") && !Object.keys(match).length) throw new HttpError(400, "ต้องระบุเงื่อนไขรายการที่จะแก้ไขหรือลบ");
+  const records = data ? (Array.isArray(data) ? data : [data]) : [];
+  if (action !== "delete" && !records.length) throw new HttpError(400, "กรุณาระบุข้อมูล");
+  if (action === "update" && records.length !== 1) throw new HttpError(400, "แก้ไขข้อมูลได้ครั้งละหนึ่งรายการ");
+  records.forEach(row => validateData(table, row));
+  const client = await getDbPool().connect();
+  try {
+    await client.query("BEGIN");
+    const output: Record<string, unknown>[] = [];
+    if (action === "delete" || action === "update") {
+      const record = records[0] || {};
+      const keys = Object.keys(record).filter(k => !["id", "created_at", "updated_at"].includes(k));
+      const values: unknown[] = action === "update" ? keys.map(k => sqlValue(record[k])) : [];
+      const where = Object.entries(match).map(([key, value]) => { values.push(value); return `${columnName(table, key)} = $${values.length}`; });
+      const sets = [...keys.map((key, i) => `${columnName(table, key)} = $${i + 1}`), '"updated_at" = now()'];
+      const result = await client.query(`${action === "delete" ? "DELETE FROM" : "UPDATE"} public."${table}" ${action === "update" ? `SET ${sets.join(",")}` : ""} WHERE ${where.join(" AND ")} RETURNING *`, values);
+      output.push(...result.rows);
+    } else for (const record of records) {
+      const keys = Object.keys(record);
+      let sql = `INSERT INTO public."${table}" (${keys.map(k => columnName(table, k)).join(",")}) VALUES (${keys.map((_, i) => `$${i + 1}`).join(",")})`;
+      if (action === "upsert") {
+        const updates = keys.filter(k => ![conflict, "created_at", "updated_at"].includes(k)).map(k => `${columnName(table, k)} = EXCLUDED.${columnName(table, k)}`);
+        updates.push('"updated_at" = now()');
+        sql += ` ON CONFLICT (${columnName(table, conflict)}) DO UPDATE SET ${updates.join(",")}`;
+      }
+      const result = await client.query(`${sql} RETURNING *`, keys.map(k => sqlValue(record[k])));
+      output.push(...result.rows);
+    }
+    await client.query("COMMIT"); return output;
+  } catch (error) { await client.query("ROLLBACK"); throw error; }
+  finally { client.release(); }
 }

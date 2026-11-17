@@ -439,7 +439,6 @@ export default function AdminProgramsPage() {
 
   const handleSubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-    console.log("[handleSubmit Programs] Submitting formData:", formData);
 
     if (!validateProgramForm()) {
       return;
@@ -750,8 +749,36 @@ export default function AdminProgramsPage() {
         title={editingId ? "แก้ไขโปรแกรมซอฟต์แวร์" : "เพิ่มโปรแกรมใหม่ (Product Program)"}
         description="กรอกข้อความอธิบาย (Text), รูปภาพหน้าจอ, ลิงก์คลิปวิดีโอ (YouTube/MP4)"
         maxWidth="5xl"
+        footer={
+          <>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setIsModalOpen(false)}
+              disabled={isSaving}
+              className="rounded-xl px-5 h-10 text-sm font-medium cursor-pointer"
+            >
+              ยกเลิก
+            </Button>
+            <Button
+              type="submit"
+              form="program-form"
+              disabled={isSaving}
+              className="rounded-xl bg-blue-600 hover:bg-blue-700 text-white px-6 h-10 text-sm font-semibold shadow-sm shadow-blue-600/20 cursor-pointer flex items-center gap-2"
+            >
+              {isSaving ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span>กำลังบันทึก...</span>
+                </>
+              ) : (
+                <span>บันทึกข้อมูลโปรแกรม</span>
+              )}
+            </Button>
+          </>
+        }
       >
-        <form onSubmit={handleSubmit} noValidate className="space-y-6">
+        <form id="program-form" onSubmit={handleSubmit} noValidate className="space-y-6">
           {/* Quick Template Selector */}
           {!editingId && (
             <div className="p-3.5 bg-blue-50/70 border border-blue-200/80 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -1122,34 +1149,6 @@ export default function AdminProgramsPage() {
               label="รูปภาพหน้าจอระบบ ฟีเจอร์ 2 (Feature 2 Screenshot / Analytics)"
               description="ภาพหน้าจอแดชบอร์ดสถิติ กราฟ หรือการรายงานผลของระบบ"
             />
-          </div>
-
-          {/* ปุ่มบันทึก */}
-          <div className="pt-4 border-t border-slate-100 flex items-center justify-end gap-3">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setIsModalOpen(false)}
-              className="rounded-full px-5 text-xs font-medium"
-            >
-              ยกเลิก
-            </Button>
-            <Button
-              type="submit"
-              variant="emerald"
-              onClick={handleSubmit}
-              disabled={isSaving}
-              className="rounded-full px-6 text-xs font-semibold shadow-md shadow-emerald-500/25"
-            >
-              {isSaving ? (
-                <>
-                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                  <span>กำลังบันทึก...</span>
-                </>
-              ) : (
-                <span>บันทึกข้อมูลโปรแกรม</span>
-              )}
-            </Button>
           </div>
         </form>
       </Modal>

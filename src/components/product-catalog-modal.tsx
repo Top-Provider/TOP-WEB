@@ -18,6 +18,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { Input } from "@/components/ui/input";
 import type { ProductItemResponse } from "@/app/api/products/route";
 
 interface ProductCatalogModalProps {
@@ -186,13 +187,13 @@ export function ProductCatalogModal({
             <div className="px-6 py-3.5 bg-slate-50/70 border-b border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3 shrink-0">
               {/* Search Input */}
               <div className="relative w-full sm:w-80">
-                <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                <input
+                <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 z-10" />
+                <Input
                   type="text"
                   placeholder="ค้นหารุ่นสินค้า, SKU หรือประเภท..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="w-full pl-9 pr-3.5 py-2 text-xs bg-white rounded-xl border border-slate-200 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15"
+                  className="h-9 pl-9 pr-3.5 text-xs"
                 />
                 {search && (
                   <button

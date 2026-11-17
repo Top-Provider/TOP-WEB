@@ -1,54 +1,35 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
+import type { TeamMember } from "@/lib/team";
 
-export interface TeamMember {
-  name: string;
-  role: string;
-  badge: string;
-  bio: string;
-  imageSrc: string;
-}
-
-const teamMembers: TeamMember[] = [
-  {
-    name: "Pimchanok V.",
-    role: "Co-Founder & Managing Director",
-    badge: "Managing Director",
-    bio: "บริหารกลยุทธ์องค์กรและการส่งมอบระบบสารสนเทศโรงพยาบาลระดับ Enterprise ทั่วประเทศ",
-    imageSrc: "/images/team_1.jpg",
-  },
-  {
-    name: "Kittipong S.",
-    role: "VP of Hospital Engineering",
-    badge: "VP Engineering",
-    bio: "ผู้เชี่ยวชาญโครงสร้างพื้นฐานคลาวด์และระบบฐานข้อมูลขนาดใหญ่สำหรับสถานพยาบาล",
-    imageSrc: "/images/team_2.jpg",
-  },
-  {
-    name: "Thanawat R.",
-    role: "Principal System Architect",
-    badge: "Chief Architect",
-    bio: "ออกแบบสถาปัตยกรรมระบบ HIS, มาตรฐาน HL7/FHIR และระบบรักษาความปลอดภัยไซเบอร์",
-    imageSrc: "/images/team_3.jpg",
-  },
-  {
-    name: "Chanon K.",
-    role: "Head of Solution & Product",
-    badge: "Head of Product",
-    bio: "พัฒนานวัตกรรม UX/UI สำหรับบุคลากรทางการแพทย์และโซลูชัน Smart Hospital ครบวงจร",
-    imageSrc: "/images/team_4.jpg",
-  },
-];
+export type { TeamMember };
 
 interface TeamSectionProps {
   initialMembers?: TeamMember[];
 }
 
-export function TeamSection({ initialMembers }: TeamSectionProps = {}) {
-  const displayMembers = initialMembers && initialMembers.length > 0 ? initialMembers : teamMembers;
+export function TeamSection({ initialMembers = [] }: TeamSectionProps) {
+  const [members, setMembers] = useState<TeamMember[]>(initialMembers);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    fetch("/api/team", { cache: "no-store", signal: controller.signal })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((json) => {
+        if (json?.success && Array.isArray(json.data)) {
+          setMembers(json.data);
+        }
+      })
+      .catch(() => {
+        // Ignore abort/network errors when initialMembers is already rendered
+      });
+    return () => controller.abort();
+  }, []);
+
+  if (members.length === 0) return null;
   return (
     <section id="team" className="py-16 sm:py-24 bg-[#F8FAFC] border-t border-slate-200/80">
       <div className="w-[94%] max-w-[2200px] mx-auto px-2 sm:px-4 lg:px-6">
@@ -67,11 +48,11 @@ export function TeamSection({ initialMembers }: TeamSectionProps = {}) {
           </p>
         </div>
 
-        {/* 4 Cards Grid */}
+        {/* Cards Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {displayMembers.map((member, idx) => (
+          {members.map((member, idx) => (
             <motion.div
-              key={member.name}
+              key={member.id ?? member.name}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
@@ -88,6 +69,7 @@ export function TeamSection({ initialMembers }: TeamSectionProps = {}) {
                     fill
                     sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
                     className="object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
+                    unoptimized={member.imageSrc.startsWith("/api/") || member.imageSrc.startsWith("data:")}
                   />
                   <div className="absolute bottom-2.5 left-2.5 backdrop-blur-md bg-slate-950/75 text-white text-[10px] font-medium px-3 py-1 rounded-full border border-white/15 flex items-center gap-1.5">
                     <span className="w-1.5 h-1.5 rounded-full bg-[#0066FF]" />

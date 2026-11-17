@@ -20,6 +20,7 @@ import {
   Layers,
   Sparkles,
   ExternalLink,
+  Building2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -32,24 +33,15 @@ import { Card } from "@/components/ui/card";
 import { Modal } from "@/components/ui/modal";
 import { toast } from "@/components/ui/toast";
 import { fetchRecords, saveRecord } from "@/lib/crud";
-import { ActivityItem } from "@/app/api/activities/route";
+import { ActivityItem, CATEGORY_OPTIONS } from "@/lib/activities";
 
-const DEFAULT_CATEGORY_OPTIONS: SelectOption[] = [
-  { value: "product_innovation", label: "Product Innovation" },
-  { value: "hr_development", label: "การพัฒนาบุคลากร" },
-  { value: "partner", label: "Partner" },
-  { value: "customer", label: "Customer" },
-  { value: "seminar", label: "การสัมมนา" },
-  { value: "activity_partner", label: "กิจกรรม & Partner" },
-  { value: "activity_customer", label: "กิจกรรม & Customer" },
-  { value: "orientation", label: "Orientation" },
-  { value: "workshop", label: "Workshop" },
-  { value: "awards", label: "งานรับรางวัล" },
-  { value: "distributor", label: "แต่งตั้งเป็นตัวแทนจำหน่าย" },
-  { value: "certification", label: "แต่งตั้งรับรองผลิตภัณฑ์" },
-  { value: "religious", label: "พิธีทางศาสนา" },
-  { value: "company_internal", label: "กิจกรรมภายในบริษัท" },
-];
+const DEFAULT_CATEGORY_OPTIONS = CATEGORY_OPTIONS.filter(option => option.value !== "all");
+
+interface CustomerOption {
+  customerId: number;
+  customerName: string;
+  isActive: boolean;
+}
 
 const DEFAULT_FORM: Omit<ActivityItem, "id"> = {
   title: "",
@@ -70,6 +62,7 @@ const DEFAULT_FORM: Omit<ActivityItem, "id"> = {
 export default function AdminActivitiesPage() {
   const [activities, setActivities] = useState<ActivityItem[]>([]);
   const [categoryOptions, setCategoryOptions] = useState<SelectOption[]>(DEFAULT_CATEGORY_OPTIONS);
+  const [customerOptions, setCustomerOptions] = useState<SelectOption[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
@@ -85,20 +78,33 @@ export default function AdminActivitiesPage() {
   const [viewActivity, setViewActivity] = useState<ActivityItem | null>(null);
   const [activeGalleryIndex, setActiveGalleryIndex] = useState(0);
 
+  async function loadAllActivities() {
+    const data: ActivityItem[] = [];
+    let total = 0;
+    do {
+      const response = await fetch(`/api/activities?all=true&limit=100&offset=${data.length}`);
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || "โหลดกิจกรรมไม่สำเร็จ");
+      data.push(...result.data); total = result.total;
+      if (!result.data.length) break;
+    } while (data.length < total);
+    return { success: true, data };
+  }
   // โหลดรายการกิจกรรมและหมวดหมู่
   const loadData = async () => {
     setLoading(true);
     try {
-      const [res, opts] = await Promise.all([
-        fetch("/api/activities?all=true"),
+      const [res, opts, customerResponse] = await Promise.all([
+        loadAllActivities(),
         fetchRecords<{ value: string; label: string }>({
           table: "TBM_PROGRAM_OPTIONS",
           orderBy: "display_order",
           orderDir: "asc",
         }),
+        fetch("/api/admin/customers", { cache: "no-store" }),
       ]);
 
-      const json = await res.json();
+      const json = res;
       if (json.success && Array.isArray(json.data)) {
         setActivities(json.data);
       }
@@ -116,6 +122,19 @@ export default function AdminActivitiesPage() {
           );
         }
       }
+
+      const customerResult = await customerResponse.json();
+      if (!customerResponse.ok || !customerResult.success) {
+        throw new Error(customerResult.error || "โหลดรายชื่อลูกค้าไม่สำเร็จ");
+      }
+      setCustomerOptions(
+        (customerResult.data as CustomerOption[])
+          .filter((customer) => customer.isActive)
+          .map((customer) => ({
+            value: String(customer.customerId),
+            label: customer.customerName,
+          }))
+      );
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
       console.error("[Load Activities Error]:", msg);
@@ -157,6 +176,7 @@ export default function AdminActivitiesPage() {
       const titleEn = (act.title_en || "").toLowerCase();
       const desc = (act.short_description || "").toLowerCase();
       const loc = (act.location || "").toLowerCase();
+      const customer = (act.customerName || "").toLowerCase();
       const tags = (act.tags || []).join(" ").toLowerCase();
 
       return (
@@ -164,6 +184,7 @@ export default function AdminActivitiesPage() {
         titleEn.includes(term) ||
         desc.includes(term) ||
         loc.includes(term) ||
+        customer.includes(term) ||
         tags.includes(term)
       );
     });
@@ -183,6 +204,7 @@ export default function AdminActivitiesPage() {
     setEditingId(act.id);
     setFormData({
       title: act.title,
+      customerId: act.customerId,
       title_en: act.title_en || "",
       category: act.category,
       event_date: act.event_date || new Date().toISOString().split("T")[0],
@@ -218,6 +240,7 @@ export default function AdminActivitiesPage() {
     try {
       const payload = {
         ...formData,
+        customerName: undefined,
         tags: parsedTags,
       };
 
@@ -599,6 +622,12 @@ export default function AdminActivitiesPage() {
                             <span className="truncate">{act.location}</span>
                           </div>
                         )}
+                        {act.customerName && (
+                          <div className="flex items-center gap-1.5 text-blue-600 line-clamp-1">
+                            <Building2 className="w-3.5 h-3.5 shrink-0" />
+                            <span className="truncate">{act.customerName}</span>
+                          </div>
+                        )}
                       </td>
 
                       {/* Featured Star Toggle */}
@@ -695,13 +724,13 @@ export default function AdminActivitiesPage() {
         title={editingId ? "แก้ไขข้อมูลกิจกรรม" : "เพิ่มกิจกรรมใหม่"}
         maxWidth="5xl"
         footer={
-          <div className="flex items-center justify-end gap-3 w-full">
+          <>
             <Button
               type="button"
               variant="outline"
               onClick={() => setShowModal(false)}
               disabled={saving}
-              className="rounded-xl px-5"
+              className="rounded-xl px-5 h-10 text-sm font-medium cursor-pointer"
             >
               ยกเลิก
             </Button>
@@ -709,11 +738,11 @@ export default function AdminActivitiesPage() {
               type="submit"
               form="activity-form"
               disabled={saving}
-              className="rounded-xl bg-blue-600 hover:bg-blue-700 text-white min-w-[120px]"
+              className="rounded-xl bg-blue-600 hover:bg-blue-700 text-white px-6 h-10 text-sm font-semibold shadow-sm shadow-blue-600/20 cursor-pointer"
             >
               {saving ? "กำลังบันทึก..." : editingId ? "บันทึกการแก้ไข" : "เพิ่มกิจกรรม"}
             </Button>
-          </div>
+          </>
         }
       >
         <form id="activity-form" onSubmit={handleSave} className="space-y-4 py-2">
@@ -786,6 +815,26 @@ export default function AdminActivitiesPage() {
                   className="bg-white"
                 />
               </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-medium text-slate-700 mb-1">
+                ลูกค้า / โรงพยาบาล
+              </label>
+              <Select
+                value={formData.customerId ? String(formData.customerId) : ""}
+                onChange={(value) =>
+                  setFormData((previous) => ({
+                    ...previous,
+                    customerId: value ? Number(value) : undefined,
+                  }))
+                }
+                options={[{ value: "", label: "ไม่ระบุลูกค้า" }, ...customerOptions]}
+                placeholder="เลือกลูกค้า..."
+              />
+              <p className="mt-1 text-[11px] text-slate-400">
+                รายชื่อมาจากเมนู Master ลูกค้า
+              </p>
             </div>
 
             <div>
@@ -921,6 +970,15 @@ export default function AdminActivitiesPage() {
           onClose={() => setViewActivity(null)}
           title="ตัวอย่างกิจกรรม"
           maxWidth="5xl"
+          footer={
+            <Button
+              variant="outline"
+              onClick={() => setViewActivity(null)}
+              className="rounded-xl px-6 h-10 text-sm font-medium cursor-pointer"
+            >
+              ปิดหน้าต่าง
+            </Button>
+          }
         >
           <div className="py-2 space-y-4">
             {/* Main Image Display */}
@@ -996,6 +1054,12 @@ export default function AdminActivitiesPage() {
                     {viewActivity.location}
                   </span>
                 )}
+                {viewActivity.customerName && (
+                  <span className="text-xs text-blue-600 flex items-center gap-1">
+                    <Building2 className="w-3.5 h-3.5" />
+                    {viewActivity.customerName}
+                  </span>
+                )}
               </div>
 
               <h2 className="text-xl font-bold text-slate-900">{viewActivity.title}</h2>
@@ -1030,13 +1094,6 @@ export default function AdminActivitiesPage() {
               </div>
             )}
 
-            <Button
-              variant="outline"
-              onClick={() => setViewActivity(null)}
-              className="w-full rounded-xl mt-4"
-            >
-              ปิดหน้าต่าง
-            </Button>
           </div>
         </Modal>
       )}
@@ -1049,32 +1106,29 @@ export default function AdminActivitiesPage() {
         onClose={() => setDeleteConfirmId(null)}
         title="ยืนยันการลบกิจกรรม"
         maxWidth="sm"
-      >
-        <div className="py-2 space-y-4">
-          <p className="text-sm text-slate-600">
-            คุณต้องการลบกิจกรรมนี้ออกจากฐานข้อมูลใช่หรือไม่? การดำเนินการนี้ไม่สามารถยกเลิกได้
-          </p>
-
-          <div className="flex items-center justify-end gap-2 pt-2">
+        footer={
+          <>
             <Button
               variant="outline"
-              size="sm"
               onClick={() => setDeleteConfirmId(null)}
               disabled={saving}
-              className="rounded-xl"
+              className="rounded-xl px-5 h-10 text-sm font-medium cursor-pointer"
             >
               ยกเลิก
             </Button>
             <Button
-              size="sm"
               onClick={handleDelete}
               disabled={saving}
-              className="rounded-xl bg-red-600 hover:bg-red-700 text-white"
+              className="rounded-xl bg-rose-600 hover:bg-rose-700 text-white px-5 h-10 text-sm font-semibold shadow-sm shadow-rose-600/20 cursor-pointer"
             >
               {saving ? "กำลังลบ..." : "ยืนยันลบ"}
             </Button>
-          </div>
-        </div>
+          </>
+        }
+      >
+        <p className="text-sm text-slate-600 py-1">
+          คุณต้องการลบกิจกรรมนี้ออกจากฐานข้อมูลใช่หรือไม่? การดำเนินการนี้ไม่สามารถยกเลิกได้
+        </p>
       </Modal>
     </div>
   );

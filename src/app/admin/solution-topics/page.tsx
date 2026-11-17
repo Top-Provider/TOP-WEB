@@ -302,16 +302,6 @@ VALUES
 
         <div className="flex items-center gap-2.5">
           <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setShowSqlModal(true)}
-            className="rounded-full text-xs font-semibold gap-1.5 border-slate-300"
-          >
-            <Code className="w-3.5 h-3.5 text-blue-600" />
-            <span>คำสั่ง SQL สร้างตาราง</span>
-          </Button>
-
-          <Button
             onClick={handleOpenAdd}
             size="sm"
             className="rounded-full bg-blue-600 hover:bg-blue-700 text-xs font-semibold gap-1.5"
@@ -369,20 +359,11 @@ VALUES
       ) : filteredTopics.length === 0 ? (
         <Card className="py-16 text-center border-dashed border-slate-300">
           <LayoutGrid className="w-10 h-10 text-slate-300 mx-auto mb-3" />
-          <p className="text-sm font-semibold text-slate-700">ยังไม่มีการ์ดในตาราง TB_SOLUTION_TOPICS</p>
+          <p className="text-sm font-semibold text-slate-700">ยังไม่มีการ์ดโซลูชัน</p>
           <p className="text-xs text-slate-500 mt-1 max-w-md mx-auto">
-            หากยังไม่ได้สร้างตารางใน Supabase สามารถกดปุ่ม &quot;คำสั่ง SQL สร้างตาราง&quot; ด้านบนเพื่อคัดลอก SQL ไปรันใน Supabase ได้ทันที
+            กดปุ่มด้านล่างเพื่อเพิ่มการ์ดภาพรวมโซลูชันแรก
           </p>
           <div className="mt-4 flex items-center justify-center gap-2">
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => setShowSqlModal(true)}
-              className="rounded-full text-xs font-semibold gap-1.5"
-            >
-              <Code className="w-3.5 h-3.5" />
-              <span>ดูคำสั่ง SQL สร้างตาราง</span>
-            </Button>
             <Button
               size="sm"
               onClick={handleOpenAdd}
@@ -507,30 +488,52 @@ VALUES
         onClose={() => setShowModal(false)}
         title={editingId ? "แก้ไขการ์ดโซลูชัน" : "เพิ่มการ์ดโซลูชันใหม่"}
         maxWidth="2xl"
+        footer={
+          <>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setShowModal(false)}
+              disabled={saving}
+              className="rounded-xl px-5 h-10 text-sm font-medium cursor-pointer"
+            >
+              ยกเลิก
+            </Button>
+            <Button
+              type="submit"
+              form="solution-topic-form"
+              disabled={saving}
+              className="rounded-xl bg-blue-600 hover:bg-blue-700 text-white px-6 h-10 text-sm font-semibold shadow-sm shadow-blue-600/20 cursor-pointer flex items-center gap-2"
+            >
+              {saving && <Loader2 className="w-4 h-4 animate-spin" />}
+              {editingId ? "บันทึกการแก้ไข" : "บันทึกข้อมูล"}
+            </Button>
+          </>
+        }
       >
-        <form onSubmit={handleSave} className="space-y-4">
+        <form id="solution-topic-form" onSubmit={handleSave} className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="text-xs font-semibold text-slate-700 block mb-1">
-                โซลูชัน (Tab Category) *
+              <label className="text-xs font-semibold text-slate-700 block mb-1.5">
+                โซลูชัน (Tab Category) <span className="text-rose-500 font-bold">*</span>
               </label>
               <Select
                 value={formData.tab_category}
                 onChange={(val) => setFormData({ ...formData, tab_category: val })}
                 options={TAB_OPTIONS}
-                className="h-9 text-xs"
+                className="h-10 text-xs sm:text-sm rounded-xl"
               />
             </div>
 
             <div>
-              <label className="text-xs font-semibold text-slate-700 block mb-1">
+              <label className="text-xs font-semibold text-slate-700 block mb-1.5">
                 ลำดับการแสดงผล (Sort Order)
               </label>
               <Input
                 type="number"
                 value={formData.sort_order}
                 onChange={(e) => setFormData({ ...formData, sort_order: Number(e.target.value) })}
-                className="h-9 text-xs"
+                className="h-10 text-xs sm:text-sm rounded-xl"
                 placeholder="1, 2, 3..."
               />
             </div>
@@ -538,47 +541,47 @@ VALUES
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="text-xs font-semibold text-slate-700 block mb-1">
-                ชื่อหัวข้อการ์ด (Title) *
+              <label className="text-xs font-semibold text-slate-700 block mb-1.5">
+                ชื่อหัวข้อการ์ด (Title) <span className="text-rose-500 font-bold">*</span>
               </label>
               <Input
                 value={formData.title}
                 onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                 placeholder="เช่น Printer, Supply, Barcode & Scanner"
-                className="h-9 text-xs"
+                className="h-10 text-xs sm:text-sm rounded-xl"
                 required
               />
             </div>
 
             <div>
-              <label className="text-xs font-semibold text-slate-700 block mb-1">
+              <label className="text-xs font-semibold text-slate-700 block mb-1.5">
                 ข้อความกำกับ (Subtitle)
               </label>
               <Input
                 value={formData.subtitle}
                 onChange={(e) => setFormData({ ...formData, subtitle: e.target.value })}
                 placeholder="เช่น 2026 • Printing & Supply Solution"
-                className="h-9 text-xs"
+                className="h-10 text-xs sm:text-sm rounded-xl"
               />
             </div>
           </div>
 
           <div>
-            <label className="text-xs font-semibold text-slate-700 block mb-1">
-              คำบรรยายภาพรวม (Description) *
+            <label className="text-xs font-semibold text-slate-700 block mb-1.5">
+              คำบรรยายภาพรวม (Description) <span className="text-rose-500 font-bold">*</span>
             </label>
             <Textarea
               value={formData.short_description}
               onChange={(e) => setFormData({ ...formData, short_description: e.target.value })}
               rows={3}
               placeholder="ข้อความบรรยายจุดเด่นของโซลูชันนี้..."
-              className="text-xs"
+              className="text-xs sm:text-sm rounded-xl"
               required
             />
           </div>
 
           <div>
-            <label className="text-xs font-semibold text-slate-700 block mb-1">
+            <label className="text-xs font-semibold text-slate-700 block mb-1.5">
               Key Features (พิมพ์แยกบรรทัดละ 1 ข้อ)
             </label>
             <Textarea
@@ -586,50 +589,19 @@ VALUES
               onChange={(e) => setFormData({ ...formData, key_features: e.target.value })}
               rows={3}
               placeholder="Laser & Inkjet Printer&#10;Thermal & Wristband Printer&#10;Large Format & Dot Matrix"
-              className="text-xs font-mono"
+              className="text-xs sm:text-sm rounded-xl"
             />
             <p className="text-[11px] text-slate-400 mt-1">
               ระบบจะแปลงแต่ละบรรทัดให้เป็น Bullet Points สีน้ำเงินบนการ์ดหน้าแรกอัตโนมัติ
             </p>
           </div>
 
-          <div>
-            <label className="text-xs font-semibold text-slate-700 block mb-1">
-              รูปภาพประจำการ์ด (Cover Image)
-            </label>
-            <Input
-              value={formData.cover_image_url}
-              onChange={(e) => setFormData({ ...formData, cover_image_url: e.target.value })}
-              placeholder="URL รูปภาพ เช่น /images/printer-product.png หรือ https://..."
-              className="h-9 text-xs"
-            />
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="text-xs font-semibold text-slate-700 block mb-1">
-                ข้อความบนปุ่มกด (CTA Text)
-              </label>
-              <Input
-                value={formData.cta_text}
-                onChange={(e) => setFormData({ ...formData, cta_text: e.target.value })}
-                placeholder="เช่น ดูสินค้า Printer ทั้งหมด"
-                className="h-9 text-xs"
-              />
-            </div>
-
-            <div>
-              <label className="text-xs font-semibold text-slate-700 block mb-1">
-                ลิงก์เมื่อคลิกปุ่ม (CTA Link)
-              </label>
-              <Input
-                value={formData.cta_link}
-                onChange={(e) => setFormData({ ...formData, cta_link: e.target.value })}
-                placeholder="เช่น /solutions/printing?group=Printer"
-                className="h-9 text-xs"
-              />
-            </div>
-          </div>
+          <ImageUpload
+            value={formData.cover_image_url}
+            onChange={(val) => setFormData({ ...formData, cover_image_url: val })}
+            label="รูปภาพประจำการ์ด (Cover Image)"
+            description="อัปโหลดไฟล์รูปภาพ (PNG, JPG, WebP) หรือวาง URL รูปภาพ"
+          />
 
           <div className="flex items-center gap-2 pt-2">
             <input
@@ -639,73 +611,11 @@ VALUES
               onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
               className="rounded text-blue-600 focus:ring-blue-500 w-4 h-4 cursor-pointer"
             />
-            <label htmlFor="is_active_toggle" className="text-xs font-medium text-slate-700 cursor-pointer">
+            <label htmlFor="is_active_toggle" className="text-xs font-semibold text-slate-700 cursor-pointer">
               เปิดแสดงผลการ์ดนี้บนหน้าแรก (Is Active)
             </label>
           </div>
-
-          <div className="pt-4 border-t border-slate-100 flex items-center justify-end gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => setShowModal(false)}
-              disabled={saving}
-              className="text-xs"
-            >
-              ยกเลิก
-            </Button>
-            <Button
-              type="submit"
-              size="sm"
-              disabled={saving}
-              className="bg-blue-600 hover:bg-blue-700 text-xs gap-1.5"
-            >
-              {saving && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
-              {editingId ? "บันทึกการแก้ไข" : "เพิ่มการ์ด"}
-            </Button>
-          </div>
         </form>
-      </Modal>
-
-      {/* SQL Script Dialog */}
-      <Modal
-        isOpen={showSqlModal}
-        onClose={() => setShowSqlModal(false)}
-        title="คำสั่ง SQL สร้างตาราง TB_SOLUTION_TOPICS"
-        maxWidth="5xl"
-      >
-        <div className="space-y-3">
-          <p className="text-xs text-slate-600">
-            คัดลอกคำสั่งด้านล่างไปวางใน <strong>Supabase Dashboard &gt; SQL Editor</strong> แล้วกด Run ได้ทันที
-            ระบบจะสร้างตารางและใส่ข้อมูลเริ่มต้น (Printer, Supply, Barcode, Computer, Server ฯลฯ) ให้ครบถ้วน:
-          </p>
-
-          <div className="relative">
-            <pre className="p-3 bg-slate-900 text-slate-100 rounded-xl text-[11px] font-mono overflow-x-auto max-h-[360px] leading-relaxed">
-              {sqlScript}
-            </pre>
-            <Button
-              size="sm"
-              onClick={copySql}
-              className="absolute top-2.5 right-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs gap-1 shadow-sm"
-            >
-              {copiedSql ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
-              <span>{copiedSql ? "คัดลอกแล้ว!" : "คัดลอก SQL"}</span>
-            </Button>
-          </div>
-
-          <div className="pt-3 border-t border-slate-100 flex justify-end">
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => setShowSqlModal(false)}
-              className="text-xs"
-            >
-              ปิดหน้าต่าง
-            </Button>
-          </div>
-        </div>
       </Modal>
 
       {/* Delete Confirmation */}

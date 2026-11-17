@@ -1,12 +1,12 @@
 import { Suspense } from "react";
 import { Metadata } from "next";
-import { supabase } from "@/lib/supabase";
+import { listPublicProducts, mapProductRow } from "@/lib/public-catalog";
 import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
 import { ProductCatalogView } from "@/components/product-catalog-view";
 import type { ProductItemResponse } from "@/app/api/products/route";
 
-export const revalidate = 60;
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "ศูนย์รวมเครื่องพิมพ์ & วัสดุสิ้นเปลือง (Printers & Supplies) | TOP PROVIDER SYSTEM GROUP",
@@ -14,49 +14,16 @@ export const metadata: Metadata = {
     "ศูนย์รวมเครื่องพิมพ์คุณภาพสูง หมึกพิมพ์ ริบบอนบาร์โค้ด และวัสดุสิ้นเปลืองทางการแพทย์สำหรับโรงพยาบาลและองค์กร พร้อมสเปกและเอกสาร Datasheet / TOR",
 };
 
-function resolveProductImageUrl(id: unknown, url: unknown, fallback: string): string {
-  if (typeof url !== "string" || !url) return fallback;
-  if (url.startsWith("data:")) {
-    return `/api/product-image/${id}`;
-  }
-  return url;
-}
-
 export default async function ProductsPage() {
   let initialProducts: ProductItemResponse[] = [];
   try {
-    const { data: records, error } = await supabase
-      .from("TB_PRODUCTS")
-      .select(
-        "id, name, sku, slug, category_id, sub_category, brand, product_type, short_description, full_description, specifications, cover_image_url, gallery_images, compatible_products, datasheet_en_url, tor_th_url, is_active"
-      )
-      .eq("is_active", true)
-      .order("id", { ascending: false })
-      .limit(60);
-
-    if (!error && records && Array.isArray(records)) {
-      initialProducts = records.map((item) => ({
-        id: Number(item.id),
-        name: String(item.name || ""),
-        sku: String(item.sku || ""),
-        slug: String(item.slug || `prod-${item.id}`),
-        category_id: String(item.category_id || "Printing"),
-        sub_category: String(item.sub_category || ""),
-        brand: String(item.brand || ""),
-        product_type: (item.product_type === "supply" ? "supply" : "printer"),
-        short_description: String(item.short_description || ""),
-        full_description: String(item.full_description || ""),
-        specifications: Array.isArray(item.specifications) ? item.specifications : [],
-        cover_image_url: resolveProductImageUrl(item.id, item.cover_image_url, "/images/printer-product.png"),
-        gallery_images: Array.isArray(item.gallery_images)
-          ? item.gallery_images.filter((img) => typeof img === "string" && (!img.startsWith("data:") || img.length <= 35000))
-          : [],
-        compatible_products: Array.isArray(item.compatible_products) ? item.compatible_products : [],
-        datasheet_en_url: String(item.datasheet_en_url || ""),
-        tor_th_url: String(item.tor_th_url || ""),
-        is_active: item.is_active !== false,
-      }));
-    }
+    const records = await listPublicProducts({ limit: 60, orderDir: "desc" });
+    initialProducts = records.map((item) =>
+      mapProductRow(item, {
+        fallbackImage: "/images/printer-product.png",
+        strictPrinterSupply: true,
+      })
+    );
   } catch (err) {
     console.error("Error loading products on products catalog page:", err);
   }

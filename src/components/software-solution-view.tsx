@@ -17,12 +17,15 @@ import {
   Loader2,
   Sparkles,
   Share2,
+  Stethoscope,
+  Layers,
+  Headphones,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/select";
 import { Card } from "@/components/ui/card";
 import { MedicalCrossLoader } from "@/components/ui/medical-cross-loader";
-import { fetchRecords } from "@/lib/crud";
+import { fetchPublicRecords } from "@/lib/crud";
 
 export interface ProgramItem {
   id: string;
@@ -60,7 +63,7 @@ export const VITANIX_FALLBACK = {
     "Seamless HIS & Insurer Policy Integration",
     "Automated ICD-10 & ICD-9 Coding Check",
   ],
-  feature1Image: "/images/vitanix-dashboard.png",
+  feature1Image: "/images/showcase-laptop.png",
   feature2Badge: "HOSPITAL FINANCIAL BENEFITS",
   feature2Title: "Why Hospital Financial Teams Choose Vitanix Claim?",
   feature2Desc:
@@ -75,7 +78,7 @@ export const VITANIX_FALLBACK = {
     "Cash Flow Optimization",
     "Direct Billing Reconciliation",
   ],
-  feature2Image: "/images/vitanix-claim-analytics.png",
+  feature2Image: "/images/laptop_mockup.jpg",
 };
 
 // ค่าเริ่มต้นเป็น Array ว่าง ไม่ใช้ข้อมูล mock
@@ -198,7 +201,9 @@ export function mapSoftwareRecordToProgram(
   const rawF1Image = r.feature_1_image || "";
   const feature1Image = rawF1Image.startsWith("data:")
     ? `/api/software-image/${r.id}?field=feature_1_image`
-    : rawF1Image || (isVitanix ? VITANIX_FALLBACK.feature1Image : coverImage);
+    : rawF1Image && rawF1Image !== "/images/vitanix-dashboard.png"
+    ? rawF1Image
+    : coverImage || VITANIX_FALLBACK.feature1Image;
 
   const feature2Badge = r.feature_2_badge || (isVitanix ? VITANIX_FALLBACK.feature2Badge : "");
   const feature2Title = r.feature_2_title || (isVitanix ? VITANIX_FALLBACK.feature2Title : "");
@@ -206,11 +211,11 @@ export function mapSoftwareRecordToProgram(
   const rawF2Image = r.feature_2_image || "";
   const feature2Image = rawF2Image.startsWith("data:")
     ? `/api/software-image/${r.id}?field=feature_2_image`
-    : rawF2Image && rawF2Image !== "/images/vitanix-claim.png"
+    : rawF2Image &&
+      rawF2Image !== "/images/vitanix-claim.png" &&
+      rawF2Image !== "/images/vitanix-claim-analytics.png"
     ? rawF2Image
-    : isVitanix
-    ? VITANIX_FALLBACK.feature2Image
-    : coverImage;
+    : coverImage || VITANIX_FALLBACK.feature2Image;
 
   return {
     id: `software-${r.id}`,
@@ -297,7 +302,7 @@ export function SoftwareSolutionView({ initialRecords, initialPrograms }: Softwa
       return;
     }
 
-    fetchRecords<{
+    fetchPublicRecords<{
       id: number;
       name: string;
       category_id?: string;
@@ -657,7 +662,7 @@ export function SoftwareSolutionView({ initialRecords, initialPrograms }: Softwa
                   <Card className="rounded-3xl border border-slate-200/90 shadow-lg shadow-slate-200/50 overflow-hidden bg-slate-50 p-2 group">
                     <div className="relative aspect-[16/10] w-full rounded-2xl overflow-hidden bg-white border border-slate-200/60">
                       <Image
-                        src={activeProgram.feature1Image || activeProgram.coverImage || "/images/vitanix-dashboard-hd.png"}
+                        src={activeProgram.feature1Image || activeProgram.coverImage || "/images/showcase-laptop.png"}
                         alt={activeProgram.feature1Title || activeProgram.name}
                         fill
                         className="object-cover object-top group-hover:scale-105 transition-transform duration-500"
@@ -676,7 +681,7 @@ export function SoftwareSolutionView({ initialRecords, initialPrograms }: Softwa
                   <Card className="rounded-3xl border border-slate-200/90 shadow-lg shadow-slate-200/50 overflow-hidden bg-slate-50 p-2 group">
                     <div className="relative aspect-[16/10] w-full rounded-2xl overflow-hidden bg-white border border-slate-200/60">
                       <Image
-                        src={activeProgram.feature2Image || activeProgram.coverImage || "/images/vitanix-dashboard-hd.png"}
+                        src={activeProgram.feature2Image || activeProgram.coverImage || "/images/laptop_mockup.jpg"}
                         alt={activeProgram.feature2Title || activeProgram.name}
                         fill
                         className="object-cover object-top group-hover:scale-105 transition-transform duration-500"
@@ -754,40 +759,43 @@ export function SoftwareSolutionView({ initialRecords, initialPrograms }: Softwa
       {/* 4. TECHNOLOGY GRID & CTA BANNER */}
       <div className="w-[94%] max-w-[1720px] mx-auto px-2 sm:px-4 lg:px-6 space-y-12 sm:space-y-16">
         <div className="space-y-8 pt-4">
-          <div className="text-center max-w-2xl mx-auto space-y-2">
-            <span className="text-[11px] font-bold text-blue-600 tracking-wider uppercase">
-              TECHNOLOGY & CAPABILITIES
+          <div className="text-center max-w-2xl mx-auto space-y-2.5">
+            <span className="text-[11px] font-bold text-blue-600 tracking-wider uppercase block">
+              WHY CHOOSE VITANIX CLAIM
             </span>
-            <h3 className="text-2xl sm:text-3xl font-extrabold text-slate-900">
-              Technology That Powers Smarter Hospital Claims
+            <h3 className="text-2xl sm:text-3xl font-extrabold text-slate-900 leading-tight">
+              Technology That Powers Smarter
+              <br />
+              Hospital Claims
             </h3>
-            <p className="text-xs sm:text-sm text-slate-500">
-              เทคโนโลยีที่อยู่เบื้องหลังการประมวลผลและการบริหารจัดการเวชระเบียนโรงพยาบาลระดับ Enterprise
+            <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">
+              ออกแบบมาเพื่อช่วยให้โรงพยาบาลบริหารจัดการงานเคลมทุกกองทุนได้อย่างแม่นยำ ลดการติด C
+              <br className="hidden sm:inline" /> และเพิ่มสภาพคล่องทางการเงินอย่างมีประสิทธิภาพ
             </p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
             <Card className="p-6 rounded-3xl bg-white border border-slate-200/90 shadow-xs hover:shadow-md hover:border-blue-200 transition-all space-y-3">
               <div className="w-10 h-10 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center">
-                <Sparkles className="w-5 h-5" />
+                <Stethoscope className="w-5 h-5" />
               </div>
               <h4 className="text-sm font-bold text-slate-900">
-                Clinical AI Coding Assisting
+                Clinical &amp; Coding Accuracy
               </h4>
               <p className="text-xs text-slate-500 leading-relaxed">
-                ระบบ AI ช่วยตรวจสอบและแนะนำรหัสโรค ICD-10 และหัตถการทางการแพทย์อัตโนมัติ
+                ตรวจสอบรหัสโรค (ICD-10) หัตถการ (ICD-9) และมาตรฐานข้อมูล 16 แฟ้มตามเกณฑ์แต่ละกองทุนได้อย่างแม่นยำก่อนส่งเบิก
               </p>
             </Card>
 
             <Card className="p-6 rounded-3xl bg-white border border-slate-200/90 shadow-xs hover:shadow-md hover:border-blue-200 transition-all space-y-3">
               <div className="w-10 h-10 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center">
-                <Share2 className="w-5 h-5" />
+                <Layers className="w-5 h-5" />
               </div>
               <h4 className="text-sm font-bold text-slate-900">
-                Real-time HIS Integration
+                Seamless HIS Integration
               </h4>
               <p className="text-xs text-slate-500 leading-relaxed">
-                เชื่อมต่อระบบเวชระเบียนเดิม (HIS, EMR, PACS, LIS) อย่างไร้รอยต่อแบบ Real-time
+                เชื่อมต่อข้อมูลการรักษา สิทธิผู้ป่วย และรายการยาจากระบบ HIS เข้าสู่ระบบเคลมทุกกองทุนและประกันภัยได้แบบไร้รอยต่อ
               </p>
             </Card>
 
@@ -799,47 +807,47 @@ export function SoftwareSolutionView({ initialRecords, initialPrograms }: Softwa
                 Faster Reimbursement
               </h4>
               <p className="text-xs text-slate-500 leading-relaxed">
-                ลดระยะเวลาการเบิกจ่ายเงินชดเชยค่ารักษาพยาบาล รวดเร็ว แม่นยำ และเพิ่มกระแสเงินสด
+                ลดขั้นตอนการตรวจสอบเอกสารซ้ำซ้อนด้วยระบบ Pre-Audit อัตโนมัติ ช่วยลดอัตราการถูกปฏิเสธจ่าย (Rejected Claims) และเร่งรอบรับเงิน
               </p>
             </Card>
 
             <Card className="p-6 rounded-3xl bg-white border border-slate-200/90 shadow-xs hover:shadow-md hover:border-blue-200 transition-all space-y-3">
               <div className="w-10 h-10 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center">
-                <RefreshCw className="w-5 h-5" />
+                <Headphones className="w-5 h-5" />
               </div>
               <h4 className="text-sm font-bold text-slate-900">
                 Continuous Rule Updates
               </h4>
               <p className="text-xs text-slate-500 leading-relaxed">
-                อัปเดตเงื่อนไขและกฎเกณฑ์การเบิกจ่ายของกองทุนสุขภาพภาครัฐและเอกชนอัตโนมัติตลอด 24 ชั่วโมง
+                อัปเดตเงื่อนไขการเบิกจ่ายและเกณฑ์กองทุนสุขภาพ (สปสช., ประกันสังคม, ข้าราชการ) ให้เป็นปัจจุบันเสมอ พร้อมทีมผู้เชี่ยวชาญดูแล
               </p>
             </Card>
           </div>
         </div>
 
         {/* 5. CALL TO ACTION BANNER */}
-        <div className="rounded-[32px] sm:rounded-[36px] bg-gradient-to-r from-blue-700 via-blue-600 to-indigo-700 p-8 sm:p-12 text-white shadow-xl shadow-blue-600/20 relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-80 h-80 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
-
-          <div className="relative z-10 max-w-2xl space-y-3">
-            <span className="text-[11px] font-bold text-blue-200 uppercase tracking-wider bg-white/10 px-3 py-1 rounded-full inline-block backdrop-blur-xs">
-              TOP PROVIDER ENTERPRISE
+        <div className="rounded-[32px] sm:rounded-[36px] bg-gradient-to-r from-[#0B1C3D] via-[#0B328A] to-[#0066FF] p-8 sm:p-12 text-white shadow-xl shadow-blue-900/20 relative overflow-hidden">
+          <div className="relative z-10 max-w-4xl space-y-3.5">
+            <span className="text-[11px] font-semibold text-blue-100 uppercase tracking-wider bg-white/10 border border-white/15 px-3.5 py-1 rounded-full inline-block">
+              TOP PROVIDER SYSTEM GROUP
             </span>
-            <h3 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight leading-snug">
+            <h3 className="text-xl sm:text-2xl lg:text-[28px] font-extrabold tracking-tight leading-snug">
               พร้อมยกระดับองค์กรของคุณด้วยเทคโนโลยีที่ใช่หรือยัง?
             </h3>
-            <p className="text-xs sm:text-sm text-blue-100 leading-relaxed">
-              ปรึกษาทีมผู้เชี่ยวชาญของ TOP PROVIDER เพื่อรับคำแนะนำ ออกแบบโซลูชัน หรือนัดหมายรับชมการสาธิตระบบ (Demo) ได้ทันที
+            <p className="text-xs sm:text-sm text-blue-100/90 leading-relaxed">
+              เราพร้อมเป็นส่วนหนึ่งในการขับเคลื่อนองค์กรของคุณ ด้วยโซลูชันเทคโนโลยีที่ตอบโจทย์ทุกความต้องการ
+              <br className="hidden sm:inline" /> ไม่ว่าจะเป็นการพัฒนาระบบ การออกแบบซอฟต์แวร์ หรือระบบบริหารจัดการองค์กร
+              <br className="hidden sm:inline" /> ให้ทีมงานของเราช่วยแนะนำแนวทางที่เหมาะสมสำหรับคุณ
             </p>
 
-            <div className="pt-3">
+            <div className="pt-2">
               <Button
                 asChild
-                className="rounded-full bg-white hover:bg-slate-100 text-[#0062FF] font-bold text-xs sm:text-sm px-7 py-3.5 shadow-md transition-all cursor-pointer"
+                className="rounded-full bg-white hover:bg-slate-100 text-[#0062FF] font-bold text-xs sm:text-sm px-6 py-3 h-auto shadow-md transition-all cursor-pointer"
               >
-                <Link href="/#contact" className="flex items-center gap-2">
-                  <span>ติดต่อเราตอนนี้</span>
-                  <ArrowRight className="w-4 h-4" />
+                <Link href="/contact" className="flex items-center gap-2">
+                  <PhoneCall className="w-4 h-4" />
+                  <span>Contact Our Team</span>
                 </Link>
               </Button>
             </div>

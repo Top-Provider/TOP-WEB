@@ -14,6 +14,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { MedicalCrossLoader } from "@/components/ui/medical-cross-loader";
 import type { ProductItemResponse } from "@/app/api/products/route";
@@ -79,16 +80,10 @@ export function PrintingSolutionView({
 
   // Active Category state
   const [loading, setLoading] = useState<boolean>(initialProducts.length === 0);
-  // Auto-detect first available sub-category from DB or fallback
-  const [selectedSubCategory, setSelectedSubCategory] = useState<string>(() => {
-    if (initialProducts && initialProducts.length > 0) {
-      const firstValid = initialProducts.find((p) => p.sub_category && p.sub_category.trim());
-      if (firstValid && firstValid.sub_category) {
-        return firstValid.sub_category;
-      }
-    }
-    return "Black & White Laser Printer";
-  });
+  // Default to the first Printer category in the sidebar
+  const [selectedSubCategory, setSelectedSubCategory] = useState<string>(
+    SIDEBAR_PRINTER_CATEGORIES[0] || "Black & White Laser Printer"
+  );
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [detailProduct, setDetailProduct] = useState<ExtendedProductItem | null>(null);
 
@@ -401,12 +396,12 @@ export function PrintingSolutionView({
 
               {/* Search Box */}
               <div className="relative w-full sm:w-64">
-                <input
+                <Input
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="ค้นหาสินค้า"
-                  className="w-full pl-9 pr-4 py-2 rounded-xl bg-white border border-slate-200 text-xs sm:text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all shadow-2xs"
+                  className="h-9 pl-9 pr-4 text-xs sm:text-sm"
                 />
                 <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
                 {searchQuery && (

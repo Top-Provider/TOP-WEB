@@ -1,11 +1,18 @@
 import type { Metadata } from "next";
-import { Prompt, Geist_Mono } from "next/font/google";
+import { Inter, Noto_Sans_Thai, Geist_Mono } from "next/font/google";
 import { LocatorProvider } from "@/components/locator-provider";
 import "./globals.css";
 
-const prompt = Prompt({
-  variable: "--font-prompt",
-  subsets: ["latin", "thai"],
+const inter = Inter({
+  variable: "--font-inter",
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700", "800"],
+  display: "swap",
+});
+
+const notoSansThai = Noto_Sans_Thai({
+  variable: "--font-noto-sans-thai",
+  subsets: ["thai"],
   weight: ["300", "400", "500", "600", "700", "800"],
   display: "swap",
 });
@@ -59,7 +66,7 @@ export default function RootLayout({
     <html
       lang="th"
       suppressHydrationWarning
-      className={`${prompt.variable} ${geistMono.variable} scroll-smooth antialiased font-sans`}
+      className={`${inter.variable} ${notoSansThai.variable} ${geistMono.variable} scroll-smooth antialiased font-sans`}
     >
       <body
         suppressHydrationWarning

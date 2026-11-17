@@ -24,6 +24,8 @@ import {
   ArrowUpRight,
   Loader2,
 } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
 import { MedicalCrossLoader } from "@/components/ui/medical-cross-loader";
 import type { ProductItemResponse } from "@/app/api/products/route";
 
@@ -237,18 +239,18 @@ export function ProductCatalogView({
             <div className="flex items-center gap-2.5">
               {/* Search Box */}
               <div className="relative flex-1 md:w-64">
-                <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                <input
+                <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 z-10" />
+                <Input
                   type="text"
                   placeholder="ค้นหารุ่น, SKU..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="w-full pl-9 pr-8 py-2 text-xs bg-slate-50 border border-slate-200 rounded-full focus:outline-none focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-500/10 transition-all"
+                  className="h-9 pl-9 pr-8 text-xs bg-slate-50 rounded-full"
                 />
                 {search && (
                   <button
                     onClick={() => setSearch("")}
-                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 z-10"
                   >
                     <X className="w-3.5 h-3.5" />
                   </button>
@@ -257,18 +259,16 @@ export function ProductCatalogView({
 
               {/* Brand Selector */}
               {availableBrands.length > 0 && (
-                <select
+                <Select
                   value={selectedBrand}
-                  onChange={(e) => setSelectedBrand(e.target.value)}
-                  className="px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-full text-slate-700 focus:outline-none focus:border-blue-500 font-medium cursor-pointer"
-                >
-                  <option value="all">ทุกแบรนด์</option>
-                  {availableBrands.map((b) => (
-                    <option key={b} value={b}>
-                      {b}
-                    </option>
-                  ))}
-                </select>
+                  onChange={setSelectedBrand}
+                  options={[
+                    { value: "all", label: "ทุกแบรนด์" },
+                    ...availableBrands.map((b) => ({ value: b, label: b })),
+                  ]}
+                  className="w-40"
+                  triggerClassName="h-9 text-xs bg-slate-50 rounded-full"
+                />
               )}
             </div>
           </div>

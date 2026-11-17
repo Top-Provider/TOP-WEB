@@ -39,7 +39,6 @@ export async function saveRecord<T = unknown>(
   payload: SavePayload
 ): Promise<ApiResponse<T>> {
   try {
-    console.log("🚀 [saveRecord] Sending request to /api/admin/save:", payload);
     const res = await fetch("/api/admin/save", {
       method: "POST",
       headers: {
@@ -104,3 +103,12 @@ export async function fetchRecords<T = unknown>(params: {
   }
 }
 
+
+/** Public website reads only published records from a separate endpoint. */
+export async function fetchPublicRecords<T = unknown>(params: { table: string; orderBy?: string; orderDir?: "asc" | "desc"; limit?: number }): Promise<T[]> {
+  const query = new URLSearchParams(Object.entries(params).map(([key, value]) => [key, String(value)]));
+  const response = await fetch(`/api/catalog?${query}`);
+  const result = await response.json();
+  if (!response.ok) throw new Error(result.error || "ไม่สามารถโหลดข้อมูลได้");
+  return result.data;
+}

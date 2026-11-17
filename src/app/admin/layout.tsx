@@ -1,12 +1,13 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { Inter, Noto_Sans_Thai } from "next/font/google";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { ToastContainer } from "@/components/ui/toast";
-import { supabase } from "@/lib/supabase";
+import { ToastContainer, toast } from "@/components/ui/toast";
+
 import {
   LayoutDashboard,
   LayoutGrid,
@@ -22,10 +23,35 @@ import {
   Loader2,
   Users,
   Calendar,
+  Wrench,
+  SlidersHorizontal,
+  UserPlus,
+  Building2,
 } from "lucide-react";
+
+const inter = Inter({
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700", "800"],
+  display: "swap",
+});
+
+const notoSansThai = Noto_Sans_Thai({
+  subsets: ["thai"],
+  weight: ["300", "400", "500", "600", "700", "800"],
+  display: "swap",
+});
+
+const adminFontStyle = {
+  ["--font-sans" as string]: `${inter.style.fontFamily}, ${notoSansThai.style.fontFamily}, sans-serif`,
+  fontFamily: `${inter.style.fontFamily}, ${notoSansThai.style.fontFamily}, sans-serif`,
+};
 
 const navigation = [
   { name: "แดชบอร์ด", href: "/admin", icon: LayoutDashboard },
+  { name: "แจ้งซ่อม (Helpdesk)", href: "/admin/helpdesk", icon: Wrench },
+  { name: "ลงทะเบียนลูกค้า (Helpdesk)", href: "/admin/helpdesk/customers", icon: UserPlus },
+  { name: "Master ลูกค้า", href: "/admin/customers", icon: Building2 },
+  { name: "ตั้งค่า SLA", href: "/admin/helpdesk/settings", icon: SlidersHorizontal },
   { name: "จัดการสินค้า (Master)", href: "/admin/products", icon: Package },
   { name: "จัดการโปรแกรม (Programs)", href: "/admin/programs", icon: Layers },
   { name: "การ์ดภาพรวมโซลูชัน", href: "/admin/solution-topics", icon: LayoutGrid },
@@ -67,70 +93,19 @@ export default function AdminLayout({
   };
 
   React.useEffect(() => {
-    // ถ้าอยู่ที่หน้า Login ไม่ต้องตรวจสิทธิ์
-    if (pathname === "/admin/login") {
-      setCheckingAuth(false);
-      return;
-    }
-
-    let isMounted = true;
-
-    async function checkUserSession() {
-      try {
-        const {
-          data: { session },
-        } = await supabase.auth.getSession();
-
-        if (!session) {
-          if (isMounted) {
-            setIsAuthenticated(false);
-            setCheckingAuth(false);
-            router.replace("/admin/login");
-          }
-          return;
-        }
-
-        if (isMounted) {
-          setIsAuthenticated(true);
-          setCheckingAuth(false);
-          if (session.user?.email) {
-            const name = session.user.email.split("@")[0];
-            setDisplayUsername(name);
-          }
-        }
-      } catch (err) {
-        console.error("Auth session check error:", err);
-        if (isMounted) {
-          setIsAuthenticated(false);
-          setCheckingAuth(false);
-          router.replace("/admin/login");
-        }
-      }
-    }
-
-    checkUserSession();
-
-    // ฟังสถานะเปลี่ยน session (เช่น Logout หรือ Token หมดอายุ)
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === "SIGNED_OUT") {
-        setIsAuthenticated(false);
-        router.replace("/admin/login");
-      } else if (session) {
-        setIsAuthenticated(true);
-      }
-    });
-
-    return () => {
-      isMounted = false;
-      subscription.unsubscribe();
-    };
+    if (pathname === "/admin/login") { setCheckingAuth(false); return; }
+    let active = true;
+    setCheckingAuth(true);
+    fetch("/api/auth/session", { cache: "no-store" })
+      .then(async res => { if (!res.ok) throw new Error("Unauthorized"); return res.json(); })
+      .then(data => { if (active) { setIsAuthenticated(true); setDisplayUsername(data.user.username); } })
+      .catch(() => { if (active) { setIsAuthenticated(false); router.replace("/admin/login"); } })
+      .finally(() => { if (active) setCheckingAuth(false); });
+    return () => { active = false; };
   }, [pathname, router]);
-
   // ถ้าเป็นหน้า login ให้แสดง children ธรรมดา โดยไม่มี Sidebar
   if (pathname === "/admin/login") {
-    return <>{children}</>;
+    return <div className={`${inter.className} ${notoSansThai.className}`} style={adminFontStyle}>{children}</div>;
   }
 
   // กำลังตรวจสอบ Auth: แสดง Loading หน้าจอแอดมิน
@@ -159,18 +134,18 @@ export default function AdminLayout({
 
   const handleLogout = async () => {
     try {
-      await supabase.auth.signOut();
-      if (typeof window !== "undefined") {
-        localStorage.removeItem("admin_username");
-      }
+      const response = await fetch("/api/auth/logout", { method: "POST" });
+      if (!response.ok) throw new Error("Logout failed");
+      setIsAuthenticated(false);
+      router.replace("/admin/login");
     } catch (e) {
       console.error(e);
+      toast.error("ออกจากระบบไม่สำเร็จ กรุณาลองใหม่");
     }
-    router.push("/admin/login");
   };
 
   return (
-    <div className="min-h-screen bg-slate-100 flex">
+    <div className={`min-h-screen bg-slate-100 flex ${inter.className} ${notoSansThai.className}`} style={adminFontStyle}>
       {/* Mobile Sidebar Overlay */}
       {sidebarOpen && (
         <div

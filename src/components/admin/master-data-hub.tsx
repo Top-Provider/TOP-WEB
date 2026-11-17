@@ -118,7 +118,7 @@ export function MasterDataHub() {
   // Fetch Main Categories
   const loadMainCategories = async () => {
     try {
-      const res = await fetch("/api/admin/categories");
+      const res = await fetch("/api/admin/categories?all=true");
       const json = await res.json();
       if (json && json.success && Array.isArray(json.categories)) {
         setMainCategories(json.categories);
@@ -451,6 +451,19 @@ export function MasterDataHub() {
         onClose={() => setStatusModal((prev) => ({ ...prev, isOpen: false }))}
         title={statusModal.type === "success" ? "แจ้งเตือนการทำรายการ" : "เกิดข้อผิดพลาด"}
         maxWidth="sm"
+        footer={
+          <Button
+            type="button"
+            onClick={() => setStatusModal((prev) => ({ ...prev, isOpen: false }))}
+            className={`w-full rounded-xl h-10 text-white text-sm font-semibold cursor-pointer ${
+              statusModal.type === "success"
+                ? "bg-emerald-600 hover:bg-emerald-700"
+                : "bg-slate-800 hover:bg-slate-900"
+            }`}
+          >
+            ตกลง
+          </Button>
+        }
       >
         <div className="py-2 text-center space-y-4">
           <div className="flex justify-center">
@@ -476,20 +489,6 @@ export function MasterDataHub() {
             <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
               {statusModal.message}
             </p>
-          </div>
-
-          <div className="pt-2">
-            <Button
-              type="button"
-              onClick={() => setStatusModal((prev) => ({ ...prev, isOpen: false }))}
-              className={`w-full py-2.5 rounded-xl text-white text-xs font-semibold cursor-pointer ${
-                statusModal.type === "success"
-                  ? "bg-emerald-600 hover:bg-emerald-700"
-                  : "bg-slate-800 hover:bg-slate-900"
-              }`}
-            >
-              ตกลง
-            </Button>
           </div>
         </div>
       </Modal>
@@ -717,8 +716,31 @@ export function MasterDataModal({
           ? `แก้ไข${isMain ? "หมวดหมู่หลัก" : "ตัวเลือก"}`
           : `เพิ่ม${isMain ? "หมวดหมู่หลักใหม่" : "ตัวเลือกใหม่"}`
       }
+      footer={
+        <>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onClose}
+            disabled={isSaving}
+            className="rounded-xl px-5 h-10 text-sm font-medium cursor-pointer"
+          >
+            ยกเลิก
+          </Button>
+          <Button
+            type="submit"
+            form="master-data-form"
+            disabled={isSaving}
+            className="rounded-xl bg-blue-600 hover:bg-blue-700 text-white px-6 h-10 text-sm font-semibold shadow-sm shadow-blue-600/20 cursor-pointer flex items-center gap-2"
+          >
+            {isSaving && <Loader2 className="w-4 h-4 animate-spin" />}
+            <span>{editingId ? "บันทึกการแก้ไข" : "บันทึกข้อมูล"}</span>
+          </Button>
+        </>
+      }
     >
       <form
+        id="master-data-form"
         onSubmit={onSubmit}
         onKeyDown={(e) => {
           if (e.key === "Enter" && (e.target as HTMLElement).tagName !== "TEXTAREA") {
@@ -853,25 +875,6 @@ export function MasterDataModal({
             </div>
           </>
         )}
-
-        <div className="flex items-center justify-end gap-2.5 pt-4 border-t border-slate-100">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={onClose}
-            className="text-xs rounded-xl cursor-pointer"
-          >
-            ยกเลิก
-          </Button>
-          <Button
-            type="submit"
-            disabled={isSaving}
-            className="bg-[#0066FF] hover:bg-[#0052CC] text-white text-xs font-semibold rounded-xl px-5 cursor-pointer flex items-center gap-1.5"
-          >
-            {isSaving && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
-            <span>{editingId ? "บันทึกการแก้ไข" : "บันทึกข้อมูล"}</span>
-          </Button>
-        </div>
       </form>
     </Modal>
   );

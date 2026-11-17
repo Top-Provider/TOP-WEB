@@ -531,7 +531,6 @@ export default function AdminProductsPage() {
 
   const handleSubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-    console.log("[handleSubmit Products] Submitting formData:", formData);
 
     if (!validateForm()) {
       setStatusModal({
@@ -994,7 +993,8 @@ export default function AdminProductsPage() {
               type="button"
               variant="outline"
               onClick={() => setIsModalOpen(false)}
-              className="rounded-full px-5 text-xs font-medium cursor-pointer"
+              disabled={isSaving}
+              className="rounded-xl px-5 h-10 text-sm font-medium cursor-pointer"
             >
               ยกเลิก
             </Button>
@@ -1002,11 +1002,11 @@ export default function AdminProductsPage() {
               type="button"
               onClick={handleSubmit}
               disabled={isSaving}
-              className="rounded-full px-6 text-xs font-semibold shadow-md shadow-blue-500/25 cursor-pointer"
+              className="rounded-xl bg-blue-600 hover:bg-blue-700 text-white px-6 h-10 text-sm font-semibold shadow-sm shadow-blue-600/20 cursor-pointer flex items-center gap-2"
             >
               {isSaving ? (
                 <>
-                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  <Loader2 className="w-4 h-4 animate-spin" />
                   <span>กำลังบันทึก...</span>
                 </>
               ) : (
@@ -1705,6 +1705,18 @@ export default function AdminProductsPage() {
         onClose={() => setStatusModal((prev) => ({ ...prev, isOpen: false }))}
         title={statusModal.type === "success" ? "แจ้งเตือนการทำรายการ" : "เกิดข้อผิดพลาด"}
         maxWidth="sm"
+        footer={
+          <Button
+            type="button"
+            onClick={() => setStatusModal((prev) => ({ ...prev, isOpen: false }))}
+            className={`w-full h-10 rounded-xl text-white text-sm font-semibold cursor-pointer ${statusModal.type === "success"
+                ? "bg-emerald-600 hover:bg-emerald-700"
+                : "bg-slate-800 hover:bg-slate-900"
+              }`}
+          >
+            ตกลง
+          </Button>
+        }
       >
         <div className="py-2 text-center space-y-4">
           <div className="flex justify-center">
@@ -1729,19 +1741,6 @@ export default function AdminProductsPage() {
             <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
               {statusModal.message}
             </p>
-          </div>
-
-          <div className="pt-2">
-            <Button
-              type="button"
-              onClick={() => setStatusModal((prev) => ({ ...prev, isOpen: false }))}
-              className={`w-full py-2.5 rounded-xl text-white text-xs font-semibold cursor-pointer ${statusModal.type === "success"
-                  ? "bg-emerald-600 hover:bg-emerald-700"
-                  : "bg-slate-800 hover:bg-slate-900"
-                }`}
-            >
-              ตกลง
-            </Button>
           </div>
         </div>
       </Modal>

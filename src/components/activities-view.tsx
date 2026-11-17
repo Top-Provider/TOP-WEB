@@ -1,423 +1,205 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   Megaphone,
   Calendar,
-  Lightbulb,
-  PlayCircle,
   Play,
   Search,
-  ChevronRight,
-  ChevronLeft,
-  ChevronDown,
   ArrowRight,
   MapPin,
-  Tag,
   X,
-  Share2,
+  Building2,
 } from "lucide-react";
-import { ActivityItem } from "@/app/api/activities/route";
-import { Modal } from "@/components/ui/modal";
+import {
+  ActivityItem,
+  CATEGORY_OPTIONS,
+  formatThaiDate,
+  getCategoryLabel,
+  getCategoryBadgeClass,
+} from "@/lib/activities";
+import { ActivityDetail } from "@/components/activity-detail";
 import { Button } from "@/components/ui/button";
-import { Select, SelectOption } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
 
 interface ActivitiesViewProps {
   initialActivities?: ActivityItem[];
+  initialTotal?: number;
 }
 
-const CATEGORY_OPTIONS: SelectOption[] = [
-  { value: "all", label: "ทุกหมวดหมู่ (ทั้งหมด)" },
-  { value: "product_innovation", label: "Product Innovation" },
-  { value: "hr_development", label: "การพัฒนาบุคลากร" },
-  { value: "partner", label: "Partner" },
-  { value: "customer", label: "Customer" },
-  { value: "seminar", label: "การสัมมนา" },
-  { value: "activity_partner", label: "กิจกรรม & Partner" },
-  { value: "activity_customer", label: "กิจกรรม & Customer" },
-  { value: "orientation", label: "Orientation" },
-  { value: "workshop", label: "Workshop" },
-  { value: "awards", label: "งานรับรางวัล" },
-  { value: "distributor", label: "แต่งตั้งเป็นตัวแทนจำหน่าย" },
-  { value: "certification", label: "แต่งตั้งรับรองผลิตภัณฑ์" },
-  { value: "religious", label: "พิธีทางศาสนา" },
-  { value: "company_internal", label: "กิจกรรมภายในบริษัท" },
-];
-
-const THAI_MONTHS = [
-  "ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.",
-  "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค.",
-];
-
-function formatThaiDate(dateStr?: string): string {
-  if (!dateStr) return "";
-  try {
-    const parts = dateStr.split("T")[0].split("-");
-    if (parts.length === 3) {
-      const year = parseInt(parts[0], 10) + 543;
-      const monthIdx = parseInt(parts[1], 10) - 1;
-      const day = parseInt(parts[2], 10);
-      const monthName = THAI_MONTHS[monthIdx] || parts[1];
-      return `${day} ${monthName} ${year}`;
-    }
-    const d = new Date(dateStr);
-    if (!isNaN(d.getTime())) {
-      const day = d.getDate();
-      const month = THAI_MONTHS[d.getMonth()];
-      const year = d.getFullYear() + 543;
-      return `${day} ${month} ${year}`;
-    }
-  } catch {
-    // fallback
-  }
-  return dateStr;
-}
-
-export function ActivitiesView({ initialActivities = [] }: ActivitiesViewProps) {
+export function ActivitiesView({
+  initialActivities = [],
+  initialTotal,
+}: ActivitiesViewProps) {
+  const [activities, setActivities] = useState<ActivityItem[]>(initialActivities);
+  const [total, setTotal] = useState<number>(initialTotal ?? initialActivities.length);
   const [selectedCategory, setSelectedCategory] = useState("all");
-  const [searchTerm, setSearchTerm] = useState("");
-  const [sortOrder, setSortOrder] = useState<"desc" | "asc">("desc");
-  const [isSortOpen, setIsSortOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [selectedActivity, setSelectedActivity] = useState<ActivityItem | null>(null);
+  const isFirstRender = useRef(true);
 
-  // Active detail modal
-  const [activeActivity, setActiveActivity] = useState<ActivityItem | null>(null);
-  const [activeImageIndex, setActiveImageIndex] = useState(0);
+  useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
 
-  // Filter & sort activities
-  const filteredActivities = useMemo(() => {
-    let list = initialActivities.filter((act) => {
-      // Category filter
-      if (selectedCategory !== "all") {
-        if (
-          act.category !== selectedCategory &&
-          act.category !== getCategoryLabel(selectedCategory)
-        ) {
-          // Compatibility fallbacks for older legacy categories
-          if (selectedCategory === "company_internal" && act.category === "culture") {
-            // match
-          } else if (selectedCategory === "seminar" && (act.category === "exhibition" || act.category === "การสัมนา")) {
-            // match
-          } else if (selectedCategory === "hr_development" && act.category === "training") {
-            // match
-          } else {
-            return false;
-          }
+    const controller = new AbortController();
+    const timer = setTimeout(async () => {
+      setLoading(true);
+      try {
+        const params = new URLSearchParams();
+        if (selectedCategory !== "all") params.set("category", selectedCategory);
+        if (searchQuery.trim()) params.set("search", searchQuery.trim());
+        const res = await fetch(`/api/activities?${params.toString()}`, {
+          signal: controller.signal,
+          cache: "no-store",
+        });
+        const json = await res.json();
+        if (res.ok && json.success) {
+          setActivities(json.data || []);
+          setTotal(typeof json.total === "number" ? json.total : (json.data || []).length);
         }
+      } catch (err) {
+        if ((err as Error).name !== "AbortError") {
+          console.error(err);
+        }
+      } finally {
+        setLoading(false);
       }
+    }, 200);
 
-      // Search term
-      if (!searchTerm.trim()) return true;
-      const term = searchTerm.toLowerCase();
-      const title = (act.title || "").toLowerCase();
-      const titleEn = (act.title_en || "").toLowerCase();
-      const desc = (act.short_description || "").toLowerCase();
-      const loc = (act.location || "").toLowerCase();
-      const tags = (act.tags || []).join(" ").toLowerCase();
-
-      return (
-        title.includes(term) ||
-        titleEn.includes(term) ||
-        desc.includes(term) ||
-        loc.includes(term) ||
-        tags.includes(term)
-      );
-    });
-
-    // Sort by event_date / id
-    list = [...list].sort((a, b) => {
-      const dateA = a.event_date ? new Date(a.event_date).getTime() : 0;
-      const dateB = b.event_date ? new Date(b.event_date).getTime() : 0;
-      if (sortOrder === "desc") {
-        return dateB - dateA || b.id - a.id;
-      }
-      return dateA - dateB || a.id - b.id;
-    });
-
-    return list;
-  }, [initialActivities, selectedCategory, searchTerm, sortOrder]);
-
-  const getCategoryLabel = (category: string) => {
-    switch (category) {
-      case "product_innovation":
-      case "Product Innovation":
-        return "Product Innovation";
-      case "hr_development":
-      case "การพัฒนาบุคลากร":
-        return "การพัฒนาบุคลากร";
-      case "partner":
-      case "Partner":
-        return "Partner";
-      case "customer":
-      case "Customer":
-        return "Customer";
-      case "seminar":
-      case "การสัมมนา":
-      case "การสัมนา":
-        return "การสัมมนา";
-      case "activity_partner":
-      case "กิจกรรม & Partner":
-        return "กิจกรรม & Partner";
-      case "activity_customer":
-      case "กิจกรรม & Customer":
-        return "กิจกรรม & Customer";
-      case "orientation":
-      case "Orientation":
-      case "Orieantation":
-        return "Orientation";
-      case "workshop":
-      case "Workshop":
-        return "Workshop";
-      case "awards":
-      case "งานรับรางวัล":
-        return "งานรับรางวัล";
-      case "distributor":
-      case "แต่งตั้งเป็นตัวแทนจำหน่าย":
-        return "แต่งตั้งเป็นตัวแทนจำหน่าย";
-      case "certification":
-      case "แต่งตั้งรับรองผลิตภัณฑ์":
-      case "แต่งตั้งรับรองผลัตภัณฑ์":
-        return "แต่งตั้งรับรองผลิตภัณฑ์";
-      case "religious":
-      case "พิธีทางศาสนา":
-        return "พิธีทางศาสนา";
-      case "company_internal":
-      case "culture":
-      case "กิจกรรมภายในบริษัท":
-        return "กิจกรรมภายในบริษัท";
-      case "news":
-        return "ข่าวประชาสัมพันธ์";
-      case "event":
-        return "กิจกรรม & อีเวนต์";
-      case "tech":
-        return "ความรู้และเทคโนโลยี";
-      case "video":
-        return "วิดีโอ";
-      case "exhibition":
-        return "งานสัมมนา & นิทรรศการ";
-      case "training":
-        return "อบรมและพัฒนาทักษะ";
-      case "csr":
-        return "เพื่อสังคม (CSR)";
-      default:
-        return category;
-    }
-  };
-
-  const getCategoryBadgeClass = (category: string) => {
-    switch (category) {
-      case "product_innovation":
-      case "Product Innovation":
-        return "bg-blue-600 text-white";
-      case "hr_development":
-      case "การพัฒนาบุคลากร":
-        return "bg-emerald-600 text-white";
-      case "partner":
-      case "Partner":
-        return "bg-indigo-600 text-white";
-      case "customer":
-      case "Customer":
-        return "bg-teal-600 text-white";
-      case "seminar":
-      case "การสัมมนา":
-      case "การสัมนา":
-        return "bg-violet-600 text-white";
-      case "activity_partner":
-      case "กิจกรรม & Partner":
-        return "bg-purple-600 text-white";
-      case "activity_customer":
-      case "กิจกรรม & Customer":
-        return "bg-cyan-600 text-white";
-      case "orientation":
-      case "Orientation":
-      case "Orieantation":
-        return "bg-amber-600 text-white";
-      case "workshop":
-      case "Workshop":
-        return "bg-orange-600 text-white";
-      case "awards":
-      case "งานรับรางวัล":
-        return "bg-yellow-600 text-white";
-      case "distributor":
-      case "แต่งตั้งเป็นตัวแทนจำหน่าย":
-        return "bg-rose-600 text-white";
-      case "certification":
-      case "แต่งตั้งรับรองผลิตภัณฑ์":
-      case "แต่งตั้งรับรองผลัตภัณฑ์":
-        return "bg-green-600 text-white";
-      case "religious":
-      case "พิธีทางศาสนา":
-        return "bg-amber-800 text-white";
-      case "company_internal":
-      case "culture":
-      case "กิจกรรมภายในบริษัท":
-        return "bg-pink-600 text-white";
-      case "news":
-        return "bg-sky-500 text-white";
-      case "event":
-        return "bg-blue-600 text-white";
-      case "tech":
-        return "bg-indigo-600 text-white";
-      case "video":
-        return "bg-cyan-600 text-white";
-      default:
-        return "bg-slate-700 text-white";
-    }
-  };
-
-  const openModal = (act: ActivityItem) => {
-    setActiveActivity(act);
-    setActiveImageIndex(0);
-  };
-
-  const activeImages = useMemo(() => {
-    if (!activeActivity) return [];
-    return [
-      activeActivity.cover_image_url,
-      ...(activeActivity.gallery_images || []),
-    ].filter(Boolean) as string[];
-  }, [activeActivity]);
+    return () => {
+      clearTimeout(timer);
+      controller.abort();
+    };
+  }, [selectedCategory, searchQuery]);
 
   return (
-    <div className="space-y-8 sm:space-y-10">
-      {/* ========================================================================= */}
-      {/* Filter Tabs & Sort Dropdown Row */}
-      {/* ========================================================================= */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-2">
-        {/* Left: Category Dropdown using Select Component */}
-        <div className="flex items-center gap-2.5 w-full sm:w-auto">
-          <div className="w-full sm:w-72 md:w-80">
+    <div>
+      <section className="relative isolate overflow-hidden bg-gradient-to-br from-[#F0F7FF] via-white to-[#E4F0FF] border-b border-slate-200/70 pt-10 sm:pt-14 pb-20 sm:pb-24">
+        {/* Subtle Background Glow */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute -top-24 -right-24 -z-10 h-96 w-96 rounded-full bg-blue-400/15 blur-3xl"
+        />
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute -bottom-24 -left-24 -z-10 h-80 w-80 rounded-full bg-sky-300/15 blur-3xl"
+        />
+
+        <div className="relative z-10 w-[94%] max-w-[1280px] mx-auto px-2 sm:px-4 grid grid-cols-1 lg:grid-cols-12 items-center gap-8 lg:gap-10">
+          <div className="lg:col-span-6 space-y-4">
+            <span className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-blue-50 border border-blue-200/80 text-[#0066FF] text-xs font-bold tracking-wider uppercase">
+              <Megaphone className="w-3.5 h-3.5" />
+              NEWS &amp; ACTIVITIES
+            </span>
+            <h1 className="text-3xl sm:text-4xl lg:text-[44px] font-extrabold text-slate-900 tracking-tight leading-tight">
+              ข่าวสารและกิจกรรมองค์กร
+            </h1>
+            <div className="w-20 h-1.5 rounded-full bg-gradient-to-r from-[#0066FF] to-sky-400" />
+            <p className="max-w-xl text-sm sm:text-base text-slate-600 leading-relaxed">
+              อัปเดตข่าวสาร กิจกรรม งานสัมมนา เวิร์กช็อป และความเคลื่อนไหวของบริษัท
+              พร้อมเรื่องราวดี ๆ จากทีมงานและพันธมิตรของเราทั่วประเทศ
+            </p>
+          </div>
+
+          <div className="lg:col-span-6">
+            <div className="relative aspect-[16/10] w-full rounded-3xl overflow-hidden border-4 border-white shadow-2xl shadow-blue-900/10 ring-1 ring-slate-200/80 bg-slate-100">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/images/office-hq-new.jpg"
+                alt="อาคารสำนักงานใหญ่ บริษัท ท็อป โปรไวเดอร์ ซิสเต็ม กรุ๊ป จำกัด"
+                className="w-full h-full object-cover object-center"
+              />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Filter Dock */}
+      <div className="w-[94%] max-w-[1160px] mx-auto px-2 sm:px-4 -mt-10 sm:-mt-12 relative z-20 mb-8 sm:mb-10">
+        <div className="bg-white/95 backdrop-blur-md border border-white rounded-3xl p-3 sm:p-4 shadow-lg shadow-blue-900/10 grid grid-cols-1 md:grid-cols-[260px_1fr_auto] gap-3 items-center">
+          <div className="min-w-0">
             <Select
               value={selectedCategory}
-              onChange={(val) => setSelectedCategory(val)}
-              options={CATEGORY_OPTIONS}
-              placeholder="เลือกหมวดหมู่กิจกรรม..."
-              triggerClassName="rounded-full text-xs sm:text-sm font-semibold shadow-2xs h-10 px-4"
+              onChange={setSelectedCategory}
+              options={CATEGORY_OPTIONS.map((c) => ({ value: c.value, label: c.label }))}
+              triggerClassName="h-11 rounded-full border-slate-200 bg-white px-4 shadow-none"
             />
           </div>
-          {selectedCategory !== "all" && (
-            <button
-              type="button"
-              onClick={() => setSelectedCategory("all")}
-              className="text-xs text-blue-600 hover:text-blue-800 font-semibold px-3 py-2 rounded-full hover:bg-blue-50 border border-blue-100 transition-colors cursor-pointer shrink-0 whitespace-nowrap"
-            >
-              ล้างตัวกรอง
-            </button>
-          )}
-        </div>
 
-        {/* Right Controls: Search & Sort */}
-        <div className="flex items-center gap-3 w-full sm:w-auto">
-          {/* Search Bar */}
-          <div className="relative flex-1 sm:w-64">
-            <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-            <input
+          <div className="relative min-w-0">
+            <Search className="w-4 h-4 text-slate-400 absolute left-4 top-1/2 -translate-y-1/2 z-10 pointer-events-none" />
+            <Input
               type="text"
-              placeholder="ค้นหาบทความ, ข่าวสาร..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-9 pr-3 py-2 rounded-full bg-white border border-slate-200/90 text-xs sm:text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0062FF]/20 focus:border-[#0062FF] transition-all shadow-2xs"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="ค้นหาข่าวสารหรือกิจกรรม..."
+              aria-label="ค้นหาข่าวสารหรือกิจกรรม"
+              className="h-11 pl-11 pr-10 rounded-full"
             />
-            {searchTerm && (
+            {searchQuery && (
               <button
                 type="button"
-                onClick={() => setSearchTerm("")}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 cursor-pointer"
+                onClick={() => setSearchQuery("")}
+                className="absolute right-3.5 top-1/2 -translate-y-1/2 z-10 text-slate-400 hover:text-slate-600"
+                aria-label="ล้างคำค้นหา"
               >
-                <X className="w-3.5 h-3.5" />
+                <X className="h-4 w-4" />
               </button>
             )}
           </div>
 
-          {/* Sort Dropdown */}
-          <div className="relative">
-            <button
-              type="button"
-              onClick={() => setIsSortOpen(!isSortOpen)}
-              className="px-4 py-2 rounded-full bg-white border border-slate-200/90 text-xs sm:text-sm text-slate-600 hover:text-slate-900 font-medium flex items-center gap-1.5 shadow-2xs cursor-pointer whitespace-nowrap"
-            >
-              <span className="text-slate-400">เรียงตาม :</span>
-              <span className="font-semibold text-slate-800">
-                {sortOrder === "desc" ? "ล่าสุด" : "เก่าสุด"}
-              </span>
-              <ChevronDown className="w-3.5 h-3.5 text-slate-500 ml-0.5" />
-            </button>
-
-            {isSortOpen && (
-              <div className="absolute right-0 mt-1.5 w-32 bg-white rounded-2xl shadow-xl border border-slate-100 py-1.5 z-20 animate-in fade-in zoom-in-95 duration-150">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSortOrder("desc");
-                    setIsSortOpen(false);
-                  }}
-                  className={`w-full text-left px-3.5 py-2 text-xs font-medium transition-colors cursor-pointer ${
-                    sortOrder === "desc"
-                      ? "text-[#0062FF] bg-blue-50 font-bold"
-                      : "text-slate-700 hover:bg-slate-50"
-                  }`}
-                >
-                  ล่าสุด (ใหม่สุด)
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSortOrder("asc");
-                    setIsSortOpen(false);
-                  }}
-                  className={`w-full text-left px-3.5 py-2 text-xs font-medium transition-colors cursor-pointer ${
-                    sortOrder === "asc"
-                      ? "text-[#0062FF] bg-blue-50 font-bold"
-                      : "text-slate-700 hover:bg-slate-50"
-                  }`}
-                >
-                  เก่าสุด (ก่อนหน้า)
-                </button>
-              </div>
-            )}
+          <div className="hidden md:flex items-center gap-2 h-11 px-4 rounded-full bg-[#eaf3ff] text-[#075fdc] text-xs font-extrabold whitespace-nowrap">
+            <Megaphone className="h-4 w-4" />
+            <span>{total.toLocaleString("th-TH")} รายการ</span>
           </div>
         </div>
       </div>
 
-      {/* ========================================================================= */}
-      {/* 3-Column Activities & News Cards Grid */}
-      {/* ========================================================================= */}
-      {filteredActivities.length === 0 ? (
-        <div className="text-center py-24 bg-white rounded-3xl border border-slate-200/80 shadow-xs">
-          <div className="w-16 h-16 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center mx-auto mb-4">
-            <Calendar className="w-8 h-8" />
-          </div>
-          <h3 className="text-lg font-bold text-slate-900">ไม่พบข่าวสารหรือกิจกรรมที่ค้นหา</h3>
-          <p className="text-sm text-slate-500 mt-1.5">
-            ลองปรับเปลี่ยนคำค้นหาหรือเลือกดูหมวดหมู่อื่นๆ
-          </p>
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => {
-              setSelectedCategory("all");
-              setSearchTerm("");
-            }}
-            className="mt-4 rounded-full text-xs"
-          >
-            ล้างตัวกรองทั้งหมด
-          </Button>
+      <section className="w-[94%] max-w-[1280px] mx-auto px-2 sm:px-4">
+        {/* Activities Grid */}
+        {loading && activities.length === 0 ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {[1, 2, 3].map((n) => (
+            <div key={n} className="h-96 rounded-3xl bg-white border border-slate-200 animate-pulse" />
+          ))}
+        </div>
+      ) : activities.length === 0 ? (
+        <div className="bg-white rounded-3xl border border-slate-200 p-12 text-center space-y-3">
+          <p className="text-slate-500 font-medium">ไม่พบกิจกรรมที่ตรงกับเงื่อนไข</p>
+          {(selectedCategory !== "all" || searchQuery) && (
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                setSelectedCategory("all");
+                setSearchQuery("");
+              }}
+            >
+              แสดงกิจกรรมทั้งหมด
+            </Button>
+          )}
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-7">
-          {filteredActivities.map((act) => {
-            const isVideo = act.category === "video";
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {activities.map((act) => {
             const thaiDate = formatThaiDate(act.event_date);
             const categoryLabel = getCategoryLabel(act.category);
+            const isVideo = act.category === "video";
 
             return (
               <article
                 key={act.id}
-                onClick={() => openModal(act)}
-                className="group relative bg-white rounded-[24px] overflow-hidden border border-slate-200/80 shadow-xs hover:shadow-xl hover:border-blue-300 transition-all duration-300 flex flex-col cursor-pointer"
+                onClick={() => setSelectedActivity(act)}
+                className="group bg-white rounded-3xl border border-slate-200/80 shadow-xs hover:shadow-xl hover:border-blue-200 transition-all duration-300 overflow-hidden flex flex-col cursor-pointer"
               >
-                {/* Image Cover Container */}
                 <div className="relative aspect-[16/10] w-full overflow-hidden bg-slate-100">
                   {act.cover_image_url ? (
+                    // eslint-disable-next-line @next/next/no-img-element
                     <img
                       src={act.cover_image_url}
                       alt={act.title}
@@ -453,7 +235,6 @@ export function ActivitiesView({ initialActivities = [] }: ActivitiesViewProps) 
                     </span>
                   </div>
 
-                  {/* Video Play Button Overlay */}
                   {isVideo && (
                     <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                       <div className="w-12 h-12 rounded-full bg-white/95 text-[#0062FF] flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
@@ -466,194 +247,42 @@ export function ActivitiesView({ initialActivities = [] }: ActivitiesViewProps) 
                 {/* Card Body */}
                 <div className="p-5 sm:p-6 flex-1 flex flex-col justify-between space-y-3">
                   <div className="space-y-2">
-                    <h3 className="font-bold text-slate-900 text-base sm:text-[17px] group-hover:text-[#0062FF] transition-colors line-clamp-2 leading-snug min-h-[2.85rem]">
+                    {act.location && (
+                      <p className="flex items-center gap-1.5 text-xs text-slate-500">
+                        <MapPin className="h-3.5 w-3.5 shrink-0" />
+                        <span className="truncate">{act.location}</span>
+                      </p>
+                    )}
+                    {act.customerName && (
+                      <p className="flex items-center gap-1.5 text-xs font-medium text-blue-600">
+                        <Building2 className="h-3.5 w-3.5 shrink-0" />
+                        <span className="truncate">{act.customerName}</span>
+                      </p>
+                    )}
+                    <h3 className="font-bold text-slate-900 text-lg group-hover:text-[#0062FF] transition-colors line-clamp-2 leading-snug min-h-[2.85rem]">
                       {act.title}
                     </h3>
-
                     {act.short_description && (
-                      <p className="text-xs sm:text-[13px] text-slate-500 line-clamp-2 leading-relaxed">
+                      <p className="text-slate-600 text-sm line-clamp-2 leading-relaxed">
                         {act.short_description}
                       </p>
                     )}
                   </div>
 
-                  {/* Card Footer */}
-                  <div className="pt-4 mt-auto border-t border-slate-100 flex items-center justify-between">
-                    <span className="text-xs font-bold text-[#0062FF] group-hover:underline flex items-center gap-1">
-                      <span>{isVideo ? "ดูวิดีโอ" : "อ่านรายละเอียดเพิ่มเติม"}</span>
-                      <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
-                    </span>
-
-                    <div className="w-8 h-8 rounded-full border border-blue-200 bg-blue-50/60 text-[#0062FF] group-hover:bg-[#0062FF] group-hover:text-white group-hover:border-[#0062FF] flex items-center justify-center transition-all duration-200 shadow-2xs">
-                      <ChevronRight className="w-4 h-4" />
-                    </div>
+                  <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-[#0062FF]">
+                    <span>{isVideo ? "รับชมวิดีโอ" : "ชมภาพและรายละเอียดกิจกรรม"}</span>
+                    <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
                   </div>
                 </div>
               </article>
             );
           })}
         </div>
-      )}
+        )}
+      </section>
 
-      {/* ========================================================================= */}
-      {/* Lightbox / Detail Modal */}
-      {/* ========================================================================= */}
-      {activeActivity && (
-        <Modal
-          isOpen={!!activeActivity}
-          onClose={() => setActiveActivity(null)}
-          title={activeActivity.title}
-          maxWidth="4xl"
-        >
-          <div className="space-y-6 py-2">
-            {/* Gallery Viewer */}
-            {activeImages.length > 0 && (
-              <div className="space-y-3">
-                <div className="relative aspect-video w-full rounded-2xl overflow-hidden bg-slate-950 shadow-lg">
-                  <img
-                    src={activeImages[activeImageIndex] || activeImages[0]}
-                    alt="Gallery item"
-                    className="w-full h-full object-cover"
-                  />
-
-                  {/* Arrows */}
-                  {activeImages.length > 1 && (
-                    <>
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setActiveImageIndex((prev) =>
-                            prev === 0 ? activeImages.length - 1 : prev - 1
-                          );
-                        }}
-                        className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-slate-900/60 hover:bg-slate-900/90 text-white flex items-center justify-center transition-colors cursor-pointer"
-                        title="ก่อนหน้า"
-                      >
-                        <ChevronLeft className="w-5 h-5" />
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setActiveImageIndex((prev) =>
-                            prev === activeImages.length - 1 ? 0 : prev + 1
-                          );
-                        }}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-slate-900/60 hover:bg-slate-900/90 text-white flex items-center justify-center transition-colors cursor-pointer"
-                        title="ถัดไป"
-                      >
-                        <ChevronRight className="w-5 h-5" />
-                      </button>
-                    </>
-                  )}
-
-                  {/* Counter */}
-                  <span className="absolute bottom-3 right-3 bg-slate-900/75 text-white text-xs px-2.5 py-1 rounded-full font-mono">
-                    {activeImageIndex + 1} / {activeImages.length}
-                  </span>
-                </div>
-
-                {/* Thumbnails strip */}
-                {activeImages.length > 1 && (
-                  <div className="flex gap-2 overflow-x-auto pb-1">
-                    {activeImages.map((img, i) => (
-                      <button
-                        key={i}
-                        type="button"
-                        onClick={() => setActiveImageIndex(i)}
-                        className={`relative w-20 h-14 rounded-xl overflow-hidden shrink-0 border-2 transition-all cursor-pointer ${
-                          activeImageIndex === i
-                            ? "border-[#0062FF] ring-2 ring-blue-500/20 opacity-100"
-                            : "border-transparent opacity-60 hover:opacity-100"
-                        }`}
-                      >
-                        <img src={img} alt={`Thumb ${i}`} className="w-full h-full object-cover" />
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Info details */}
-            <div className="space-y-4">
-              <div className="flex flex-wrap items-center gap-3">
-                <span
-                  className={`px-3 py-1 rounded-full text-xs font-semibold ${getCategoryBadgeClass(
-                    activeActivity.category
-                  )}`}
-                >
-                  {getCategoryLabel(activeActivity.category)}
-                </span>
-
-                {activeActivity.event_date && (
-                  <span
-                    suppressHydrationWarning
-                    className="text-xs text-slate-600 flex items-center gap-1.5 font-medium"
-                  >
-                    <Calendar className="w-4 h-4 text-[#0062FF]" />
-                    {formatThaiDate(activeActivity.event_date)}
-                  </span>
-                )}
-
-                {activeActivity.location && (
-                  <span className="text-xs text-slate-500 flex items-center gap-1.5">
-                    <MapPin className="w-4 h-4 text-[#0062FF]" />
-                    {activeActivity.location}
-                  </span>
-                )}
-              </div>
-
-              <div>
-                <h2 className="text-xl sm:text-2xl font-bold text-slate-900">
-                  {activeActivity.title}
-                </h2>
-                {activeActivity.title_en && (
-                  <p className="text-sm text-slate-500 mt-1">{activeActivity.title_en}</p>
-                )}
-              </div>
-
-              {activeActivity.short_description && (
-                <div className="p-4 rounded-2xl bg-blue-50/70 border border-blue-100 text-sm text-slate-700 leading-relaxed font-medium">
-                  {activeActivity.short_description}
-                </div>
-              )}
-
-              {activeActivity.content && (
-                <div className="text-sm text-slate-600 leading-relaxed whitespace-pre-line space-y-2">
-                  {activeActivity.content}
-                </div>
-              )}
-
-              {activeActivity.tags && activeActivity.tags.length > 0 && (
-                <div className="flex flex-wrap gap-1.5 pt-3 border-t border-slate-100">
-                  {activeActivity.tags.map((tag, i) => (
-                    <span
-                      key={i}
-                      className="px-2.5 py-1 bg-slate-100 text-slate-700 rounded-lg text-xs flex items-center gap-1 font-medium"
-                    >
-                      <Tag className="w-3 h-3 text-slate-400" />
-                      #{tag}
-                    </span>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            <div className="pt-2 flex justify-end">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setActiveActivity(null)}
-                className="rounded-xl cursor-pointer"
-              >
-                ปิดหน้าต่าง
-              </Button>
-            </div>
-          </div>
-        </Modal>
+      {selectedActivity && (
+        <ActivityDetail activity={selectedActivity} onClose={() => setSelectedActivity(null)} />
       )}
     </div>
   );

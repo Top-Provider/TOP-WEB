@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ArrowUpRight, CheckCircle2, Play, Pause, Package, Loader2, Droplets, FileText, Sparkles } from 'lucide-react';
+import { ArrowUpRight, CheckCircle2, Play, Pause, Package, Loader2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import type { Project } from '../types';
 import { ProjectModal } from './project-modal';
@@ -1120,7 +1120,7 @@ export const StickyProjectSection: React.FC<StickyProjectSectionProps> = ({
         ) : (
           <div className="relative space-y-10 lg:space-y-14">
             {currentCards.map((cardItem, index) => {
-              const topOffset = 84 + index * 16;
+              const topOffset = 84 + Math.min(index, 1) * 16;
               const project = cardItem.project;
               const isPlaying = playingVideoId === cardItem.id;
 
@@ -1318,10 +1318,10 @@ export const StickyProjectSection: React.FC<StickyProjectSectionProps> = ({
                     {/* Right Column: Preview / Media */}
                     <div
                       onClick={() => handleSelectCard(cardItem)}
-                      className={`w-full lg:w-[62%] relative overflow-hidden group cursor-pointer flex items-center justify-center p-6 sm:p-8 lg:p-10 min-h-[360px] sm:min-h-[420px] lg:min-h-full ${
+                      className={`w-full lg:w-[62%] relative overflow-hidden group cursor-pointer flex items-center justify-center min-h-[360px] sm:min-h-[420px] lg:min-h-full ${
                         cardItem.isProductPhoto
-                          ? 'bg-white'
-                          : 'bg-gradient-to-br from-slate-50/80 to-blue-50/20'
+                          ? 'p-0 bg-slate-100'
+                          : 'p-6 sm:p-8 lg:p-10 bg-gradient-to-br from-slate-50/80 to-blue-50/20'
                       }`}
                     >
                       {isPlaying && project.videoUrl ? (
@@ -1335,58 +1335,14 @@ export const StickyProjectSection: React.FC<StickyProjectSectionProps> = ({
                           />
                         </div>
                       ) : cardItem.isProductPhoto ? (
-                        cardItem.id === 'printing-printer' ? (
-                          <div className="relative w-full max-w-[780px] my-auto rounded-2xl sm:rounded-3xl overflow-hidden border border-blue-100/90 shadow-lg shadow-blue-500/5 group/printer">
-                            <img
-                              src={project.coverImage}
-                              alt={project.name}
-                              className="w-full h-auto max-h-[460px] sm:max-h-[500px] object-cover transition-transform duration-500 ease-out group-hover/printer:scale-[1.02]"
-                              loading="lazy"
-                            />
-
-                            {/* Badge 1: Inkjet Printer (Top-Left) */}
-                            <div className="absolute top-3 sm:top-5 left-3 sm:left-5 bg-white/95 backdrop-blur-md px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl sm:rounded-2xl border border-blue-100 shadow-md flex items-center gap-2 sm:gap-2.5 z-10 transition-transform duration-300 hover:scale-105">
-                              <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg sm:rounded-xl bg-blue-50 text-[#0062FF] flex items-center justify-center shrink-0">
-                                <Droplets className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#0062FF]" />
-                              </div>
-                              <div className="text-left">
-                                <p className="text-[11px] sm:text-xs font-bold text-slate-900 leading-tight">Inkjet Printer</p>
-                                <p className="text-[9px] sm:text-[10px] text-slate-500 font-medium leading-tight mt-0.5">เติมหมึกคุ้มค่า</p>
-                              </div>
-                            </div>
-
-                            {/* Badge 2: Thermal Printer (Top-Right) */}
-                            <div className="absolute top-3 sm:top-5 right-3 sm:right-5 bg-white/95 backdrop-blur-md px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl sm:rounded-2xl border border-blue-100 shadow-md flex items-center gap-2 sm:gap-2.5 z-10 transition-transform duration-300 hover:scale-105">
-                              <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg sm:rounded-xl bg-blue-50 text-[#0062FF] flex items-center justify-center shrink-0">
-                                <FileText className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#0062FF]" />
-                              </div>
-                              <div className="text-left">
-                                <p className="text-[11px] sm:text-xs font-bold text-slate-900 leading-tight">Thermal Printer</p>
-                                <p className="text-[9px] sm:text-[10px] text-slate-500 font-medium leading-tight mt-0.5">สำหรับฉลากและข้อมือ</p>
-                              </div>
-                            </div>
-
-                            {/* Badge 3: Laser Printer (Center-Right / Bottom) */}
-                            <div className="absolute bottom-3 sm:bottom-5 right-3 sm:right-8 bg-white/95 backdrop-blur-md px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl sm:rounded-2xl border border-blue-100 shadow-md flex items-center gap-2 sm:gap-2.5 z-10 transition-transform duration-300 hover:scale-105">
-                              <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg sm:rounded-xl bg-blue-50 text-[#0062FF] flex items-center justify-center shrink-0">
-                                <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#0062FF]" />
-                              </div>
-                              <div className="text-left">
-                                <p className="text-[11px] sm:text-xs font-bold text-slate-900 leading-tight">Laser Printer</p>
-                                <p className="text-[9px] sm:text-[10px] text-slate-500 font-medium leading-tight mt-0.5">พิมพ์เร็ว คมชัด ประหยัด</p>
-                              </div>
-                            </div>
-                          </div>
-                        ) : (
-                          <div className="relative w-full max-w-[740px] xl:max-w-[780px] my-auto flex items-center justify-center p-2 sm:p-4 lg:p-6">
-                            <img
-                              src={project.coverImage}
-                              alt={project.name}
-                              className="w-full max-w-[440px] sm:max-w-[560px] md:max-w-[640px] lg:max-w-[720px] max-h-[440px] sm:max-h-[480px] lg:max-h-[520px] h-auto object-contain transition-transform duration-500 ease-out group-hover:scale-[1.03] drop-shadow-[0_18px_35px_rgba(0,0,0,0.12)]"
-                              loading="lazy"
-                            />
-                          </div>
-                        )
+                        <div className="relative h-full min-h-[360px] sm:min-h-[420px] lg:min-h-[500px] w-full overflow-hidden bg-slate-100 group/photo">
+                          <img
+                            src={project.coverImage}
+                            alt={project.name}
+                            className="h-full min-h-[360px] sm:min-h-[420px] lg:min-h-[500px] w-full object-cover object-center transition-transform duration-500 ease-out group-hover/photo:scale-[1.03]"
+                            loading="lazy"
+                          />
+                        </div>
                       ) : (
                         <div className="relative w-full max-w-[760px] my-auto transition-transform duration-500 ease-out group-hover:scale-[1.015] flex flex-col items-center justify-center">
                           <div className="relative w-full rounded-t-xl bg-[#0F172A] border-[6px] sm:border-[8px] border-slate-900 shadow-[0_20px_50px_rgba(0,102,255,0.12)] overflow-hidden aspect-[16/10] flex items-center justify-center">

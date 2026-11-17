@@ -1,157 +1,30 @@
 import { Metadata } from "next";
-import { query } from "@/lib/db";
-import { supabase } from "@/lib/supabase";
+import { listActivities } from "@/lib/activity-repository";
+
 import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
 import { ActivitiesView } from "@/components/activities-view";
-import { ActivityItem } from "@/app/api/activities/route";
 
-export const revalidate = 60;
+
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "News & Activity | TOP PROVIDER SYSTEM GROUP",
+  title: "Company Activities & Events | TOP PROVIDER SYSTEM GROUP",
   description:
-    "อัปเดตข่าวสาร กิจกรรม และความเคลื่อนไหวล่าสุด จาก บริษัท ท็อป โปรไวเดอร์ ซิสเต็ม กรุ๊ป จำกัด ผู้นำด้านเทคโนโลยีสารสนเทศโรงพยาบาลครบวงจร",
+    "รวมภาพกิจกรรม งานสัมมนา เวิร์กช็อป และช่วงเวลาสำคัญของทีมและพันธมิตร บริษัท ท็อป โปรไวเดอร์ ซิสเต็ม กรุ๊ป จำกัด",
 };
 
-function parseJsonArray(val: unknown): string[] {
-  if (Array.isArray(val)) return val as string[];
-  if (typeof val === "string") {
-    try {
-      const parsed = JSON.parse(val);
-      if (Array.isArray(parsed)) return parsed as string[];
-    } catch {
-      return [];
-    }
-  }
-  return [];
-}
-
-function formatRow(row: Record<string, unknown>): ActivityItem {
-  let dateStr = "";
-  if (row.event_date) {
-    if (row.event_date instanceof Date) {
-      const d = row.event_date;
-      const year = d.getFullYear();
-      const month = String(d.getMonth() + 1).padStart(2, "0");
-      const day = String(d.getDate()).padStart(2, "0");
-      dateStr = `${year}-${month}-${day}`;
-    } else {
-      dateStr = String(row.event_date).split("T")[0];
-    }
-  }
-
-  return {
-    id: Number(row.id),
-    title: String(row.title || ""),
-    title_en: row.title_en ? String(row.title_en) : undefined,
-    category: String(row.category || "news"),
-    event_date: dateStr || undefined,
-    location: row.location ? String(row.location) : undefined,
-    short_description: row.short_description ? String(row.short_description) : undefined,
-    content: row.content ? String(row.content) : undefined,
-    cover_image_url: row.cover_image_url ? String(row.cover_image_url) : undefined,
-    gallery_images: parseJsonArray(row.gallery_images),
-    tags: parseJsonArray(row.tags),
-    is_featured: Boolean(row.is_featured),
-    is_active: Boolean(row.is_active),
-    sort_order: Number(row.sort_order || 0),
-  };
-}
-
 export default async function ActivitiesPage() {
-  let initialActivities: ActivityItem[] = [];
-
-  // 1. โหลดจาก PostgreSQL เป็นหลัก
-  if (process.env.DATABASE_URL) {
-    try {
-      const res = await query(`
-        SELECT * FROM public."TB_ACTIVITIES"
-        WHERE is_active = true
-        ORDER BY sort_order ASC, event_date DESC NULLS LAST, id DESC
-      `);
-      if (res && res.rows.length > 0) {
-        initialActivities = res.rows.map(formatRow);
-      }
-    } catch (pgErr) {
-      console.warn("[PostgreSQL Activities Page load error, fallback to Supabase]:", pgErr);
-    }
-  }
-
-  // 2. Fallback ไปยัง Supabase
-  if (initialActivities.length === 0) {
-    try {
-      const { data, error } = await supabase
-        .from("TB_ACTIVITIES")
-        .select("*")
-        .eq("is_active", true)
-        .order("sort_order", { ascending: true })
-        .order("event_date", { ascending: false });
-
-      if (!error && data) {
-        initialActivities = data.map(formatRow);
-      }
-    } catch (sbErr) {
-      console.error("[Supabase Activities Page load exception]:", sbErr);
-    }
-  }
+  const { data: initialActivities, total } = await listActivities();
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#F1F5F9] selection:bg-blue-600 selection:text-white">
+    <div className="min-h-screen flex flex-col bg-[#F8FAFC] selection:bg-blue-600 selection:text-white">
       {/* Sticky Navigation Bar */}
       <Navbar />
 
       <main className="flex-1 pb-20 sm:pb-28">
-        {/* ================================================================= */}
-        {/* Hero Section */}
-        {/* ================================================================= */}
-        <section className="relative pt-6 sm:pt-10 pb-8 sm:pb-12 bg-[#F1F5F9]">
-          <div className="w-[94%] max-w-[1720px] mx-auto px-2 sm:px-4 lg:px-6">
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
-              {/* Left Column: Title & Description */}
-              <div className="lg:col-span-6 space-y-4 sm:space-y-5 z-10 py-4 sm:py-6">
-                <div className="flex items-center gap-3">
-                  <span className="text-xs sm:text-sm font-extrabold tracking-[0.2em] text-[#0062FF] uppercase">
-                    NEWS &amp; ACTIVITY
-                  </span>
-                  <span className="w-12 h-0.5 bg-[#0062FF]/50 rounded-full" />
-                </div>
-
-                <h1 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-black text-slate-900 tracking-tight leading-[1.15]">
-                  News &amp; Activity
-                </h1>
-
-                <p className="text-xs sm:text-sm lg:text-base text-slate-600 leading-relaxed max-w-xl font-normal">
-                  อัปเดตข่าวสาร กิจกรรม และความเคลื่อนไหวล่าสุด จาก บริษัท ท็อป โปรไวเดอร์ ซิสเต็ม กรุ๊ป จำกัด
-                </p>
-              </div>
-
-              {/* Right Column: Hospital Building Render / Visual */}
-              <div className="lg:col-span-6 relative">
-                <div className="relative w-full h-[240px] sm:h-[320px] lg:h-[380px] rounded-2xl sm:rounded-[32px] overflow-hidden shadow-xl shadow-slate-300/40 border border-slate-200/90 bg-white">
-                  <img
-                    src="https://images.unsplash.com/photo-1586773860418-d37222d8fce3?auto=format&fit=crop&w=1200&q=80"
-                    alt="Modern Smart Hospital Architecture - TOP PROVIDER"
-                    className="w-full h-full object-cover object-center"
-                  />
-
-                  {/* Hospital Ecosystem Badge */}
-                  <div className="absolute top-3 sm:top-4 right-3 sm:right-4 bg-white/95 backdrop-blur-md px-3 sm:px-4 py-1 sm:py-1.5 rounded-full border border-slate-200/80 text-[11px] sm:text-xs font-bold text-[#0062FF] flex items-center gap-1.5 sm:gap-2 shadow-sm">
-                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                    <span>SMART HOSPITAL ECOSYSTEM</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Content Container */}
-        <div className="w-[94%] max-w-[1720px] mx-auto px-2 sm:px-4 lg:px-6 pt-6 sm:pt-8 pb-12 sm:pb-16">
-          <ActivitiesView initialActivities={initialActivities} />
-        </div>
+        <ActivitiesView initialActivities={initialActivities} initialTotal={total} />
       </main>
-
       {/* Footer */}
       <Footer />
     </div>

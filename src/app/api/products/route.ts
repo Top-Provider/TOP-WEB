@@ -1,24 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
-
-const rawUrl =
-  process.env.NEXT_PUBLIC_SUPABASE_URL ||
-  "https://placeholder-project.supabase.co";
-const cleanUrl = rawUrl.replace(/\/rest\/v1\/?$/, "").replace(/\/$/, "");
-
-const supabaseKey =
-  process.env.SUPABASE_SERVICE_ROLE_KEY ||
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
-  process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
-  "";
-
-const supabase = createClient(cleanUrl, supabaseKey, {
-  auth: {
-    persistSession: false,
-    autoRefreshToken: false,
-  },
-});
-
+import { pgSelect } from "@/lib/db";
 export interface ProductItemResponse {
   id: number;
   name: string;
@@ -46,23 +27,10 @@ export async function GET(req: NextRequest) {
     const categoryParam = searchParams.get("category"); // 'Printing'
     const searchParam = searchParams.get("search")?.toLowerCase();
 
-    // ดึงข้อมูลจากตารางรวม TB_PRODUCTS
-    let query = supabase
-      .from("TB_PRODUCTS")
-      .select("*")
-      .eq("is_active", true)
-      .order("id", { ascending: false });
-
-    if (categoryParam) {
-      query = query.ilike("category_id", categoryParam);
-    }
-    if (typeParam && typeParam !== "all") {
-      query = query.eq("product_type", typeParam);
-    }
-
-    const { data: productsData } = await query;
-    const allRecords: Record<string, unknown>[] = productsData && Array.isArray(productsData) ? productsData : [];
-
+    const records = await pgSelect({ table: "TB_PRODUCTS", where: { is_active: true }, orderBy: "id", orderDir: "desc", limit: 1000 });
+    const allRecords: Record<string, unknown>[] = records.filter(item =>
+      (!categoryParam || String(item.category_id).toLowerCase() === categoryParam.toLowerCase()) &&
+      (!typeParam || typeParam === "all" || item.product_type === typeParam));
     let products: ProductItemResponse[] = [];
 
     if (allRecords.length > 0) {

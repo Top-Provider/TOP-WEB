@@ -3,7 +3,7 @@
 import React from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowUp, Mail, Phone, MapPin } from "lucide-react";
+import { ArrowUp } from "lucide-react";
 
 export function Footer() {
   const scrollToTop = () => {
@@ -30,13 +30,14 @@ export function Footer() {
               <h3 className="text-sm font-bold text-slate-900">
                 บริษัท ท็อป โปรไวเดอร์ ซิสเต็ม กรุ๊ป จำกัด
               </h3>
-              <p className="text-[11px] font-semibold text-[#0066FF] mt-0.5">
-                TOP PROVIDER SYSTEM GROUP CO., LTD.
+              <p className="text-[11px] font-medium text-slate-400 mt-0.5">
+                Provider System Group Co., Ltd.
               </p>
             </div>
             <p className="text-xs text-slate-500 max-w-sm leading-relaxed">
-              ผู้เชี่ยวชาญด้านการพัฒนาซอฟต์แวร์ระบบสารสนเทศโรงพยาบาล (HIS)
-              และจัดจำหน่ายอุปกรณ์ไอที เครื่องพิมพ์ ฮาร์ดแวร์ และโซลูชันการแพทย์ครบวงจร
+              ผู้นำด้านเทคโนโลยี โซลูชันระบบ และการพัฒนาซอฟต์แวร์ระดับองค์กร
+              <br />
+              เพื่อขับเคลื่อนประสิทธิภาพและความเติบโตอย่างยั่งยืน
             </p>
           </div>
 
@@ -47,83 +48,83 @@ export function Footer() {
             </h4>
             <ul className="space-y-2.5 text-xs text-slate-600 font-medium">
               <li>
-                <Link href="#overview" className="hover:text-[#0066FF] transition-colors">
+                <Link href="/" className="hover:text-[#0066FF] transition-colors">
                   Home
                 </Link>
               </li>
               <li>
-                <Link href="#case-studies" className="hover:text-[#0066FF] transition-colors">
-                  IT Solution & Product
+                <Link href="/#case-studies" className="hover:text-[#0066FF] transition-colors">
+                  IT Solution &amp; Product
                 </Link>
               </li>
               <li>
-                <Link href="#capabilities" className="hover:text-[#0066FF] transition-colors">
+                <Link href="/service-solution" className="hover:text-[#0066FF] transition-colors">
                   Service Solution
                 </Link>
               </li>
               <li>
-                <Link href="#team" className="hover:text-[#0066FF] transition-colors">
+                <Link href="/activities" className="hover:text-[#0066FF] transition-colors">
+                  News &amp; Activities
+                </Link>
+              </li>
+              <li>
+                <Link href="/#capabilities" className="hover:text-[#0066FF] transition-colors">
                   About Us
                 </Link>
               </li>
             </ul>
           </div>
 
-          {/* Column: Solutions */}
+          {/* Column: Connect */}
           <div>
             <h4 className="text-[11px] font-bold uppercase tracking-wider text-[#0066FF] mb-4">
-              SOLUTIONS
+              CONNECT
             </h4>
             <ul className="space-y-2.5 text-xs text-slate-600 font-medium">
-              <li className="flex items-center gap-2">
-                <span className="w-1 h-1 rounded-full bg-[#0066FF]" />
-                <Link href="/solutions/printing" className="hover:text-[#0066FF] transition-colors">
-                  Printing & Supply Solution
+              <li>
+                <Link href="/contact" className="hover:text-[#0066FF] transition-colors">
+                  LinkedIn
                 </Link>
               </li>
-              <li className="flex items-center gap-2">
-                <span className="w-1 h-1 rounded-full bg-[#0066FF]" />
-                <Link href="/solutions/hardware" className="hover:text-[#0066FF] transition-colors">
-                  Hardware Solution
+              <li>
+                <Link href="/contact" className="hover:text-[#0066FF] transition-colors">
+                  Facebook
                 </Link>
               </li>
-              <li className="flex items-center gap-2">
-                <span className="w-1 h-1 rounded-full bg-[#0066FF]" />
-                <Link href="/solutions/software" className="hover:text-[#0066FF] transition-colors">
-                  Software Solution (HIS)
+              <li>
+                <Link href="/contact" className="hover:text-[#0066FF] transition-colors">
+                  GitHub
                 </Link>
               </li>
-              <li className="flex items-center gap-2">
-                <span className="w-1 h-1 rounded-full bg-[#0066FF]" />
-                <Link href="/solutions/network" className="hover:text-[#0066FF] transition-colors">
-                  Network & Smart IoT
+              <li>
+                <Link href="/contact" className="hover:text-[#0066FF] transition-colors">
+                  Line Official
                 </Link>
               </li>
             </ul>
           </div>
 
-          {/* Column: Contact */}
+          {/* Column: Standards */}
           <div>
             <h4 className="text-[11px] font-bold uppercase tracking-wider text-[#0066FF] mb-4">
-              CONTACT
+              STANDARDS
             </h4>
-            <ul className="space-y-3 text-xs text-slate-600 font-medium">
-              <li className="flex items-center gap-2.5">
-                <Mail className="w-3.5 h-3.5 text-[#0066FF] shrink-0" />
-                <a
-                  href="mailto:contact@topprovider.co.th"
-                  className="hover:text-[#0066FF] transition-colors"
-                >
-                  contact@topprovider.co.th
-                </a>
+            <ul className="space-y-2.5 text-xs text-slate-600 font-medium">
+              <li className="flex items-center gap-2">
+                <span className="w-1 h-1 rounded-full bg-[#0066FF]" />
+                <span>ISO 27001 Certified</span>
               </li>
-              <li className="flex items-center gap-2.5">
-                <Phone className="w-3.5 h-3.5 text-[#0066FF] shrink-0" />
-                <span>02-115-5299</span>
+              <li className="flex items-center gap-2">
+                <span className="w-1 h-1 rounded-full bg-[#0066FF]" />
+                <span>Enterprise Cloud SLA 99.9%</span>
               </li>
-              <li className="flex items-start gap-2.5">
-                <MapPin className="w-3.5 h-3.5 text-[#0066FF] shrink-0 mt-0.5" />
-                <span>กรุงเทพมหานคร, ประเทศไทย</span>
+              <li className="flex items-center gap-2">
+                <span className="w-1 h-1 rounded-full bg-[#0066FF]" />
+                <span>Fast-Track Deployment</span>
+              </li>
+              <li className="flex items-center gap-2">
+                <span className="w-1 h-1 rounded-full bg-[#0066FF]" />
+                <span>24/7 Dedicated Support</span>
               </li>
             </ul>
           </div>

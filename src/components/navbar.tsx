@@ -79,14 +79,15 @@ export function Navbar() {
   const navLinks = [
     { label: "Home", href: "/" },
     { label: "IT Solution & Product", href: "/solutions/software" },
-    { label: "Service Solution", href: "/#capabilities" },
+    { label: "Service Solution", href: "/service-solution" },
     { label: "News & Activities", href: "/activities" },
-    { label: "About Us", href: "/#team" },
+    // { label: "About Us", href: "/#team" },
   ];
 
   const isLinkActive = (href: string) => {
     if (href === "/") return pathname === "/";
     if (href.startsWith("/solutions")) return pathname.startsWith("/solutions") || pathname.startsWith("/products");
+    if (href === "/service-solution") return pathname.startsWith("/service-solution");
     if (href === "/activities") return pathname.startsWith("/activities");
     return false;
   };
@@ -128,11 +129,10 @@ export function Navbar() {
 
   return (
     <div
-      className={`sticky top-0 z-50 w-full px-4 sm:px-6 pt-3 sm:pt-4 pb-2 transition-all duration-300 ease-in-out ${
-        isVisible
+      className={`sticky top-0 z-50 w-full px-4 sm:px-6 pt-3 sm:pt-4 pb-2 transition-all duration-300 ease-in-out ${isVisible
           ? "translate-y-0 opacity-100"
           : "-translate-y-full opacity-0 pointer-events-none"
-      }`}
+        }`}
     >
       <div className="w-[94%] max-w-[2200px] mx-auto bg-white/95 backdrop-blur-md rounded-full shadow-lg shadow-slate-200/50 border border-slate-100/90 px-6 sm:px-10 py-3 sm:py-3.5 flex items-center justify-between transition-all">
         {/* Brand Logo matching the user's uploaded image */}
@@ -162,11 +162,10 @@ export function Navbar() {
                 key={link.label}
                 href={link.href}
                 onClick={(e) => handleNavClick(e, link.href)}
-                className={`text-[13.5px] lg:text-[14px] xl:text-[15px] 2xl:text-[16px] font-semibold transition-colors whitespace-nowrap cursor-pointer ${
-                  active
+                className={`text-[13.5px] lg:text-[14px] xl:text-[15px] 2xl:text-[16px] font-semibold transition-colors whitespace-nowrap cursor-pointer ${active
                     ? "text-[#0062FF] font-bold"
                     : "text-slate-600 hover:text-blue-600"
-                }`}
+                  }`}
               >
                 {link.label}
               </Link>
@@ -181,8 +180,8 @@ export function Navbar() {
             className="hidden sm:inline-flex rounded-full bg-[#0062FF] hover:bg-blue-700 text-white font-semibold text-sm sm:text-[15px] px-6 py-2.5 shadow-sm hover:shadow-md hover:shadow-blue-500/25 transition-all h-10 sm:h-11"
           >
             <Link
-              href="/#contact"
-              onClick={(e) => handleNavClick(e, "/#contact")}
+              href="/contact"
+
               className="flex items-center gap-2 cursor-pointer"
             >
               <Calendar className="w-4 h-4" />
@@ -221,11 +220,10 @@ export function Navbar() {
                             key={link.label}
                             href={link.href}
                             onClick={(e) => handleNavClick(e, link.href, () => setIsOpen(false))}
-                            className={`text-base py-1.5 transition-colors cursor-pointer ${
-                              active
+                            className={`text-base py-1.5 transition-colors cursor-pointer ${active
                                 ? "text-[#0062FF] font-bold"
                                 : "text-slate-700 font-medium hover:text-blue-600"
-                            }`}
+                              }`}
                           >
                             {link.label}
                           </Link>
@@ -239,8 +237,8 @@ export function Navbar() {
                       className="w-full rounded-full bg-[#0062FF] hover:bg-blue-700 text-white py-3 font-semibold text-sm sm:text-base h-11"
                     >
                       <Link
-                        href="/#contact"
-                        onClick={(e) => handleNavClick(e, "/#contact", () => setIsOpen(false))}
+                        href="/contact"
+                        onClick={() => setIsOpen(false)}
                         className="flex items-center justify-center gap-2 cursor-pointer"
                       >
                         <Calendar className="w-4 h-4" />

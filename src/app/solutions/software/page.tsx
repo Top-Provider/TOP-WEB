@@ -1,10 +1,10 @@
-import { supabase } from "@/lib/supabase";
+import { listPublicSoftware } from "@/lib/public-catalog";
 import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
 import { SoftwareSolutionView } from "@/components/software-solution-view";
 import { Metadata } from "next";
 
-export const revalidate = 60;
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Software Solution | TOP PROVIDER SYSTEM GROUP",
@@ -12,32 +12,25 @@ export const metadata: Metadata = {
     "โซลูชันซอฟต์แวร์บริหารจัดการโรงพยาบาลและระบบเบิกจ่ายค่ารักษาพยาบาลอัจฉริยะ (Vitanix Claim, Panacea Plus HIS, Smart Queue, EMR)",
 };
 
-function resolveSoftwareImageUrl(id: unknown, url: unknown, fallback: string, field = "cover_image_url"): string {
-  if (typeof url !== "string" || !url) return fallback;
-  if (url.startsWith("data:")) {
-    return `/api/software-image/${id}${field !== "cover_image_url" ? `?field=${field}` : ""}`;
-  }
-  return url;
-}
-
 export default async function SoftwareSolutionPage() {
   let initialRecords: Record<string, unknown>[] = [];
   try {
-    const { data: records, error } = await supabase
-      .from("TB_PRODUCT_SOFTWARE")
-      .select("*")
-      .eq("is_active", true)
-      .order("id", { ascending: true })
-      .limit(30);
-
-    if (!error && records && records.length > 0) {
-      initialRecords = records.map((item) => ({
-        ...item,
-        cover_image_url: resolveSoftwareImageUrl(item.id, item.cover_image_url, "/images/vitanix-dashboard-hd.png", "cover_image_url"),
-        feature_1_image: resolveSoftwareImageUrl(item.id, item.feature_1_image, "/images/vitanix-dashboard-hd.png", "feature_1_image"),
-        feature_2_image: resolveSoftwareImageUrl(item.id, item.feature_2_image, "/images/vitanix-dashboard-hd.png", "feature_2_image"),
-      })) as Record<string, unknown>[];
-    }
+    const records = await listPublicSoftware(30);
+    initialRecords = records.map((item) => ({
+      ...item,
+      cover_image_url:
+        typeof item.cover_image_url === "string" && item.cover_image_url
+          ? item.cover_image_url
+          : "/images/showcase-laptop.png",
+      feature_1_image:
+        typeof item.feature_1_image === "string" && item.feature_1_image
+          ? item.feature_1_image
+          : "/images/showcase-laptop.png",
+      feature_2_image:
+        typeof item.feature_2_image === "string" && item.feature_2_image
+          ? item.feature_2_image
+          : "/images/laptop_mockup.jpg",
+    }));
   } catch (err) {
     console.error("Error loading software programs on server:", err);
   }
