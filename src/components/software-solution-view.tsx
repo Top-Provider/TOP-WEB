@@ -252,7 +252,7 @@ export function SoftwareSolutionView({ initialRecords, initialPrograms }: Softwa
   const initialList = useMemo(() => {
     if (initialPrograms && initialPrograms.length > 0) return initialPrograms;
     if (initialRecords && initialRecords.length > 0) {
-      return initialRecords.map((r, i) => mapSoftwareRecordToProgram(r as any, i));
+      return initialRecords.map((r, i) => mapSoftwareRecordToProgram(r as Parameters<typeof mapSoftwareRecordToProgram>[0], i));
     }
     return [];
   }, [initialRecords, initialPrograms]);

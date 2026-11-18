@@ -122,11 +122,11 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground overflow-x-clip;
     font-family: var(--font-inter), var(--font-noto-sans-thai), sans-serif;
   }
   html {
-    @apply font-sans;
+    @apply font-sans overflow-x-clip;
     font-family: var(--font-inter), var(--font-noto-sans-thai), sans-serif;
   }
 }
@@ -137,6 +137,22 @@
 .no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
+}
+
+@keyframes marquee-loop {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-marquee-loop {
+  display: flex;
+  width: max-content;
+  will-change: transform;
+  animation: marquee-loop 35s linear infinite;
 }
 
 /* News & Activities banner */

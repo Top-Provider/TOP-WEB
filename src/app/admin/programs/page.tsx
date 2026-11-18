@@ -12,6 +12,7 @@ import { Select } from "@/components/ui/select";
 import { ImageUpload } from "@/components/ui/image-upload";
 import { VideoUpload } from "@/components/ui/video-upload";
 import { toast } from "@/components/ui/toast";
+import { AdminLoadingState } from "@/components/admin/admin-loading-state";
 import { saveRecord, fetchRecords } from "@/lib/crud";
 import { Plus, Search, Video, Layers, Edit, Trash2, Loader2, Sparkles, PlaySquare, CheckCircle2, Award, DownloadCloud } from "lucide-react";
 
@@ -572,9 +573,8 @@ export default function AdminProgramsPage() {
           </Button>
 
           <Button
-            variant="emerald"
             onClick={handleOpenAdd}
-            className="rounded-full px-5 py-2.5 shadow-md shadow-emerald-500/20 cursor-pointer"
+            className="rounded-xl bg-blue-600 hover:bg-blue-700 text-white h-10 px-5 text-sm font-semibold shadow-sm shadow-blue-600/20 gap-2 cursor-pointer"
           >
             <Plus className="w-4 h-4" />
             <span>เพิ่มข้อมูล</span>
@@ -624,17 +624,14 @@ export default function AdminProgramsPage() {
                 <th className="py-3.5 px-4">หมวดหมู่</th>
                 <th className="py-3.5 px-4">วิดีโอสาธิต (Video)</th>
                 <th className="py-3.5 px-4">สถานะ</th>
-                <th className="py-3.5 px-4 text-right">การจัดการ</th>
+                <th className="py-3.5 px-4 text-right sticky right-0 z-10 bg-slate-50 border-l border-slate-200/70 whitespace-nowrap">การจัดการ</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 text-slate-700">
               {loading ? (
                 <tr>
-                  <td colSpan={6} className="py-12 text-center text-slate-400">
-                    <div className="flex items-center justify-center gap-2 text-xs font-medium">
-                      <Loader2 className="w-4 h-4 animate-spin text-emerald-600" />
-                      <span>กำลังโหลดข้อมูลโปรแกรมจากฐานข้อมูล...</span>
-                    </div>
+                  <td colSpan={6}>
+                    <AdminLoadingState label="กำลังโหลดข้อมูลโปรแกรม..." />
                   </td>
                 </tr>
               ) : filtered.length === 0 ? (
@@ -683,12 +680,13 @@ export default function AdminProgramsPage() {
                         เปิดแสดงผล
                       </span>
                     </td>
-                    <td className="py-3 px-4 text-right">
-                      <div className="inline-flex items-center gap-1">
+                    <td className="py-3 px-4 text-right sticky right-0 z-10 bg-white border-l border-slate-100">
+                      <div className="inline-flex items-center gap-1.5">
                         <Button
                           type="button"
                           variant="ghost"
                           size="icon-sm"
+                          className="bg-amber-50 text-amber-600 hover:bg-amber-100 hover:text-amber-700 border border-amber-200/70 rounded-lg"
                           onClick={() => {
                             setEditingId(item.id);
                             setFormData({
@@ -719,14 +717,14 @@ export default function AdminProgramsPage() {
                           }}
                           title="แก้ไข"
                         >
-                          <Edit className="w-4 h-4 text-slate-500 hover:text-emerald-600" />
+                          <Edit className="w-4 h-4" />
                         </Button>
                         <Button
                           type="button"
                           variant="ghost"
                           size="icon-sm"
                           onClick={() => setDeleteTarget({ id: item.id, name: item.name })}
-                          className="hover:bg-rose-50 text-slate-500 hover:text-rose-600"
+                          className="bg-rose-50 text-rose-600 hover:bg-rose-100 hover:text-rose-700 border border-rose-200/70 rounded-lg"
                           title="ลบ"
                         >
                           <Trash2 className="w-4 h-4" />
@@ -911,7 +909,7 @@ export default function AdminProgramsPage() {
 
             <div>
               <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                ข้อความอธิบายแบบเต็ม (Full Description - แสดงใน Popup)
+                ข้อความอธิบายแบบเต็ม (Full Description)
               </label>
               <Textarea
                 rows={3}

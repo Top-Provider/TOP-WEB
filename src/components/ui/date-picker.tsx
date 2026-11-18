@@ -374,14 +374,17 @@ export function DatePicker({
       {isOpen && mounted && typeof document !== "undefined" && createPortal(
         <div
           ref={popoverRef}
+          onPointerDown={(e) => e.stopPropagation()}
+          onMouseDown={(e) => e.stopPropagation()}
           style={{
             position: "fixed",
             top: `${popoverPos?.top ?? 0}px`,
             left: `${popoverPos?.left ?? 0}px`,
             width: `${popoverPos?.width ?? 320}px`,
             zIndex: 9999,
+            pointerEvents: "auto",
           }}
-          className="bg-white rounded-2xl shadow-2xl shadow-slate-900/25 border border-slate-200/90 p-4 animate-in fade-in zoom-in-95 duration-150 select-none"
+          className="pointer-events-auto bg-white rounded-2xl shadow-2xl shadow-slate-900/25 border border-slate-200/90 p-4 animate-in fade-in zoom-in-95 duration-150 select-none"
         >
           {/* Header Controls */}
           <div className="flex items-center justify-between gap-1 pb-3 mb-3 border-b border-slate-100">

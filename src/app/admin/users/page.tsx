@@ -28,6 +28,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectOption } from "@/components/ui/select";
 import { Card } from "@/components/ui/card";
 import { Modal } from "@/components/ui/modal";
+import { AdminLoadingState } from "@/components/admin/admin-loading-state";
 import { toast } from "@/components/ui/toast";
 import { fetchRecords, saveRecord } from "@/lib/crud";
 
@@ -489,7 +490,7 @@ export default function AdminUsersPage() {
               <Users className="w-5 h-5" />
             </span>
             <h1 className="text-xl sm:text-2xl font-bold text-slate-900">
-              จัดการข้อมูลบุคลากร (TB_USERS)
+              จัดการข้อมูลบุคลากร
             </h1>
           </div>
           <p className="text-sm text-slate-500 mt-1">
@@ -511,7 +512,7 @@ export default function AdminUsersPage() {
 
           <Button
             onClick={handleOpenAdd}
-            className="rounded-xl bg-blue-600 hover:bg-blue-700 text-white gap-2 shadow-sm"
+            className="rounded-xl bg-blue-600 hover:bg-blue-700 text-white h-10 px-5 text-sm font-semibold shadow-sm shadow-blue-600/20 gap-2 cursor-pointer"
           >
             <UserPlus className="w-4 h-4" />
             เพิ่มบุคลากรใหม่
@@ -627,17 +628,14 @@ export default function AdminUsersPage() {
                 <th className="py-3.5 px-4 text-center">หน้าแรก</th>
                 <th className="py-3.5 px-4">ข้อมูลติดต่อ</th>
                 <th className="py-3.5 px-4 text-center">สถานะ</th>
-                <th className="py-3.5 px-4 text-right">จัดการ</th>
+                <th className="py-3.5 px-4 text-right sticky right-0 z-10 bg-slate-50 border-l border-slate-200/70 whitespace-nowrap">จัดการ</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
               {loading ? (
                 <tr>
-                  <td colSpan={7} className="py-12 text-center text-slate-400">
-                    <div className="flex flex-col items-center justify-center gap-2">
-                      <RefreshCw className="w-6 h-6 animate-spin text-blue-600" />
-                      <span>กำลังโหลดข้อมูลบุคลากร...</span>
-                    </div>
+                  <td colSpan={7}>
+                    <AdminLoadingState label="กำลังโหลดข้อมูลบุคลากร..." />
                   </td>
                 </tr>
               ) : filteredUsers.length === 0 ? (
@@ -809,12 +807,12 @@ export default function AdminUsersPage() {
                       </td>
 
                       {/* Actions */}
-                      <td className="py-3.5 px-4 text-right">
-                        <div className="flex items-center justify-end gap-1">
+                      <td className="py-3.5 px-4 text-right sticky right-0 z-10 bg-white border-l border-slate-100">
+                        <div className="flex items-center justify-end gap-1.5">
                           <button
                             type="button"
                             onClick={() => setViewUser(user)}
-                            className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                            className="p-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 border border-blue-200/70 rounded-lg transition-colors"
                             title="ดูข้อมูลแบบเต็ม"
                           >
                             <Eye className="w-4 h-4" />
@@ -822,7 +820,7 @@ export default function AdminUsersPage() {
                           <button
                             type="button"
                             onClick={() => handleOpenEdit(user)}
-                            className="p-1.5 text-slate-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"
+                            className="p-1.5 bg-amber-50 text-amber-600 hover:bg-amber-100 border border-amber-200/70 rounded-lg transition-colors"
                             title="แก้ไข"
                           >
                             <Edit2 className="w-4 h-4" />
@@ -830,7 +828,7 @@ export default function AdminUsersPage() {
                           <button
                             type="button"
                             onClick={() => setDeleteConfirmId(user.id || null)}
-                            className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                            className="p-1.5 bg-rose-50 text-rose-600 hover:bg-rose-100 border border-rose-200/70 rounded-lg transition-colors"
                             title="ลบ"
                           >
                             <Trash2 className="w-4 h-4" />
@@ -1039,7 +1037,7 @@ export default function AdminUsersPage() {
                   placeholder="เลือกบทบาทงาน..."
                 />
                 <p className="text-[11px] text-slate-400 mt-1">
-                  ข้อมูลจาก TBM_PROGRAM_OPTIONS (job)
+                  ตัวเลือกจากข้อมูลหลัก (Master Data)
                 </p>
               </div>
 

@@ -28,12 +28,14 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectOption } from "@/components/ui/select";
 import { DatePicker } from "@/components/ui/date-picker";
 import { ImageUpload } from "@/components/ui/image-upload";
+import { AdminLoadingState } from "@/components/admin/admin-loading-state";
 import { GalleryUpload } from "@/components/ui/gallery-upload";
+import { VideoUpload } from "@/components/ui/video-upload";
 import { Card } from "@/components/ui/card";
 import { Modal } from "@/components/ui/modal";
 import { toast } from "@/components/ui/toast";
 import { fetchRecords, saveRecord } from "@/lib/crud";
-import { ActivityItem, CATEGORY_OPTIONS } from "@/lib/activities";
+import { ActivityItem, CATEGORY_OPTIONS, formatThaiDate, getActivityVideoEmbedUrl, getActivityVideoThumbnailUrl } from "@/lib/activities";
 
 const DEFAULT_CATEGORY_OPTIONS = CATEGORY_OPTIONS.filter(option => option.value !== "all");
 
@@ -52,6 +54,7 @@ const DEFAULT_FORM: Omit<ActivityItem, "id"> = {
   short_description: "",
   content: "",
   cover_image_url: "",
+  video_url: "",
   gallery_images: [],
   tags: [],
   is_featured: false,
@@ -212,6 +215,7 @@ export default function AdminActivitiesPage() {
       short_description: act.short_description || "",
       content: act.content || "",
       cover_image_url: act.cover_image_url || "",
+      video_url: act.video_url || "",
       gallery_images: act.gallery_images || [],
       tags: act.tags || [],
       is_featured: act.is_featured,
@@ -386,7 +390,7 @@ export default function AdminActivitiesPage() {
               <Calendar className="w-5 h-5" />
             </span>
             <h1 className="text-xl sm:text-2xl font-bold text-slate-900">
-              จัดการกิจกรรมและข่าวสารองค์กร (TB_ACTIVITIES)
+              จัดการกิจกรรมและข่าวสารองค์กร
             </h1>
           </div>
           <p className="text-sm text-slate-500 mt-1">
@@ -408,7 +412,7 @@ export default function AdminActivitiesPage() {
 
           <Button
             onClick={handleOpenAdd}
-            className="rounded-xl bg-blue-600 hover:bg-blue-700 text-white gap-2 shadow-sm"
+            className="rounded-xl bg-blue-600 hover:bg-blue-700 text-white h-10 px-5 text-sm font-semibold shadow-sm shadow-blue-600/20 gap-2 cursor-pointer"
           >
             <Plus className="w-4 h-4" />
             เพิ่มกิจกรรมใหม่
@@ -483,11 +487,10 @@ export default function AdminActivitiesPage() {
           <button
             type="button"
             onClick={() => setFeaturedOnlyFilter((prev) => !prev)}
-            className={`px-3 py-2 rounded-xl text-xs font-medium transition-colors flex items-center gap-1.5 border ${
-              featuredOnlyFilter
-                ? "bg-amber-500 text-white border-amber-500 shadow-sm"
-                : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"
-            }`}
+            className={`px-3 py-2 rounded-xl text-xs font-medium transition-colors flex items-center gap-1.5 border ${featuredOnlyFilter
+              ? "bg-amber-500 text-white border-amber-500 shadow-sm"
+              : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"
+              }`}
           >
             <Star className="w-3.5 h-3.5" />
             เฉพาะไฮไลต์
@@ -499,11 +502,10 @@ export default function AdminActivitiesPage() {
               <button
                 key={st}
                 onClick={() => setStatusFilter(st)}
-                className={`px-3 py-1 rounded-lg text-xs font-medium transition-colors ${
-                  statusFilter === st
-                    ? "bg-white text-slate-900 shadow-sm"
-                    : "text-slate-600 hover:text-slate-900"
-                }`}
+                className={`px-3 py-1 rounded-lg text-xs font-medium transition-colors ${statusFilter === st
+                  ? "bg-white text-slate-900 shadow-sm"
+                  : "text-slate-600 hover:text-slate-900"
+                  }`}
               >
                 {st === "all" ? "ทั้งหมด" : st === "active" ? "เผยแพร่" : "ซ่อน"}
               </button>
@@ -524,17 +526,14 @@ export default function AdminActivitiesPage() {
                 <th className="py-3.5 px-4">วันที่ & สถานที่</th>
                 <th className="py-3.5 px-4 text-center">ไฮไลต์</th>
                 <th className="py-3.5 px-4 text-center">สถานะ</th>
-                <th className="py-3.5 px-4 text-right">จัดการ</th>
+                <th className="py-3.5 px-4 text-right sticky right-0 z-10 bg-slate-50 border-l border-slate-200/70 whitespace-nowrap">จัดการ</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
               {loading ? (
                 <tr>
-                  <td colSpan={7} className="py-12 text-center text-slate-400">
-                    <div className="flex flex-col items-center justify-center gap-2">
-                      <RefreshCw className="w-6 h-6 animate-spin text-blue-600" />
-                      <span>กำลังโหลดข้อมูลกิจกรรม...</span>
-                    </div>
+                  <td colSpan={7}>
+                    <AdminLoadingState label="กำลังโหลดข้อมูลกิจกรรม..." />
                   </td>
                 </tr>
               ) : filteredActivities.length === 0 ? (
@@ -567,6 +566,20 @@ export default function AdminActivitiesPage() {
                               <img
                                 src={act.cover_image_url}
                                 alt={act.title}
+                                className="w-full h-full object-cover"
+                              />
+                            ) : getActivityVideoThumbnailUrl(act.video_url) ? (
+                              <img
+                                src={getActivityVideoThumbnailUrl(act.video_url) || ""}
+                                alt={act.title}
+                                className="w-full h-full object-cover"
+                              />
+                            ) : act.video_url ? (
+                              <video
+                                src={`${act.video_url}#t=0.5`}
+                                muted
+                                playsInline
+                                preload="metadata"
                                 className="w-full h-full object-cover"
                               />
                             ) : (
@@ -614,7 +627,7 @@ export default function AdminActivitiesPage() {
                       <td className="py-3.5 px-4 text-xs text-slate-600 space-y-1">
                         <div className="flex items-center gap-1.5 font-medium text-slate-700">
                           <Calendar className="w-3.5 h-3.5 text-slate-400" />
-                          <span>{act.event_date || "-"}</span>
+                          <span>{act.event_date ? formatThaiDate(act.event_date) : "-"}</span>
                         </div>
                         {act.location && (
                           <div className="flex items-center gap-1.5 text-slate-400 line-clamp-1">
@@ -635,19 +648,17 @@ export default function AdminActivitiesPage() {
                         <button
                           type="button"
                           onClick={() => handleToggleFeatured(act)}
-                          className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold cursor-pointer transition-colors ${
-                            act.is_featured
-                              ? "bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100"
-                              : "bg-slate-100 text-slate-400 hover:bg-slate-200"
-                          }`}
+                          className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold cursor-pointer transition-colors ${act.is_featured
+                            ? "bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100"
+                            : "bg-slate-100 text-slate-400 hover:bg-slate-200"
+                            }`}
                           title="คลิกเพื่อสลับสถานะไฮไลต์"
                         >
                           <Star
-                            className={`w-3.5 h-3.5 ${
-                              act.is_featured
-                                ? "fill-amber-500 text-amber-500"
-                                : "text-slate-400"
-                            }`}
+                            className={`w-3.5 h-3.5 ${act.is_featured
+                              ? "fill-amber-500 text-amber-500"
+                              : "text-slate-400"
+                              }`}
                           />
                           {act.is_featured ? "ไฮไลต์" : "ปกติ"}
                         </button>
@@ -658,32 +669,30 @@ export default function AdminActivitiesPage() {
                         <button
                           type="button"
                           onClick={() => handleToggleStatus(act)}
-                          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold cursor-pointer transition-colors ${
-                            act.is_active
-                              ? "bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
-                              : "bg-slate-100 text-slate-500 hover:bg-slate-200"
-                          }`}
+                          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold cursor-pointer transition-colors ${act.is_active
+                            ? "bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
+                            : "bg-slate-100 text-slate-500 hover:bg-slate-200"
+                            }`}
                           title="คลิกเพื่อสลับสถานะ"
                         >
                           <span
-                            className={`w-1.5 h-1.5 rounded-full ${
-                              act.is_active ? "bg-emerald-500" : "bg-slate-400"
-                            }`}
+                            className={`w-1.5 h-1.5 rounded-full ${act.is_active ? "bg-emerald-500" : "bg-slate-400"
+                              }`}
                           />
                           {act.is_active ? "เผยแพร่" : "ซ่อน"}
                         </button>
                       </td>
 
                       {/* Actions */}
-                      <td className="py-3.5 px-4 text-right">
-                        <div className="flex items-center justify-end gap-1">
+                      <td className="py-3.5 px-4 text-right sticky right-0 z-10 bg-white border-l border-slate-100">
+                        <div className="flex items-center justify-end gap-1.5">
                           <button
                             type="button"
                             onClick={() => {
                               setViewActivity(act);
                               setActiveGalleryIndex(0);
                             }}
-                            className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                            className="p-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 border border-blue-200/70 rounded-lg transition-colors"
                             title="ดูตัวอย่างกิจกรรม"
                           >
                             <Eye className="w-4 h-4" />
@@ -691,7 +700,7 @@ export default function AdminActivitiesPage() {
                           <button
                             type="button"
                             onClick={() => handleOpenEdit(act)}
-                            className="p-1.5 text-slate-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"
+                            className="p-1.5 bg-amber-50 text-amber-600 hover:bg-amber-100 border border-amber-200/70 rounded-lg transition-colors"
                             title="แก้ไข"
                           >
                             <Edit2 className="w-4 h-4" />
@@ -699,7 +708,7 @@ export default function AdminActivitiesPage() {
                           <button
                             type="button"
                             onClick={() => setDeleteConfirmId(act.id)}
-                            className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                            className="p-1.5 bg-rose-50 text-rose-600 hover:bg-rose-100 border border-rose-200/70 rounded-lg transition-colors"
                             title="ลบ"
                           >
                             <Trash2 className="w-4 h-4" />
@@ -911,6 +920,16 @@ export default function AdminActivitiesPage() {
             />
           </div>
 
+          {/* วิดีโอกิจกรรม (Video) */}
+          <div className="bg-slate-50/70 p-4 rounded-xl border border-slate-200/80">
+            <VideoUpload
+              label="4. วิดีโอกิจกรรม (Activity Video)"
+              description="อัปโหลดไฟล์คลิป MP4, WebM (สูงสุด 50MB) หรือวางลิงก์ YouTube"
+              value={formData.video_url || ""}
+              onChange={(val) => setFormData((p) => ({ ...p, video_url: val }))}
+            />
+          </div>
+
           {/* สวิตช์เปิดใช้งาน & ปักหมุดไฮไลต์ */}
           <div className="pt-2 border-t border-slate-200/80 space-y-3">
             <div className="flex items-center justify-between">
@@ -1016,16 +1035,34 @@ export default function AdminActivitiesPage() {
                           key={i}
                           type="button"
                           onClick={() => setActiveGalleryIndex(i)}
-                          className={`relative w-20 h-14 rounded-lg overflow-hidden shrink-0 border-2 transition-all cursor-pointer ${
-                            activeGalleryIndex === i
-                              ? "border-blue-600 ring-2 ring-blue-500/20"
-                              : "border-transparent opacity-60 hover:opacity-100"
-                          }`}
+                          className={`relative w-20 h-14 rounded-lg overflow-hidden shrink-0 border-2 transition-all cursor-pointer ${activeGalleryIndex === i
+                            ? "border-blue-600 ring-2 ring-blue-500/20"
+                            : "border-transparent opacity-60 hover:opacity-100"
+                            }`}
                         >
                           <img src={img} alt={`Thumb ${i}`} className="w-full h-full object-cover" />
                         </button>
                       ))}
                     </div>
+                  )}
+                </div>
+              );
+            })()}
+
+            {viewActivity.video_url && (() => {
+              const embedUrl = getActivityVideoEmbedUrl(viewActivity.video_url);
+              return (
+                <div className="overflow-hidden rounded-xl bg-black aspect-video">
+                  {embedUrl ? (
+                    <iframe
+                      src={embedUrl}
+                      title={viewActivity.title}
+                      className="h-full w-full border-0"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                    />
+                  ) : (
+                    <video src={viewActivity.video_url} controls playsInline className="h-full w-full" />
                   )}
                 </div>
               );
@@ -1044,7 +1081,7 @@ export default function AdminActivitiesPage() {
                 {viewActivity.event_date && (
                   <span className="text-xs text-slate-500 flex items-center gap-1">
                     <Calendar className="w-3.5 h-3.5" />
-                    {viewActivity.event_date}
+                    {formatThaiDate(viewActivity.event_date)}
                   </span>
                 )}
 

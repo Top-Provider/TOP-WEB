@@ -116,30 +116,30 @@ export default function ServiceSolutionPage() {
 
         <section className="pb-10 pt-1 sm:pb-16">
           <div className="mx-auto grid w-[88%] max-w-[1500px] gap-6 lg:grid-cols-2">
-            <article className="group relative overflow-hidden rounded-[26px] border border-blue-100 bg-white px-6 py-7 shadow-[0_18px_45px_rgba(30,64,175,0.08)] sm:px-8 sm:py-9">
+            <article className="group relative overflow-hidden rounded-[26px] border border-blue-100 bg-white px-5 py-6 shadow-[0_18px_45px_rgba(30,64,175,0.08)] sm:px-8 sm:py-9">
               <div className="absolute -bottom-20 -right-12 h-52 w-52 rounded-full bg-blue-100/70 blur-2xl transition-transform duration-500 group-hover:scale-125" />
-              <div className="relative flex h-full flex-col items-start justify-between gap-7 sm:flex-row sm:items-center">
-                <div>
+              <div className="relative flex h-full flex-col items-start justify-between gap-5 sm:flex-row sm:items-center sm:gap-7">
+                <div className="w-full sm:w-auto">
                   <span className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-[#0874ff] text-white shadow-lg shadow-blue-200">
                     <UserRound className="h-6 w-6" aria-hidden="true" />
                   </span>
-                  <h2 className="text-2xl font-extrabold text-[#0d173d]">เข้าสู่ระบบ (Login)</h2>
+                  <h2 className="text-xl font-extrabold text-[#0d173d] sm:text-2xl">เข้าสู่ระบบ (Login)</h2>
                   <p className="mt-1.5 text-sm font-medium text-slate-500">สำหรับผู้ใช้งานระบบแจ้งซ่อม</p>
                   <Link
                     href="/helpdesk/login?force=true"
                     prefetch={false}
-                    className="mt-6 inline-flex items-center gap-3 rounded-full bg-[#0874ff] px-6 py-3 text-sm font-bold text-white shadow-lg shadow-blue-200 transition-all hover:-translate-y-0.5 hover:bg-blue-700 hover:shadow-xl"
+                    className="mt-5 inline-flex items-center gap-3 rounded-full bg-[#0874ff] px-6 py-3 text-sm font-bold text-white shadow-lg shadow-blue-200 transition-all hover:-translate-y-0.5 hover:bg-blue-700 hover:shadow-xl sm:mt-6"
                   >
                     เข้าสู่ระบบ
                     <ArrowRight className="h-4 w-4" aria-hidden="true" />
                   </Link>
                 </div>
-                <div className="relative flex h-36 w-full max-w-[220px] items-center justify-center sm:h-44">
-                  <div className="absolute h-28 w-40 rotate-[-5deg] rounded-[20px] border-4 border-blue-200 bg-gradient-to-br from-white to-blue-100 shadow-xl" />
-                  <div className="absolute top-7 flex h-16 w-16 items-center justify-center rounded-full bg-blue-500 text-white shadow-lg ring-8 ring-blue-100">
-                    <UserRound className="h-8 w-8" aria-hidden="true" />
+                <div className="relative mx-auto flex h-32 w-full max-w-[200px] shrink-0 items-center justify-center sm:mx-0 sm:h-44 sm:max-w-[220px]">
+                  <div className="absolute h-24 w-36 rotate-[-5deg] rounded-[20px] border-4 border-blue-200 bg-gradient-to-br from-white to-blue-100 shadow-xl sm:h-28 sm:w-40" />
+                  <div className="absolute top-5 flex h-14 w-14 items-center justify-center rounded-full bg-blue-500 text-white shadow-lg ring-8 ring-blue-100 sm:top-7 sm:h-16 sm:w-16">
+                    <UserRound className="h-7 w-7 sm:h-8 sm:w-8" aria-hidden="true" />
                   </div>
-                  <div className="absolute bottom-4 h-3 w-44 rounded-full bg-blue-100 blur-sm" />
+                  <div className="absolute bottom-2 h-3 w-36 rounded-full bg-blue-100 blur-sm sm:bottom-4 sm:w-44" />
                 </div>
               </div>
             </article>

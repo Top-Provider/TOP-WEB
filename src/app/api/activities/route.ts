@@ -1,7 +1,7 @@
-﻿import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/admin-auth";
 import { apiError, HttpError } from "@/lib/api-error";
-import { listActivities, getActivity } from "@/lib/activity-repository";
+import { listActivities, getActivity, ensureActivityVideoColumn } from "@/lib/activity-repository";
 import { activitySchema, recordId } from "@/lib/data-validation";
 import { pgInsert, pgUpdate, pgDelete } from "@/lib/db";
 import { formatActivityRow } from "@/lib/activities";
@@ -23,6 +23,7 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     await requireAdmin(req);
+    await ensureActivityVideoColumn();
     const body = activitySchema.parse(await req.json());
     const { customerId, ...activity } = body;
     const data = await pgInsert("TB_ACTIVITIES", {
@@ -36,9 +37,13 @@ export async function POST(req: NextRequest) {
 export async function PUT(req: NextRequest) {
   try {
     await requireAdmin(req);
+    await ensureActivityVideoColumn();
     const { id, ...body } = await req.json();
     const payload = activitySchema.partial().parse(body);
     if (payload.event_date === "") payload.event_date = null;
+    if (payload.video_url === `/api/activity-video/${id}`) {
+      delete payload.video_url;
+    }
     const { customerId, ...activity } = payload;
     const data = await pgUpdate(
       "TB_ACTIVITIES",

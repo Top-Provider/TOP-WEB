@@ -626,7 +626,7 @@ export function NetworkSolutionView({
 
                             // กรณีที่ 1: มีหลายข้อ/หลายบรรทัด -> แยกแสดงทีละข้อเป็น Bullet Points ชัดเจน
                             if (isMultiLineValue) {
-                              let lines = normalizedVal.includes("\n")
+                              const lines = normalizedVal.includes("\n")
                                 ? normalizedVal.split("\n").map((l) => l.trim()).filter(Boolean)
                                 : normalizedVal.split(/\s+-\s+/).map((l) => l.trim()).filter(Boolean);
 

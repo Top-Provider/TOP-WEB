@@ -12,6 +12,7 @@ import { Select } from "@/components/ui/select";
 import { ImageUpload } from "@/components/ui/image-upload";
 import { PdfUpload } from "@/components/ui/pdf-upload";
 import { toast } from "@/components/ui/toast";
+import { AdminLoadingState } from "@/components/admin/admin-loading-state";
 import { saveRecord, fetchRecords } from "@/lib/crud";
 import { Plus, Search, FileText, Edit, Trash2, Loader2, Sparkles, Layers, X, UploadCloud, Link as LinkIcon, Image as ImageIcon, CheckCircle2, AlertCircle, ChevronLeft, ChevronRight, GripVertical, ChevronUp, ChevronDown } from "lucide-react";
 
@@ -671,10 +672,10 @@ export default function AdminProductsPage() {
 
         <Button
           onClick={handleOpenAdd}
-          className="rounded-full px-5 py-2.5 shadow-md shadow-blue-500/20"
+          className="rounded-xl bg-blue-600 hover:bg-blue-700 text-white h-10 px-5 text-sm font-semibold shadow-sm shadow-blue-600/20 gap-2 cursor-pointer"
         >
           <Plus className="w-4 h-4" />
-          <span>เพิ่มสินค้าใหม่ (Popup)</span>
+          <span>เพิ่มสินค้าใหม่</span>
         </Button>
       </div>
 
@@ -720,19 +721,14 @@ export default function AdminProductsPage() {
                 <th className="py-3.5 px-4">หมวดหมู่</th>
                 <th className="py-3.5 px-4">ไฟล์เอกสาร</th>
                 <th className="py-3.5 px-4">สถานะ</th>
-                <th className="py-3.5 px-4 text-right">การจัดการ</th>
+                <th className="py-3.5 px-4 text-right sticky right-0 z-10 bg-slate-50 border-l border-slate-200/70 whitespace-nowrap">การจัดการ</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 text-slate-700">
               {isLoading ? (
                 <tr>
-                  <td colSpan={6} className="py-20 text-center text-slate-500">
-                    <div className="flex flex-col items-center justify-center gap-3">
-                      <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
-                      <span className="text-xs sm:text-sm font-medium text-slate-600">
-                        กำลังโหลดข้อมูลสินค้า...
-                      </span>
-                    </div>
+                  <td colSpan={6}>
+                    <AdminLoadingState label="กำลังโหลดข้อมูลสินค้า..." />
                   </td>
                 </tr>
               ) : paginatedProducts.length === 0 ? (
@@ -817,12 +813,13 @@ export default function AdminProductsPage() {
                         เปิดแสดงผล
                       </span>
                     </td>
-                    <td className="py-3 px-4 text-right">
-                      <div className="inline-flex items-center gap-1">
+                    <td className="py-3 px-4 text-right sticky right-0 z-10 bg-white border-l border-slate-100">
+                      <div className="inline-flex items-center gap-1.5">
                         <Button
                           type="button"
                           variant="ghost"
                           size="icon-sm"
+                          className="bg-amber-50 text-amber-600 hover:bg-amber-100 hover:text-amber-700 border border-amber-200/70 rounded-lg"
                           onClick={async () => {
                             setEditingId(product.id);
                             const isCustom = !!product.brand && product.brand !== "-" && !brandOptions.some(o => o.value === product.brand && o.value !== "Other");
@@ -872,14 +869,14 @@ export default function AdminProductsPage() {
                           }}
                           title="แก้ไข"
                         >
-                          <Edit className="w-4 h-4 text-slate-500 hover:text-blue-600" />
+                          <Edit className="w-4 h-4" />
                         </Button>
                         <Button
                           type="button"
                           variant="ghost"
                           size="icon-sm"
                           onClick={() => setDeleteTarget({ id: product.id, name: product.name })}
-                          className="hover:bg-rose-50 text-slate-500 hover:text-rose-600"
+                          className="bg-rose-50 text-rose-600 hover:bg-rose-100 hover:text-rose-700 border border-rose-200/70 rounded-lg"
                           title="ลบ"
                         >
                           <Trash2 className="w-4 h-4" />

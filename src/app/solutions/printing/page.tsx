@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import { Metadata } from "next";
 import { listPublicProducts, mapProductRow } from "@/lib/public-catalog";
+import { isDbConnectionError } from "@/lib/api-error";
 import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
 import { PrintingSolutionView } from "@/components/printing-solution-view";
@@ -27,6 +28,7 @@ export default async function PrintingSolutionPage() {
     );
   } catch (err) {
     console.error("Error loading products on printing solution page:", err);
+    if (isDbConnectionError(err)) throw err;
   }
 
   return (

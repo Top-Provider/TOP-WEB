@@ -7,6 +7,7 @@ import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { ToastContainer, toast } from "@/components/ui/toast";
+import { AdminNotificationBell } from "@/components/helpdesk/admin-notification-bell";
 
 import {
   LayoutDashboard,
@@ -27,6 +28,7 @@ import {
   SlidersHorizontal,
   UserPlus,
   Building2,
+  MessageSquare,
 } from "lucide-react";
 
 const inter = Inter({
@@ -57,6 +59,7 @@ const navigation = [
   { name: "การ์ดภาพรวมโซลูชัน", href: "/admin/solution-topics", icon: LayoutGrid },
   { name: "จัดการบุคลากร (Users)", href: "/admin/users", icon: Users },
   { name: "กิจกรรมบริษัท (Activities)", href: "/admin/activities", icon: Calendar },
+  { name: "ข้อความติดต่อ (Contact)", href: "/admin/contact", icon: MessageSquare },
   { name: "ข้อมูลหลัก (Master Data)", href: "/admin/categories", icon: FolderTree },
 ];
 
@@ -72,6 +75,7 @@ export default function AdminLayout({
   const [displayUsername, setDisplayUsername] = useState("admin");
   const [checkingAuth, setCheckingAuth] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [newTicketCount, setNewTicketCount] = useState(0);
 
   useEffect(() => {
     try {
@@ -246,13 +250,14 @@ export default function AdminLayout({
             {navigation.map((item) => {
               const Icon = item.icon;
               const isActive = pathname === item.href;
+              const showBadge = item.href === "/admin/helpdesk" && newTicketCount > 0;
               return (
                 <Link
                   key={item.name}
                   href={item.href}
                   onClick={() => setSidebarOpen(false)}
                   title={item.name}
-                  className={`flex items-center rounded-xl text-xs sm:text-sm font-medium transition-all ${
+                  className={`relative flex items-center rounded-xl text-xs sm:text-sm font-medium transition-all ${
                     isCollapsed
                       ? "justify-center p-3"
                       : "gap-3 px-3 py-2.5"
@@ -263,7 +268,17 @@ export default function AdminLayout({
                   }`}
                 >
                   <Icon className="w-4 h-4 shrink-0" />
-                  {!isCollapsed && <span className="truncate">{item.name}</span>}
+                  {!isCollapsed && (
+                    <span className="truncate flex-1">{item.name}</span>
+                  )}
+                  {showBadge && !isCollapsed && (
+                    <span className="ml-auto inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-rose-500 px-1.5 text-[10px] font-bold text-white">
+                      {newTicketCount > 99 ? "99+" : newTicketCount}
+                    </span>
+                  )}
+                  {showBadge && isCollapsed && (
+                    <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-rose-500" />
+                  )}
                 </Link>
               );
             })}
@@ -336,6 +351,7 @@ export default function AdminLayout({
           </div>
 
           <div className="flex items-center gap-3">
+            <AdminNotificationBell onNewCountChange={setNewTicketCount} />
             <div className="flex items-center gap-2.5">
               <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-700 font-bold text-xs flex items-center justify-center uppercase">
                 {displayUsername.charAt(0) || "A"}

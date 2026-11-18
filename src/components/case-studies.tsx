@@ -1318,10 +1318,10 @@ export const StickyProjectSection: React.FC<StickyProjectSectionProps> = ({
                     {/* Right Column: Preview / Media */}
                     <div
                       onClick={() => handleSelectCard(cardItem)}
-                      className={`w-full lg:w-[62%] relative overflow-hidden group cursor-pointer flex items-center justify-center min-h-[360px] sm:min-h-[420px] lg:min-h-full ${
+                      className={`w-full lg:w-[62%] relative overflow-hidden group cursor-pointer flex items-center justify-center ${
                         cardItem.isProductPhoto
-                          ? 'p-0 bg-slate-100'
-                          : 'p-6 sm:p-8 lg:p-10 bg-gradient-to-br from-slate-50/80 to-blue-50/20'
+                          ? 'p-0 bg-slate-100 min-h-0 md:min-h-[420px] lg:min-h-full'
+                          : 'p-6 sm:p-8 lg:p-10 bg-gradient-to-br from-slate-50/80 to-blue-50/20 min-h-[300px] sm:min-h-[400px] lg:min-h-full'
                       }`}
                     >
                       {isPlaying && project.videoUrl ? (
@@ -1335,11 +1335,11 @@ export const StickyProjectSection: React.FC<StickyProjectSectionProps> = ({
                           />
                         </div>
                       ) : cardItem.isProductPhoto ? (
-                        <div className="relative h-full min-h-[360px] sm:min-h-[420px] lg:min-h-[500px] w-full overflow-hidden bg-slate-100 group/photo">
+                        <div className="relative w-full h-auto md:h-full md:min-h-[420px] lg:min-h-[500px] overflow-hidden bg-slate-100 group/photo">
                           <img
                             src={project.coverImage}
                             alt={project.name}
-                            className="h-full min-h-[360px] sm:min-h-[420px] lg:min-h-[500px] w-full object-cover object-center transition-transform duration-500 ease-out group-hover/photo:scale-[1.03]"
+                            className="w-full h-auto object-contain md:h-full md:min-h-[420px] lg:min-h-[500px] md:object-cover object-center transition-transform duration-500 ease-out group-hover/photo:scale-[1.03]"
                             loading="lazy"
                           />
                         </div>

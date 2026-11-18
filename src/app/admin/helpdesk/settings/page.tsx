@@ -9,6 +9,7 @@ import { toast } from "@/components/ui/toast";
 import { ArrowLeft, Save, Plus, Trash2, Loader2 } from "lucide-react";
 import type { BusinessHourRule, SlaTargetRule } from "@/lib/helpdesk-sla";
 import type { TicketPriority } from "@/lib/helpdesk-constants";
+import { formatThaiDate } from "@/lib/activities";
 
 const DAY_NAMES = ["อาทิตย์", "จันทร์", "อังคาร", "พุธ", "พฤหัสบดี", "ศุกร์", "เสาร์"];
 
@@ -308,7 +309,7 @@ export default function AdminHelpdeskSettingsPage() {
             {holidays.map((hol) => (
               <div key={hol.id} className="py-2.5 flex items-center justify-between text-sm">
                 <div>
-                  <span className="font-semibold text-slate-900 mr-3">{hol.holiday_date}</span>
+                  <span className="font-semibold text-slate-900 mr-3">{formatThaiDate(hol.holiday_date)}</span>
                   <span className="text-slate-600">{hol.name}</span>
                 </div>
                 <Button

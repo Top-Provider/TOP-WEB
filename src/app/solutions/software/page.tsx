@@ -1,4 +1,5 @@
 import { listPublicSoftware } from "@/lib/public-catalog";
+import { isDbConnectionError } from "@/lib/api-error";
 import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
 import { SoftwareSolutionView } from "@/components/software-solution-view";
@@ -33,6 +34,7 @@ export default async function SoftwareSolutionPage() {
     }));
   } catch (err) {
     console.error("Error loading software programs on server:", err);
+    if (isDbConnectionError(err)) throw err;
   }
 
   return (

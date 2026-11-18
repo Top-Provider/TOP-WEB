@@ -22,7 +22,13 @@ export function VideoUpload({
   const isHttp = value?.startsWith("http");
   const [tab, setTab] = useState<"file" | "url">(isYoutube || isHttp ? "url" : "file");
   const [isDragging, setIsDragging] = useState(false);
+  const [readingFile, setReadingFile] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const getEmbedUrl = (url: string) => {
+    const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([A-Za-z0-9_-]{6,})/);
+    return match ? `https://www.youtube.com/embed/${match[1]}` : url;
+  };
 
   const processFile = (file: File) => {
     if (!file) return;
@@ -32,11 +38,22 @@ export function VideoUpload({
       return;
     }
 
+    if (file.size > 50 * 1024 * 1024) {
+      alert("ไฟล์วิดีโอมีขนาดใหญ่เกิน 50MB กรุณาย่อขนาดไฟล์หรือวางลิงก์ YouTube แทน");
+      return;
+    }
+
+    setReadingFile(true);
     const reader = new FileReader();
     reader.onload = (event) => {
+      setReadingFile(false);
       if (event.target?.result) {
         onChange(event.target.result as string);
       }
+    };
+    reader.onerror = () => {
+      setReadingFile(false);
+      alert("ไม่สามารถอ่านไฟล์วิดีโอได้");
     };
     reader.readAsDataURL(file);
   };
@@ -165,7 +182,7 @@ export function VideoUpload({
               <div className="relative w-full aspect-video rounded-xl overflow-hidden bg-black flex items-center justify-center">
                 {isYoutube ? (
                   <iframe
-                    src={value}
+                    src={getEmbedUrl(value)}
                     title="Video preview"
                     className="w-full h-full border-0"
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"

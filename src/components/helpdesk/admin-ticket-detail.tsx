@@ -3,6 +3,7 @@
 import React, { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { DateTimePicker } from "@/components/ui/date-time-picker";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
@@ -236,15 +237,14 @@ export function AdminTicketDetail({
         </div>
         <div className="w-full h-2.5 rounded-full bg-slate-200 overflow-hidden">
           <div
-            className={`h-full transition-all ${
-              ticket.sla?.state === "BREACHED"
+            className={`h-full transition-all ${ticket.sla?.state === "BREACHED"
                 ? "bg-rose-600"
                 : ticket.sla?.state === "WARNING"
-                ? "bg-amber-500"
-                : ticket.sla?.state === "PAUSED"
-                ? "bg-purple-500"
-                : "bg-blue-600"
-            }`}
+                  ? "bg-amber-500"
+                  : ticket.sla?.state === "PAUSED"
+                    ? "bg-purple-500"
+                    : "bg-blue-600"
+              }`}
             style={{ width: `${Math.min(100, Math.max(4, slaPercent))}%` }}
           />
         </div>
@@ -359,13 +359,12 @@ export function AdminTicketDetail({
                 data.messages.map((m) => (
                   <div
                     key={m.id}
-                    className={`p-3 rounded-xl text-sm border ${
-                      m.is_internal
+                    className={`p-3 rounded-xl text-sm border ${m.is_internal
                         ? "bg-amber-50 border-amber-200"
                         : m.sender_type === "CUSTOMER"
-                        ? "bg-blue-50 border-blue-100"
-                        : "bg-slate-50 border-slate-200"
-                    }`}
+                          ? "bg-blue-50 border-blue-100"
+                          : "bg-slate-50 border-slate-200"
+                      }`}
                   >
                     <div className="flex items-center justify-between text-xs text-slate-500 mb-1">
                       <span className="font-semibold text-slate-800 flex items-center gap-1.5">
@@ -385,11 +384,10 @@ export function AdminTicketDetail({
                 <button
                   type="button"
                   onClick={() => setIsInternal(false)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 border ${
-                    !isInternal
+                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 border ${!isInternal
                       ? "bg-blue-600 text-white border-blue-600"
                       : "bg-white text-slate-600 border-slate-200"
-                  }`}
+                    }`}
                 >
                   <MessageSquare className="w-3.5 h-3.5" />
                   ตอบกลับลูกค้า (เห็นในหน้าติดตาม)
@@ -397,11 +395,10 @@ export function AdminTicketDetail({
                 <button
                   type="button"
                   onClick={() => setIsInternal(true)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 border ${
-                    isInternal
+                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 border ${isInternal
                       ? "bg-amber-600 text-white border-amber-600"
                       : "bg-white text-slate-600 border-slate-200"
-                  }`}
+                    }`}
                 >
                   <Lock className="w-3.5 h-3.5" />
                   โน้ตภายในทีม (ลูกค้าไม่เห็น)
@@ -444,18 +441,16 @@ export function AdminTicketDetail({
                 <button
                   type="button"
                   onClick={() => setUploadStage("BEFORE")}
-                  className={`px-2.5 py-1 rounded-lg text-xs font-semibold border ${
-                    uploadStage === "BEFORE" ? "bg-slate-900 text-white" : "bg-white text-slate-600"
-                  }`}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-semibold border ${uploadStage === "BEFORE" ? "bg-slate-900 text-white" : "bg-white text-slate-600"
+                    }`}
                 >
                   ก่อนซ่อม (BEFORE)
                 </button>
                 <button
                   type="button"
                   onClick={() => setUploadStage("AFTER")}
-                  className={`px-2.5 py-1 rounded-lg text-xs font-semibold border ${
-                    uploadStage === "AFTER" ? "bg-slate-900 text-white" : "bg-white text-slate-600"
-                  }`}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-semibold border ${uploadStage === "AFTER" ? "bg-slate-900 text-white" : "bg-white text-slate-600"
+                    }`}
                 >
                   หลังซ่อม (AFTER)
                 </button>
@@ -523,7 +518,6 @@ export function AdminTicketDetail({
                   type="text"
                   value={assignedTo}
                   onChange={(e) => setAssignedTo(e.target.value)}
-                  placeholder="เช่น ช่างสมชาย"
                 />
               </div>
               <div>
@@ -536,15 +530,14 @@ export function AdminTicketDetail({
                   maxLength={15}
                   value={assignedPhone}
                   onChange={(e) => setAssignedPhone(e.target.value.replace(/\D/g, ""))}
-                  placeholder="0812345678"
                 />
               </div>
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1">วันเวลานัดเข้าหน้างาน</label>
-                <Input
-                  type="datetime-local"
+                <DateTimePicker
                   value={scheduledAt}
-                  onChange={(e) => setScheduledAt(e.target.value)}
+                  onChange={setScheduledAt}
+                  placeholder="วว/ดด/ปปปป --:--"
                 />
               </div>
               <Button

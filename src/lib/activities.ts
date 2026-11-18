@@ -11,6 +11,7 @@ export interface ActivityItem {
   short_description?: string;
   content?: string;
   cover_image_url?: string;
+  video_url?: string;
   gallery_images: string[];
   tags: string[];
   is_featured: boolean;
@@ -59,6 +60,7 @@ export function formatActivityRow(row: Record<string, unknown>): ActivityItem {
     short_description: row.short_description ? String(row.short_description) : undefined,
     content: row.content ? String(row.content) : undefined,
     cover_image_url: row.cover_image_url ? String(row.cover_image_url) : undefined,
+    video_url: row.video_url ? String(row.video_url) : undefined,
     gallery_images: parseJsonArray(row.gallery_images),
     tags: parseJsonArray(row.tags),
     is_featured: Boolean(row.is_featured),
@@ -67,6 +69,17 @@ export function formatActivityRow(row: Record<string, unknown>): ActivityItem {
     created_at: row.created_at ? String(row.created_at) : undefined,
     updated_at: row.updated_at ? String(row.updated_at) : undefined,
   };
+}
+
+export function getActivityVideoEmbedUrl(url: string): string | null {
+  const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([A-Za-z0-9_-]{6,})/);
+  return match ? `https://www.youtube.com/embed/${match[1]}` : null;
+}
+
+export function getActivityVideoThumbnailUrl(url?: string): string | null {
+  if (!url) return null;
+  const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([A-Za-z0-9_-]{6,})/);
+  return match ? `https://i.ytimg.com/vi/${match[1]}/hqdefault.jpg` : null;
 }
 
 

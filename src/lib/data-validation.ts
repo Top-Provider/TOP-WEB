@@ -36,6 +36,7 @@ export const activitySchema = z.object({
   category: z.string().trim().min(1).max(100), event_date: z.union([z.string().date(), z.literal(""), z.null()]).optional(),
   location: z.string().max(1000).nullable().optional(), short_description: z.string().max(5000).nullable().optional(),
   content: z.string().max(100000).nullable().optional(), cover_image_url: z.string().max(20_000_000).nullable().optional(),
+  video_url: z.string().max(80_000_000).nullable().optional(),
   gallery_images: z.array(z.string().max(20_000_000)).max(100).optional(), tags: z.array(z.string().max(100)).max(50).optional(),
   is_featured: z.boolean().optional(), is_active: z.boolean().optional(), sort_order: z.number().int().nonnegative().optional(),
 }).strict();

@@ -8,6 +8,7 @@ import { Modal } from "@/components/ui/modal";
 import { Textarea } from "@/components/ui/textarea";
 import { HospitalCombobox } from "@/components/helpdesk/hospital-combobox";
 import { toast } from "@/components/ui/toast";
+import { AdminLoadingState } from "@/components/admin/admin-loading-state";
 import {
   ArrowLeft,
   Building2,
@@ -293,7 +294,7 @@ export default function AdminHelpdeskCustomersPage() {
           <Button
             type="button"
             onClick={openCreateModal}
-            className="bg-blue-600 hover:bg-blue-700 text-white gap-2"
+            className="rounded-xl bg-blue-600 hover:bg-blue-700 text-white h-10 px-5 text-sm font-semibold shadow-sm shadow-blue-600/20 gap-2 cursor-pointer"
           >
             <UserPlus className="w-4 h-4" />
             ลงทะเบียนลูกค้าใหม่
@@ -321,10 +322,7 @@ export default function AdminHelpdeskCustomersPage() {
         </div>
 
         {loading ? (
-          <div className="py-14 text-center text-sm text-slate-500">
-            <Loader2 className="w-5 h-5 animate-spin mx-auto mb-2" />
-            กำลังโหลดข้อมูลบัญชีลูกค้า...
-          </div>
+          <AdminLoadingState label="กำลังโหลดข้อมูลบัญชีลูกค้า..." />
         ) : filtered.length === 0 ? (
           <div className="py-14 text-center space-y-3">
             <p className="text-sm text-slate-400">ไม่พบบัญชีลูกค้าที่ตรงกับคำค้นหา</p>
@@ -343,7 +341,7 @@ export default function AdminHelpdeskCustomersPage() {
                   <th className="text-left py-3 px-4">Username</th>
                   <th className="text-left py-3 px-4">โรงพยาบาล / หน่วยงาน</th>
                   <th className="text-left py-3 px-4">สถานะ</th>
-                  <th className="text-right py-3 px-4">จัดการ</th>
+                  <th className="text-right py-3 px-4 sticky right-0 z-10 bg-slate-50 border-l border-slate-200/70 whitespace-nowrap">จัดการ</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -373,14 +371,14 @@ export default function AdminHelpdeskCustomersPage() {
                         {acc.is_active ? "ใช้งานอยู่" : "ปิดใช้งาน"}
                       </span>
                     </td>
-                    <td className="py-3.5 px-4 text-right">
+                    <td className="py-3.5 px-4 text-right sticky right-0 z-10 bg-white border-l border-slate-100">
                       <div className="inline-flex items-center gap-2">
                         <Button
                           type="button"
                           variant="outline"
                           size="sm"
                           onClick={() => openEditModal(acc)}
-                          className="gap-1.5"
+                          className="gap-1.5 bg-amber-50 text-amber-700 hover:bg-amber-100 border-amber-200"
                         >
                           <Pencil className="w-3.5 h-3.5" />
                           แก้ไข
@@ -393,8 +391,8 @@ export default function AdminHelpdeskCustomersPage() {
                           onClick={() => toggleActive(acc)}
                           className={
                             acc.is_active
-                              ? "text-rose-600 hover:bg-rose-50 border-rose-200"
-                              : "text-emerald-700 hover:bg-emerald-50 border-emerald-200"
+                              ? "bg-rose-50 text-rose-600 hover:bg-rose-100 border-rose-200"
+                              : "bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border-emerald-200"
                           }
                         >
                           {acc.is_active ? "ปิดใช้งาน" : "เปิดใช้งาน"}

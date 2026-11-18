@@ -1,22 +1,173 @@
 import React from "react";
 import Link from "next/link";
 import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Package, Layers, FolderTree, ArrowUpRight, LayoutGrid, Users, Calendar } from "lucide-react";
+import { query } from "@/lib/db";
+import { isDbConnectionError } from "@/lib/api-error";
+import {
+  Package,
+  Layers,
+  FolderTree,
+  ArrowUpRight,
+  LayoutGrid,
+  Users,
+  Calendar,
+  Wrench,
+  UserPlus,
+  Building2,
+  SlidersHorizontal,
+  MessageSquare,
+} from "lucide-react";
 
-export default function AdminDashboardPage() {
+export const dynamic = "force-dynamic";
+
+interface DashboardCounts {
+  tickets: number;
+  openTickets: number;
+  helpdeskCustomers: number;
+  hospitals: number;
+  slaTargets: number;
+  products: number;
+  programs: number;
+  solutionTopics: number;
+  users: number;
+  activities: number;
+  contactMessages: number;
+  categories: number;
+  recentProducts: Array<{
+    id: number;
+    name: string;
+    sku: string | null;
+    category_id: string | null;
+    is_active: boolean;
+  }>;
+  recentPrograms: Array<{
+    id: number;
+    name: string;
+    category_id: string | null;
+    video_url: string | null;
+    is_active: boolean;
+  }>;
+}
+
+async function getDashboardCounts(): Promise<DashboardCounts> {
+  const [countsRes, recentProductsRes, recentProgramsRes] = await Promise.all([
+    query(`
+      SELECT
+        (SELECT count(*)::int FROM public."TB_HD_TICKETS") AS tickets,
+        (SELECT count(*)::int FROM public."TB_HD_TICKETS" WHERE status NOT IN ('CLOSED', 'CANCELLED')) AS open_tickets,
+        (SELECT count(*)::int FROM public.admin_accounts WHERE role = 'viewer') AS helpdesk_customers,
+        (SELECT count(*)::int FROM public."TBM_HD_HOSPITALS") AS hospitals,
+        (SELECT count(*)::int FROM public."TBM_HD_SLA_TARGETS") AS sla_targets,
+        (SELECT count(*)::int FROM public."TB_PRODUCTS") AS products,
+        (SELECT count(*)::int FROM public."TB_PRODUCT_SOFTWARE") AS programs,
+        (SELECT count(*)::int FROM public."TB_SOLUTION_TOPICS") AS solution_topics,
+        (SELECT count(*)::int FROM public."TB_USERS") AS users,
+        (SELECT count(*)::int FROM public."TB_ACTIVITIES") AS activities,
+        (SELECT count(*)::int FROM public."TB_CONTACT_MESSAGES") AS contact_messages,
+        (SELECT count(*)::int FROM public."TBM_PRODUCT_CATEGORIES") AS categories
+    `),
+    query(
+      `SELECT id, name, sku, category_id, is_active
+       FROM public."TB_PRODUCTS"
+       ORDER BY id DESC
+       LIMIT 3`
+    ),
+    query(
+      `SELECT id, name, category_id, video_url, is_active
+       FROM public."TB_PRODUCT_SOFTWARE"
+       ORDER BY id DESC
+       LIMIT 3`
+    ),
+  ]);
+
+  const row = (countsRes.rows[0] || {}) as Record<string, number>;
+  return {
+    tickets: Number(row.tickets || 0),
+    openTickets: Number(row.open_tickets || 0),
+    helpdeskCustomers: Number(row.helpdesk_customers || 0),
+    hospitals: Number(row.hospitals || 0),
+    slaTargets: Number(row.sla_targets || 0),
+    products: Number(row.products || 0),
+    programs: Number(row.programs || 0),
+    solutionTopics: Number(row.solution_topics || 0),
+    users: Number(row.users || 0),
+    activities: Number(row.activities || 0),
+    contactMessages: Number(row.contact_messages || 0),
+    categories: Number(row.categories || 0),
+    recentProducts: recentProductsRes.rows as DashboardCounts["recentProducts"],
+    recentPrograms: recentProgramsRes.rows as DashboardCounts["recentPrograms"],
+  };
+}
+
+export default async function AdminDashboardPage() {
+  let stats: DashboardCounts = {
+    tickets: 0,
+    openTickets: 0,
+    helpdeskCustomers: 0,
+    hospitals: 0,
+    slaTargets: 0,
+    products: 0,
+    programs: 0,
+    solutionTopics: 0,
+    users: 0,
+    activities: 0,
+    contactMessages: 0,
+    categories: 0,
+    recentProducts: [],
+    recentPrograms: [],
+  };
+
+  try {
+    stats = await getDashboardCounts();
+  } catch (err) {
+    if (isDbConnectionError(err)) throw err;
+    console.error("Failed to load admin dashboard counts:", err);
+  }
+
   const statCards = [
     {
-      title: "Master สินค้าทั้งหมด",
-      count: "119",
+      title: "แจ้งซ่อม (Helpdesk)",
+      count: stats.tickets.toLocaleString("th-TH"),
+      desc: `งานที่ยังไม่ปิด ${stats.openTickets.toLocaleString("th-TH")} รายการ`,
+      href: "/admin/helpdesk",
+      icon: Wrench,
+      color: "bg-sky-50 text-sky-600 border-sky-100",
+    },
+    {
+      title: "ลงทะเบียนลูกค้า (Helpdesk)",
+      count: stats.helpdeskCustomers.toLocaleString("th-TH"),
+      desc: "บัญชีผู้ใช้งานแจ้งซ่อมโรงพยาบาล",
+      href: "/admin/helpdesk/customers",
+      icon: UserPlus,
+      color: "bg-cyan-50 text-cyan-600 border-cyan-100",
+    },
+    {
+      title: "Master ลูกค้า",
+      count: stats.hospitals.toLocaleString("th-TH"),
+      desc: "รายชื่อโรงพยาบาลและโลโก้ลูกค้า",
+      href: "/admin/customers",
+      icon: Building2,
+      color: "bg-teal-50 text-teal-600 border-teal-100",
+    },
+    {
+      title: "ตั้งค่า SLA",
+      count: stats.slaTargets.toLocaleString("th-TH"),
+      desc: "ระดับความเร่งด่วน เวลาทำการ วันหยุด",
+      href: "/admin/helpdesk/settings",
+      icon: SlidersHorizontal,
+      color: "bg-slate-100 text-slate-700 border-slate-200",
+    },
+    {
+      title: "จัดการสินค้า (Master)",
+      count: stats.products.toLocaleString("th-TH"),
       desc: "เครื่องพิมพ์, หมึกพิมพ์, ฮาร์ดแวร์",
       href: "/admin/products",
       icon: Package,
       color: "bg-blue-50 text-blue-600 border-blue-100",
     },
     {
-      title: "โปรแกรม & ซอฟต์แวร์",
-      count: "7",
+      title: "จัดการโปรแกรม (Programs)",
+      count: stats.programs.toLocaleString("th-TH"),
       desc: "Vitanix Claim, Panacea Plus HIS ฯลฯ",
       href: "/admin/programs",
       icon: Layers,
@@ -24,15 +175,15 @@ export default function AdminDashboardPage() {
     },
     {
       title: "การ์ดภาพรวมโซลูชัน",
-      count: "9",
+      count: stats.solutionTopics.toLocaleString("th-TH"),
       desc: "Printer, Supply, Hardware, Network",
       href: "/admin/solution-topics",
       icon: LayoutGrid,
       color: "bg-amber-50 text-amber-600 border-amber-100",
     },
     {
-      title: "บุคลากร / ผู้ใช้ (Users)",
-      count: "TB_USERS",
+      title: "จัดการบุคลากร (Users)",
+      count: stats.users.toLocaleString("th-TH"),
       desc: "ข้อมูลบุคลากร ชื่อ-สกุล (TH/EN) ตำแหน่ง",
       href: "/admin/users",
       icon: Users,
@@ -40,15 +191,23 @@ export default function AdminDashboardPage() {
     },
     {
       title: "กิจกรรมบริษัท (Activities)",
-      count: "TB_ACTIVITIES",
+      count: stats.activities.toLocaleString("th-TH"),
       desc: "ภาพกิจกรรม, สัมมนา, นิทรรศการ, CSR",
       href: "/admin/activities",
       icon: Calendar,
       color: "bg-rose-50 text-rose-600 border-rose-100",
     },
     {
-      title: "หมวดหมู่หลัก (Categories)",
-      count: "6",
+      title: "ข้อความติดต่อ (Contact)",
+      count: stats.contactMessages.toLocaleString("th-TH"),
+      desc: "ข้อความที่ลูกค้าส่งผ่านหน้าติดต่อเรา",
+      href: "/admin/contact",
+      icon: MessageSquare,
+      color: "bg-violet-50 text-violet-600 border-violet-100",
+    },
+    {
+      title: "ข้อมูลหลัก (Master Data)",
+      count: stats.categories.toLocaleString("th-TH"),
       desc: "Printing, Hardware, Software ฯลฯ",
       href: "/admin/categories",
       icon: FolderTree,
@@ -59,7 +218,7 @@ export default function AdminDashboardPage() {
   return (
     <div className="space-y-8">
       {/* Welcome Banner using UI Card */}
-      <Card className="p-6 sm:p-8 flex flex-col md:flex-row md:items-center justify-between gap-6 border-slate-200/80">
+      <Card className="p-6 sm:p-8 border-slate-200/80">
         <div>
           <span className="text-xs font-semibold text-blue-600 uppercase tracking-wider block mb-1">
             CONTROL CENTER
@@ -67,38 +226,32 @@ export default function AdminDashboardPage() {
           <h2 className="text-2xl sm:text-3xl font-bold text-slate-900">
             ยินดีต้อนรับสู่ระบบจัดการ TOP PROVIDER
           </h2>
-          <p className="text-xs sm:text-sm text-slate-500 mt-1 max-w-xl">
-            จัดการข้อมูลสินค้า สเปกหมึกพิมพ์ ไฟล์ Datasheet (EN) / TOR (TH) รวมถึงวิดีโอและรายละเอียดของโปรแกรมซอฟต์แวร์ที่แสดงผลหน้าบ้าน
+          <p className="text-xs sm:text-sm text-slate-500 mt-1 max-w-2xl">
+            จัดการข้อมูลระบบแจ้งซ่อม (Helpdesk &amp; SLA), รายชื่อโรงพยาบาล, สินค้า Master, โปรแกรมซอฟต์แวร์, บุคลากร และกิจกรรมองค์กรได้ครบในที่เดียว
           </p>
-        </div>
-
-        <div className="flex items-center gap-3">
-          <Button asChild size="default" className="rounded-full px-5">
-            <Link href="/admin/products">
-              <span>+ เพิ่มสินค้าใหม่</span>
-            </Link>
-          </Button>
         </div>
       </Card>
 
       {/* Stats Overview using UI Card */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 sm:gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 sm:gap-5">
         {statCards.map((card) => {
           const Icon = card.icon;
           return (
-            <Link key={card.title} href={card.href} className="group block">
-              <Card className="p-6 hover:shadow-md hover:border-blue-300 transition-all cursor-pointer">
-                <div className="flex items-center justify-between mb-4">
-                  <div
-                    className={`w-10 h-10 rounded-xl border flex items-center justify-center ${card.color}`}
-                  >
-                    <Icon className="w-5 h-5" />
+            <Link key={card.title} href={card.href} className="group block h-full">
+              <Card className="p-5 sm:p-6 h-full hover:shadow-md hover:border-blue-300 transition-all cursor-pointer flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center justify-between mb-4">
+                    <div
+                      className={`w-10 h-10 rounded-xl border flex items-center justify-center ${card.color}`}
+                    >
+                      <Icon className="w-5 h-5" />
+                    </div>
+                    <ArrowUpRight className="w-4 h-4 text-slate-400 group-hover:text-blue-600 transition-colors" />
                   </div>
-                  <ArrowUpRight className="w-4 h-4 text-slate-400 group-hover:text-blue-600 transition-colors" />
+                  <h3 className="text-3xl font-bold text-slate-900">{card.count}</h3>
+                  <p className="text-sm font-semibold text-slate-800 mt-1">{card.title}</p>
                 </div>
-                <h3 className="text-3xl font-bold text-slate-900">{card.count}</h3>
-                <p className="text-sm font-semibold text-slate-800 mt-1">{card.title}</p>
-                <p className="text-xs text-slate-500 mt-0.5">{card.desc}</p>
+                <p className="text-xs text-slate-500 mt-1">{card.desc}</p>
               </Card>
             </Link>
           );
@@ -112,7 +265,7 @@ export default function AdminDashboardPage() {
           <div className="flex items-center justify-between">
             <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
               <Package className="w-4 h-4 text-blue-600" />
-              <span>สินค้าเครื่องพิมพ์ & หมึกพิมพ์ล่าสุด</span>
+              <span>สินค้าล่าสุดในระบบ (Products)</span>
             </h3>
             <Link
               href="/admin/products"
@@ -122,24 +275,30 @@ export default function AdminDashboardPage() {
             </Link>
           </div>
           <div className="divide-y divide-slate-100 text-xs">
-            <div className="py-3 flex items-center justify-between">
-              <div>
-                <p className="font-bold text-slate-800">Canon LBP-654CX</p>
-                <p className="text-slate-400">Color Laser Printer • SKU: LBP-654CX</p>
-              </div>
-              <span className="px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-600 font-medium">
-                พร้อมแสดงผล
-              </span>
-            </div>
-            <div className="py-3 flex items-center justify-between">
-              <div>
-                <p className="font-bold text-slate-800">Canon Cartridge 046H Series</p>
-                <p className="text-slate-400">Toner & Supply • 4 สี (BK/C/M/Y)</p>
-              </div>
-              <span className="px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-600 font-medium">
-                พร้อมแสดงผล
-              </span>
-            </div>
+            {stats.recentProducts.length === 0 ? (
+              <div className="py-4 text-slate-400">ยังไม่มีข้อมูลสินค้า</div>
+            ) : (
+              stats.recentProducts.map((p) => (
+                <div key={p.id} className="py-3 flex items-center justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="font-bold text-slate-800 truncate">{p.name}</p>
+                    <p className="text-slate-400 truncate">
+                      {p.category_id || "Product"}
+                      {p.sku ? ` • SKU: ${p.sku}` : ""}
+                    </p>
+                  </div>
+                  <span
+                    className={`shrink-0 px-2.5 py-1 rounded-full font-medium ${
+                      p.is_active
+                        ? "bg-emerald-50 text-emerald-600"
+                        : "bg-slate-100 text-slate-500"
+                    }`}
+                  >
+                    {p.is_active ? "พร้อมแสดงผล" : "ปิดใช้งาน"}
+                  </span>
+                </div>
+              ))
+            )}
           </div>
         </Card>
 
@@ -158,28 +317,33 @@ export default function AdminDashboardPage() {
             </Link>
           </div>
           <div className="divide-y divide-slate-100 text-xs">
-            <div className="py-3 flex items-center justify-between">
-              <div>
-                <p className="font-bold text-slate-800">Vitanix Claim</p>
-                <p className="text-slate-400">Hospital Claim Management • มีคลิปวิดีโอสาธิต</p>
-              </div>
-              <span className="px-2.5 py-1 rounded-full bg-blue-50 text-blue-600 font-medium">
-                YouTube Embed
-              </span>
-            </div>
-            <div className="py-3 flex items-center justify-between">
-              <div>
-                <p className="font-bold text-slate-800">Panacea Plus Hospital Solution (HIS)</p>
-                <p className="text-slate-400">Core Hospital HIS • 30 Standard Modules</p>
-              </div>
-              <span className="px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-600 font-medium">
-                พร้อมแสดงผล
-              </span>
-            </div>
+            {stats.recentPrograms.length === 0 ? (
+              <div className="py-4 text-slate-400">ยังไม่มีข้อมูลโปรแกรม</div>
+            ) : (
+              stats.recentPrograms.map((prog) => (
+                <div key={prog.id} className="py-3 flex items-center justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="font-bold text-slate-800 truncate">{prog.name}</p>
+                    <p className="text-slate-400 truncate">
+                      {prog.category_id || "Software"}
+                      {prog.video_url ? " • มีคลิปวิดีโอสาธิต" : ""}
+                    </p>
+                  </div>
+                  <span
+                    className={`shrink-0 px-2.5 py-1 rounded-full font-medium ${
+                      prog.is_active
+                        ? "bg-emerald-50 text-emerald-600"
+                        : "bg-slate-100 text-slate-500"
+                    }`}
+                  >
+                    {prog.is_active ? "พร้อมแสดงผล" : "ปิดใช้งาน"}
+                  </span>
+                </div>
+              ))
+            )}
           </div>
         </Card>
       </div>
     </div>
   );
 }
-

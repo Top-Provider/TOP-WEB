@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import { Metadata } from "next";
 import { listPublicProducts, mapProductRow } from "@/lib/public-catalog";
+import { isDbConnectionError } from "@/lib/api-error";
 import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
 import { NetworkSolutionView } from "@/components/network-solution-view";
@@ -29,6 +30,7 @@ export default async function NetworkSolutionPage() {
     );
   } catch (err) {
     console.error("Error loading products on network solution page:", err);
+    if (isDbConnectionError(err)) throw err;
   }
 
   return (

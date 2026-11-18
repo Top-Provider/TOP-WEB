@@ -7,6 +7,7 @@ import { HospitalDashboard } from "@/components/hospital-dashboard";
 import { CaseStudies } from "@/components/case-studies";
 import { TeamSection, TeamMember } from "@/components/team-section";
 import { listTeamMembers } from "@/lib/team";
+import { listPublicCustomers, type PublicCustomer } from "@/lib/public-customers";
 import { StatsTicker } from "@/components/stats-ticker";
 import { AboutSection } from "@/components/about-section";
 import { Footer } from "@/components/footer";
@@ -19,16 +20,18 @@ export default async function Home() {
   let initialProducts: Record<string, unknown>[] = [];
   let initialSolutionTopics: Record<string, unknown>[] = [];
   let initialTeamMembers: TeamMember[] = [];
+  let initialCustomers: PublicCustomer[] = [];
 
   // 1. โหลดข้อมูลจาก Local PostgreSQL (ไม่ดึง base64 blob ลงมาใน HTML)
   {
     try {
-      const [catData, softData, prodData, topicsData, teamData] = await Promise.all([
+      const [catData, softData, prodData, topicsData, teamData, customerData] = await Promise.all([
         pgSelect({ table: "TBM_PRODUCT_CATEGORIES", where: { is_active: true }, orderBy: "id", orderDir: "asc" }),
         listPublicSoftware(30),
         listPublicProducts({ limit: 300, orderDir: "asc" }),
         listPublicSolutionTopics(),
         listTeamMembers(),
+        listPublicCustomers(),
       ]);
 
       initialCategories = (catData || []).map((c) => ({
@@ -58,6 +61,7 @@ export default async function Home() {
       });
       initialSolutionTopics = topicsData || [];
       initialTeamMembers = teamData || [];
+      initialCustomers = customerData || [];
     } catch (pgErr) {
       throw pgErr;
     }
@@ -87,8 +91,8 @@ export default async function Home() {
         {/* 4. Core Leadership & Specialist Team */}
         <TeamSection initialMembers={initialTeamMembers} />
 
-        {/* 5. Partner Strip & Key Enterprise Metrics (15+ Years, 12 Systems, 99.9%, 24/7) */}
-        <StatsTicker />
+        {/* 5. Partner Strip & Key Enterprise Metrics */}
+        <StatsTicker initialCustomers={initialCustomers} />
 
         {/* 6. About TOP PROVIDER SYSTEM GROUP */}
         <AboutSection />

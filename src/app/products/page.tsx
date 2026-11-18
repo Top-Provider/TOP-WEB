@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import { Metadata } from "next";
 import { listPublicProducts, mapProductRow } from "@/lib/public-catalog";
+import { isDbConnectionError } from "@/lib/api-error";
 import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
 import { ProductCatalogView } from "@/components/product-catalog-view";
@@ -26,6 +27,7 @@ export default async function ProductsPage() {
     );
   } catch (err) {
     console.error("Error loading products on products catalog page:", err);
+    if (isDbConnectionError(err)) throw err;
   }
 
   return (

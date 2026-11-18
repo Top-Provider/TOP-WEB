@@ -203,7 +203,7 @@ export default function HelpdeskTrackPage() {
 
                 {/* Progress Steps */}
                 {data.ticket.status !== "CANCELLED" && (
-                  <div className="mt-6 grid grid-cols-3 sm:grid-cols-6 gap-2">
+                  <div className="mt-6 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
                     {PROGRESS_STEPS.map((st, idx) => {
                       const currentIdx = PROGRESS_STEPS.findIndex((s) => s.key === data.ticket.status);
                       const effectiveIdx =

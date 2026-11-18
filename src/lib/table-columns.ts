@@ -119,6 +119,7 @@ export const TABLE_COLUMNS: Record<string, readonly string[]> = {
                           "short_description",
                           "content",
                           "cover_image_url",
+                          "video_url",
                           "gallery_images",
                           "tags",
                           "is_featured",

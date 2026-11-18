@@ -137,6 +137,7 @@ CREATE TABLE IF NOT EXISTS public."TB_ACTIVITIES" (
     short_description TEXT,         -- คำอธิบายย่อ
     content TEXT,                   -- รายละเอียดเต็ม
     cover_image_url TEXT,           -- รูปหน้าปก
+    video_url TEXT,                 -- วิดีโอกิจกรรม (ไฟล์ MP4/WebM หรือลิงก์ YouTube)
     gallery_images JSONB DEFAULT '[]'::jsonb, -- รูปภาพอัลบั้มหลายรูป
     tags JSONB DEFAULT '[]'::jsonb, -- ป้ายกำกับ (Tags)
     is_featured BOOLEAN DEFAULT false, -- ไฮไลต์กิจกรรมเด่น

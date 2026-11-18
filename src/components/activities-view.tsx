@@ -15,6 +15,7 @@ import {
   ActivityItem,
   CATEGORY_OPTIONS,
   formatThaiDate,
+  getActivityVideoThumbnailUrl,
   getCategoryLabel,
   getCategoryBadgeClass,
 } from "@/lib/activities";
@@ -90,7 +91,7 @@ export function ActivitiesView({
           className="pointer-events-none absolute -bottom-24 -left-24 -z-10 h-80 w-80 rounded-full bg-sky-300/15 blur-3xl"
         />
 
-        <div className="relative z-10 w-[94%] max-w-[1280px] mx-auto px-2 sm:px-4 grid grid-cols-1 lg:grid-cols-12 items-center gap-8 lg:gap-10">
+        <div className="relative z-10 w-[94%] max-w-[1600px] mx-auto px-2 sm:px-4 grid grid-cols-1 lg:grid-cols-12 items-center gap-8 lg:gap-12">
           <div className="lg:col-span-6 space-y-4">
             <span className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-blue-50 border border-blue-200/80 text-[#0066FF] text-xs font-bold tracking-wider uppercase">
               <Megaphone className="w-3.5 h-3.5" />
@@ -120,7 +121,7 @@ export function ActivitiesView({
       </section>
 
       {/* Filter Dock */}
-      <div className="w-[94%] max-w-[1160px] mx-auto px-2 sm:px-4 -mt-10 sm:-mt-12 relative z-20 mb-8 sm:mb-10">
+      <div className="w-[94%] max-w-[1440px] mx-auto px-2 sm:px-4 -mt-10 sm:-mt-12 relative z-20 mb-8 sm:mb-10">
         <div className="bg-white/95 backdrop-blur-md border border-white rounded-3xl p-3 sm:p-4 shadow-lg shadow-blue-900/10 grid grid-cols-1 md:grid-cols-[260px_1fr_auto] gap-3 items-center">
           <div className="min-w-0">
             <Select
@@ -160,7 +161,7 @@ export function ActivitiesView({
         </div>
       </div>
 
-      <section className="w-[94%] max-w-[1280px] mx-auto px-2 sm:px-4">
+      <section className="w-[94%] max-w-[1600px] mx-auto px-2 sm:px-4">
         {/* Activities Grid */}
         {loading && activities.length === 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -189,7 +190,8 @@ export function ActivitiesView({
           {activities.map((act) => {
             const thaiDate = formatThaiDate(act.event_date);
             const categoryLabel = getCategoryLabel(act.category);
-            const isVideo = act.category === "video";
+            const isVideo = act.category === "video" || Boolean(act.video_url);
+            const videoThumb = !act.cover_image_url ? getActivityVideoThumbnailUrl(act.video_url) : null;
 
             return (
               <article
@@ -205,6 +207,23 @@ export function ActivitiesView({
                       alt={act.title}
                       loading="lazy"
                       decoding="async"
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    />
+                  ) : videoThumb ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={videoThumb}
+                      alt={act.title}
+                      loading="lazy"
+                      decoding="async"
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    />
+                  ) : act.video_url ? (
+                    <video
+                      src={`${act.video_url}#t=0.5`}
+                      muted
+                      playsInline
+                      preload="metadata"
                       className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                     />
                   ) : (

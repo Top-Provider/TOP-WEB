@@ -23,6 +23,7 @@ import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Modal } from "@/components/ui/modal";
+import { AdminLoadingState } from "@/components/admin/admin-loading-state";
 import { toast } from "@/components/ui/toast";
 import { fetchRecords, saveRecord } from "@/lib/crud";
 
@@ -378,7 +379,7 @@ export function MasterDataHub() {
         <Button
           type="button"
           onClick={handleOpenAdd}
-          className="bg-[#0066FF] hover:bg-[#0052CC] text-white rounded-xl shadow-sm text-xs font-semibold px-4 py-2.5 flex items-center gap-1.5 cursor-pointer shrink-0"
+          className="rounded-xl bg-blue-600 hover:bg-blue-700 text-white h-10 px-5 text-sm font-semibold shadow-sm shadow-blue-600/20 gap-2 cursor-pointer shrink-0"
         >
           <Plus className="w-4 h-4" />
           <span>เพิ่มข้อมูลใหม่</span>
@@ -572,7 +573,7 @@ export function MasterDataTable({
                 </>
               )}
               <th className="py-3.5 px-4">สถานะ</th>
-              <th className="py-3.5 px-4 text-right">การจัดการ</th>
+              <th className="py-3.5 px-4 text-right sticky right-0 z-10 bg-slate-50 border-l border-slate-200/70 whitespace-nowrap">การจัดการ</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100 text-slate-700">
@@ -630,14 +631,14 @@ export function MasterDataTable({
                       )}
                     </td>
 
-                    <td className="py-3.5 px-4 text-right">
+                    <td className="py-3.5 px-4 text-right sticky right-0 z-10 bg-white border-l border-slate-100">
                       <div className="flex items-center justify-end gap-1.5">
                         <Button
                           type="button"
                           variant="ghost"
                           size="xs"
                           onClick={() => onEdit(item)}
-                          className="text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg cursor-pointer"
+                          className="bg-amber-50 text-amber-600 hover:bg-amber-100 hover:text-amber-700 border border-amber-200/70 rounded-lg cursor-pointer"
                           title="แก้ไข"
                         >
                           <Edit className="w-3.5 h-3.5" />
@@ -653,7 +654,7 @@ export function MasterDataTable({
                               isMain ? mainItem.name : (optItem.label || optItem.value)
                             )
                           }
-                          className="text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg cursor-pointer"
+                          className="bg-rose-50 text-rose-600 hover:bg-rose-100 hover:text-rose-700 border border-rose-200/70 rounded-lg cursor-pointer"
                           title="ลบ"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
@@ -663,10 +664,16 @@ export function MasterDataTable({
                   </tr>
                 );
               })
+            ) : isLoading ? (
+              <tr>
+                <td colSpan={7}>
+                  <AdminLoadingState label="กำลังโหลดข้อมูล..." />
+                </td>
+              </tr>
             ) : (
               <tr>
                 <td colSpan={7} className="py-12 text-center text-slate-400">
-                  {isLoading ? "กำลังโหลดข้อมูล..." : "ไม่พบข้อมูลในหมวดหมู่นี้"}
+                  ไม่พบข้อมูลในหมวดหมู่นี้
                 </td>
               </tr>
             )}

@@ -11,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select } from "@/components/ui/select";
 import { ImageUpload } from "@/components/ui/image-upload";
 import { toast } from "@/components/ui/toast";
+import { AdminLoadingState } from "@/components/admin/admin-loading-state";
 import { saveRecord, fetchRecords } from "@/lib/crud";
 import {
   Plus,
@@ -303,8 +304,7 @@ VALUES
         <div className="flex items-center gap-2.5">
           <Button
             onClick={handleOpenAdd}
-            size="sm"
-            className="rounded-full bg-blue-600 hover:bg-blue-700 text-xs font-semibold gap-1.5"
+            className="rounded-xl bg-blue-600 hover:bg-blue-700 text-white h-10 px-5 text-sm font-semibold shadow-sm shadow-blue-600/20 gap-2 cursor-pointer"
           >
             <Plus className="w-4 h-4" />
             <span>เพิ่มการ์ดใหม่</span>
@@ -352,10 +352,7 @@ VALUES
 
       {/* Content Grid */}
       {loading ? (
-        <div className="py-20 flex flex-col items-center justify-center text-slate-400 gap-3">
-          <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
-          <p className="text-xs">กำลังโหลดข้อมูลการ์ดโซลูชัน...</p>
-        </div>
+        <AdminLoadingState label="กำลังโหลดข้อมูลการ์ดโซลูชัน..." />
       ) : filteredTopics.length === 0 ? (
         <Card className="py-16 text-center border-dashed border-slate-300">
           <LayoutGrid className="w-10 h-10 text-slate-300 mx-auto mb-3" />

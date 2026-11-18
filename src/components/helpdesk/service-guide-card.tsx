@@ -49,32 +49,32 @@ export function ServiceGuideCard() {
 
   return (
     <>
-      <article className="group relative overflow-hidden rounded-[26px] border border-blue-100 bg-white px-6 py-7 shadow-[0_18px_45px_rgba(30,64,175,0.08)] sm:px-8 sm:py-9">
+      <article className="group relative overflow-hidden rounded-[26px] border border-blue-100 bg-white px-5 py-6 shadow-[0_18px_45px_rgba(30,64,175,0.08)] sm:px-8 sm:py-9">
         <div className="absolute -bottom-20 -right-12 h-52 w-52 rounded-full bg-sky-100/80 blur-2xl transition-transform duration-500 group-hover:scale-125" />
-        <div className="relative flex h-full flex-col items-start justify-between gap-7 sm:flex-row sm:items-center">
-          <div>
+        <div className="relative flex h-full flex-col items-start justify-between gap-5 sm:flex-row sm:items-center sm:gap-7">
+          <div className="w-full sm:w-auto">
             <span className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-[#0874ff] text-white shadow-lg shadow-blue-200">
               <BookOpen className="h-6 w-6" aria-hidden="true" />
             </span>
-            <h2 className="text-2xl font-extrabold text-[#0d173d]">คู่มือคำแนะนำ</h2>
+            <h2 className="text-xl font-extrabold text-[#0d173d] sm:text-2xl">คู่มือคำแนะนำ</h2>
             <p className="mt-1.5 max-w-sm text-sm font-medium text-slate-500">
               วิธีการแจ้งซ่อม การใช้งานระบบ และข้อมูลที่เกี่ยวข้อง
             </p>
             <button
               type="button"
               onClick={() => setOpen(true)}
-              className="mt-6 inline-flex items-center gap-3 rounded-full bg-[#0874ff] px-6 py-3 text-sm font-bold text-white shadow-lg shadow-blue-200 transition-all hover:-translate-y-0.5 hover:bg-blue-700 hover:shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+              className="mt-5 inline-flex items-center gap-3 rounded-full bg-[#0874ff] px-6 py-3 text-sm font-bold text-white shadow-lg shadow-blue-200 transition-all hover:-translate-y-0.5 hover:bg-blue-700 hover:shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 sm:mt-6"
             >
               อ่านคู่มือ
               <ArrowRight className="h-4 w-4" aria-hidden="true" />
             </button>
           </div>
-          <div className="relative flex h-36 w-full max-w-[220px] items-center justify-center sm:h-44">
-            <BookOpen className="h-28 w-28 text-[#0874ff] drop-shadow-[0_14px_12px_rgba(37,99,235,0.2)]" strokeWidth={1.5} aria-hidden="true" />
-            <span className="absolute right-7 top-4 flex h-12 w-12 items-center justify-center rounded-full bg-white text-lg font-black text-[#0874ff] shadow-lg ring-4 ring-blue-100">
+          <div className="relative mx-auto flex h-32 w-full max-w-[200px] shrink-0 items-center justify-center sm:mx-0 sm:h-44 sm:max-w-[220px]">
+            <BookOpen className="h-24 w-24 text-[#0874ff] drop-shadow-[0_14px_12px_rgba(37,99,235,0.2)] sm:h-28 sm:w-28" strokeWidth={1.5} aria-hidden="true" />
+            <span className="absolute right-8 top-2 flex h-10 w-10 items-center justify-center rounded-full bg-white text-base font-black text-[#0874ff] shadow-lg ring-4 ring-blue-100 sm:right-7 sm:top-4 sm:h-12 sm:w-12 sm:text-lg">
               i
             </span>
-            <div className="absolute bottom-4 h-3 w-44 rounded-full bg-blue-100 blur-sm" />
+            <div className="absolute bottom-2 h-3 w-36 rounded-full bg-blue-100 blur-sm sm:bottom-4 sm:w-44" />
           </div>
         </div>
       </article>

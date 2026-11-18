@@ -2,6 +2,7 @@
 
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Modal } from "@/components/ui/modal";
@@ -10,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { HospitalCombobox } from "@/components/helpdesk/hospital-combobox";
 import { AdminTicketDetail } from "@/components/helpdesk/admin-ticket-detail";
 import { toast } from "@/components/ui/toast";
+import { AdminLoadingState } from "@/components/admin/admin-loading-state";
 import {
   Plus,
   Search,
@@ -22,12 +24,15 @@ import {
   Copy,
   ExternalLink,
   Loader2,
+  Download,
 } from "lucide-react";
 import {
   EQUIPMENT_LABELS,
   IMPACT_LABELS,
+  PRIORITY_LABELS,
   QUEUE_LABELS,
   SOURCE_CHANNEL_LABELS,
+  STATUS_LABELS,
   URGENCY_LABELS,
   type EquipmentType,
   type SourceChannel,
@@ -66,12 +71,23 @@ const URGENCY_OPTIONS = (Object.keys(URGENCY_LABELS) as TicketUrgency[]).map((va
 }));
 
 export default function AdminHelpdeskPage() {
+  const searchParams = useSearchParams();
   const [tickets, setTickets] = useState<TicketRow[]>([]);
   const [hospitals, setHospitals] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<QuickFilter>("ACTIVE");
   const [search, setSearch] = useState("");
   const [selectedTicketId, setSelectedTicketId] = useState<number | null>(null);
+
+  useEffect(() => {
+    const ticketParam = searchParams.get("ticket");
+    if (ticketParam) {
+      const parsedId = Number(ticketParam);
+      if (Number.isInteger(parsedId) && parsedId > 0) {
+        setSelectedTicketId(parsedId);
+      }
+    }
+  }, [searchParams]);
 
   const [createOpen, setCreateOpen] = useState(false);
   const [creating, setCreating] = useState(false);
@@ -224,6 +240,70 @@ export default function AdminHelpdeskPage() {
     toast.success("คัดลอกข้อความส่งเข้ากลุ่ม LINE แล้ว");
   };
 
+  const exportCsvReport = () => {
+    if (filteredTickets.length === 0) {
+      toast.error("ไม่มีข้อมูลสำหรับส่งออก");
+      return;
+    }
+    const escapeCell = (val: unknown) => {
+      const s = String(val ?? "").replace(/"/g, '""');
+      return `"${s}"`;
+    };
+    const headers = [
+      "เลขที่ใบแจ้งซ่อม",
+      "รหัสกลุ่มคำขอ",
+      "สถานะ",
+      "ความสำคัญ",
+      "ทีม",
+      "โรงพยาบาล/หน่วยงาน",
+      "แผนก",
+      "ผู้แจ้ง",
+      "เบอร์โทรศัพท์",
+      "ประเภทอุปกรณ์",
+      "ยี่ห้อ/รุ่น",
+      "Serial Number",
+      "อาการเสีย",
+      "ช่างผู้รับผิดชอบ",
+      "กำหนดแก้ไขเสร็จ (SLA)",
+      "เวลาที่แจ้ง",
+      "เวลาปิดงาน",
+      "คะแนน CSAT",
+    ];
+    const rows = filteredTickets.map((t) => [
+      t.ticket_no,
+      t.request_group_no || "",
+      STATUS_LABELS[t.status] || t.status,
+      PRIORITY_LABELS[t.priority] || t.priority,
+      QUEUE_LABELS[t.queue] || t.queue,
+      t.customer_org,
+      t.customer_dept || "",
+      t.contact_name,
+      t.contact_phone,
+      EQUIPMENT_LABELS[t.equipment_type] || t.equipment_type,
+      [t.equipment_brand, t.equipment_model].filter(Boolean).join(" "),
+      t.serial_number || "",
+      t.title,
+      t.assigned_to || "",
+      formatThaiDateTime(t.resolve_due_at),
+      formatThaiDateTime(t.created_at),
+      t.closed_at ? formatThaiDateTime(t.closed_at) : "",
+      t.csat_score ?? "",
+    ]);
+    const csvContent =
+      "\uFEFF" +
+      [headers, ...rows].map((row) => row.map(escapeCell).join(",")).join("\r\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `helpdesk-sla-report-${new Date().toISOString().slice(0, 10)}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    toast.success(`ส่งออกรายงาน ${filteredTickets.length} รายการเรียบร้อยแล้ว`);
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -234,14 +314,18 @@ export default function AdminHelpdeskPage() {
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <Button type="button" variant="outline" onClick={() => loadTickets()} className="gap-2">
+          <Button type="button" variant="outline" onClick={exportCsvReport} className="gap-2 cursor-pointer">
+            <Download className="w-4 h-4" />
+            Export รายงาน (CSV)
+          </Button>
+          <Button type="button" variant="outline" onClick={() => loadTickets()} className="gap-2 cursor-pointer">
             <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
             รีเฟรช
           </Button>
           <Button
             type="button"
             onClick={() => setCreateOpen(true)}
-            className="bg-blue-600 hover:bg-blue-700 text-white gap-2"
+            className="rounded-xl bg-blue-600 hover:bg-blue-700 text-white h-10 px-5 text-sm font-semibold shadow-sm shadow-blue-600/20 gap-2 cursor-pointer"
           >
             <Plus className="w-4 h-4" />
             สร้าง Ticket แทนลูกค้า
@@ -300,11 +384,10 @@ export default function AdminHelpdeskPage() {
                 key={item.key}
                 type="button"
                 onClick={() => setFilter(item.key)}
-                className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition ${
-                  filter === item.key
-                    ? "bg-blue-600 text-white border-blue-600"
-                    : "bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100"
-                }`}
+                className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition ${filter === item.key
+                  ? "bg-blue-600 text-white border-blue-600"
+                  : "bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100"
+                  }`}
               >
                 {item.label}
               </button>
@@ -324,10 +407,7 @@ export default function AdminHelpdeskPage() {
 
         {/* Ticket List */}
         {loading ? (
-          <div className="py-12 text-center text-slate-500 text-sm">
-            <Loader2 className="w-5 h-5 animate-spin mx-auto mb-2" />
-            กำลังโหลดรายการแจ้งซ่อม...
-          </div>
+          <AdminLoadingState label="กำลังโหลดรายการแจ้งซ่อม..." />
         ) : filteredTickets.length === 0 ? (
           <div className="py-12 text-center text-slate-400 text-sm">ไม่พบรายการแจ้งซ่อมในตัวกรองนี้</div>
         ) : (

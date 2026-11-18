@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { Building2, Calendar, ChevronLeft, ChevronRight, MapPin } from "lucide-react";
-import { ActivityItem, formatThaiDate, getCategoryLabel } from "@/lib/activities";
+import { ActivityItem, formatThaiDate, getActivityVideoEmbedUrl, getCategoryLabel } from "@/lib/activities";
 import { Modal } from "@/components/ui/modal";
 
 export function ActivityGallery({ images, title }: { images: string[]; title: string }) {
@@ -33,11 +33,29 @@ export function ActivityDetail({ activity, onClose }: { activity: ActivityItem; 
     return () => controller.abort();
   }, [activity.id, attempt]);
   const images = detail ? [detail.cover_image_url, ...detail.gallery_images].filter((value): value is string => Boolean(value)) : [];
-  return <Modal isOpen onClose={onClose} title={activity.title} maxWidth="4xl">
+  return <Modal isOpen onClose={onClose} title={activity.title} maxWidth="5xl">
     {!detail && !error && <p role="status" className="py-12 text-center text-slate-500">กำลังโหลดรายละเอียดกิจกรรม...</p>}
     {error && <div role="alert" className="space-y-3 text-center"><p>{error}</p><button type="button" onClick={() => { setError(""); setAttempt(value => value + 1); }} className="rounded-lg bg-blue-600 px-4 py-2 text-white">ลองใหม่</button></div>}
     {detail && <div className="space-y-5">
       <ActivityGallery images={images} title={detail.title} />
+      {detail.video_url && (() => {
+        const embedUrl = getActivityVideoEmbedUrl(detail.video_url);
+        return (
+          <div className="overflow-hidden rounded-2xl bg-black aspect-video">
+            {embedUrl ? (
+              <iframe
+                src={embedUrl}
+                title={detail.title}
+                className="h-full w-full border-0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              />
+            ) : (
+              <video src={detail.video_url} controls playsInline className="h-full w-full" />
+            )}
+          </div>
+        );
+      })()}
       <div className="flex flex-wrap items-center gap-3 text-xs text-slate-600">
         <span className="rounded-full bg-blue-50 px-3 py-1 text-blue-700">{getCategoryLabel(detail.category)}</span>
         {detail.event_date && <span className="flex items-center gap-1"><Calendar className="h-4 w-4" />{formatThaiDate(detail.event_date)}</span>}
