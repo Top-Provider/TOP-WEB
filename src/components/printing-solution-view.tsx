@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
@@ -11,17 +11,19 @@ import {
   X,
   ArrowRight,
   ExternalLink,
+  Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
+import { MedicalCrossLoader } from "@/components/ui/medical-cross-loader";
 import type { ProductItemResponse } from "@/app/api/products/route";
 
 export const SOLUTION_CATEGORY_TABS = [
   { id: "printing", label: "Printing & Supply Solution", href: "/solutions/printing", active: true },
-  { id: "hardware", label: "Hardware Solution", href: "/#case-studies" },
+  { id: "hardware", label: "Hardware Solution", href: "/solutions/hardware" },
   { id: "software", label: "Software Solution", href: "/solutions/software" },
-  { id: "network", label: "Network Solution", href: "/#case-studies" },
-  { id: "medical", label: "Medical Equipment", href: "/#case-studies" },
-  { id: "iot", label: "Smart Solution (IoT)", href: "/#case-studies" },
+  { id: "network", label: "Network Solution", href: "/solutions/network" },
 ];
 
 export interface ExtendedProductItem extends ProductItemResponse {
@@ -77,8 +79,11 @@ export function PrintingSolutionView({
   });
 
   // Active Category state
-  // "Black & White Laser Printer" is selected by default to match user's mockup!
-  const [selectedSubCategory, setSelectedSubCategory] = useState<string>("Black & White Laser Printer");
+  const [loading, setLoading] = useState<boolean>(initialProducts.length === 0);
+  // Default to the first Printer category in the sidebar
+  const [selectedSubCategory, setSelectedSubCategory] = useState<string>(
+    SIDEBAR_PRINTER_CATEGORIES[0] || "Black & White Laser Printer"
+  );
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [detailProduct, setDetailProduct] = useState<ExtendedProductItem | null>(null);
 
@@ -93,8 +98,15 @@ export function PrintingSolutionView({
     SIDEBAR_SUPPLY_CATEGORIES.map((c) => ({ value: c, label: c }))
   );
 
-  // Fetch program options for Printer & Supply categories
+  // Dedup guards to prevent double-fetching on mount/refresh
+  const hasLoadedOptionsRef = useRef(false);
+  const hasLoadedProductsRef = useRef(false);
+  const hasLoadedCategoriesRef = useRef(false);
+
+  // Fetch program options for Printer & Supply categories (only once)
   useEffect(() => {
+    if (hasLoadedOptionsRef.current) return;
+    hasLoadedOptionsRef.current = true;
     fetch("/api/admin/program-options")
       .then((res) => res.json())
       .then((json) => {
@@ -110,9 +122,16 @@ export function PrintingSolutionView({
       .catch((err) => console.log("Program options fetch error:", err));
   }, []);
 
-  // Fetch live products from /api/products
+  // Fetch live products from /api/products only if initialProducts was empty
   useEffect(() => {
-    fetch("/api/products")
+    if (initialProducts && initialProducts.length > 0) {
+      setLoading(false);
+      return;
+    }
+    if (hasLoadedProductsRef.current) return;
+    hasLoadedProductsRef.current = true;
+    setLoading(true);
+    fetch("/api/products?category=Printing")
       .then((res) => res.json())
       .then((json) => {
         if (json && json.success && Array.isArray(json.products)) {
@@ -130,12 +149,30 @@ export function PrintingSolutionView({
 
           // Only take what exists in the API!
           setAllProducts(dbProducts);
+
+          // If current selected category has 0 items but DB has items, auto-select first available
+          setSelectedSubCategory((prev) => {
+            const hasMatch = dbProducts.some(
+              (p) => (p.sub_category || "").trim().toLowerCase() === prev.trim().toLowerCase()
+            );
+            if (!hasMatch) {
+              const firstWithCat = dbProducts.find((p) => p.sub_category && p.sub_category.trim());
+              return firstWithCat?.sub_category ? firstWithCat.sub_category : prev;
+            }
+            return prev;
+          });
         }
       })
-      .catch((err) => console.log("Live products fetch error:", err));
-  }, []);
+      .catch((err) => console.log("Live products fetch error:", err))
+      .finally(() => {
+        setLoading(false);
+      });
+  }, [initialProducts]);
 
+  // Fetch dynamic categories tabs (only once)
   useEffect(() => {
+    if (hasLoadedCategoriesRef.current) return;
+    hasLoadedCategoriesRef.current = true;
     fetch("/api/admin/categories")
       .then((res) => res.json())
       .then((json) => {
@@ -147,6 +184,8 @@ export function PrintingSolutionView({
               let href = "/#case-studies";
               if (rawId === "printing") href = "/solutions/printing";
               else if (rawId === "software") href = "/solutions/software";
+              else if (rawId === "network") href = "/solutions/network";
+              else if (rawId === "hardware" || rawId.includes("hard")) href = "/solutions/hardware";
 
               return {
                 id: rawId,
@@ -256,15 +295,32 @@ export function PrintingSolutionView({
       </div>
 
       {/* ========================================================================= */}
-      {/* 2. MAIN CATALOG LAYOUT (SIDEBAR + 3-COLUMN PRODUCT GRID)                  */}
+      {/* 2. MAIN CATALOG LAYOUT (SIDEBAR + PRODUCT GRID)                           */}
       {/* ========================================================================= */}
       <div className="w-[94%] max-w-[1720px] mx-auto px-2 sm:px-4 lg:px-6 pt-6 sm:pt-8">
+        {/* MOBILE CATEGORY SELECTOR (lg:hidden) */}
+        <div className="lg:hidden w-full mb-6 space-y-1.5">
+          <p className="text-xs font-bold text-slate-600 uppercase tracking-wider px-1">
+            หมวดหมู่เครื่องพิมพ์และหมึกพิมพ์ :
+          </p>
+          <Select
+            value={selectedSubCategory}
+            onChange={(val) => setSelectedSubCategory(val)}
+            options={[...printerCategories, ...supplyCategories].map((cat) => ({
+              value: cat.value,
+              label: cat.label,
+            }))}
+            placeholder="เลือกหมวดหมู่เครื่องพิมพ์..."
+            triggerClassName="rounded-full text-xs sm:text-sm font-semibold shadow-2xs h-10 px-4"
+          />
+        </div>
+
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           
           {/* ===================================================================== */}
-          {/* LEFT SIDEBAR: PRINTER & SUPPLY CATEGORIES LIST                        */}
+          {/* LEFT SIDEBAR: PRINTER & SUPPLY CATEGORIES LIST (DESKTOP)              */}
           {/* ===================================================================== */}
-          <div className="lg:col-span-3 bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs space-y-6">
+          <div className="hidden lg:block lg:col-span-3 bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs space-y-6 lg:sticky lg:top-24">
             
             {/* GROUP 1: PRINTER */}
             <div className="space-y-2">
@@ -323,7 +379,7 @@ export function PrintingSolutionView({
           </div>
 
           {/* ===================================================================== */}
-          {/* RIGHT PRODUCT DISPLAY AREA (3-COLUMN PRODUCT CARDS GRID)              */}
+          {/* RIGHT PRODUCT DISPLAY AREA (PRODUCT CARDS GRID)                       */}
           {/* ===================================================================== */}
           <div className="lg:col-span-9 space-y-6">
             
@@ -340,12 +396,12 @@ export function PrintingSolutionView({
 
               {/* Search Box */}
               <div className="relative w-full sm:w-64">
-                <input
+                <Input
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="ค้นหาสินค้า"
-                  className="w-full pl-9 pr-4 py-2 rounded-xl bg-white border border-slate-200 text-xs sm:text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all shadow-2xs"
+                  className="h-9 pl-9 pr-4 text-xs sm:text-sm"
                 />
                 <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
                 {searchQuery && (
@@ -360,9 +416,13 @@ export function PrintingSolutionView({
               </div>
             </div>
 
-            {/* Product Cards Grid: 1 แถวแสดง 3 การ์ด */}
-            {filteredProducts.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
+            {/* Product Cards Grid */}
+            {loading ? (
+              <div className="min-h-[460px] rounded-3xl bg-white border border-slate-200/90 shadow-sm p-8 flex flex-col items-center justify-center text-center my-6">
+                <MedicalCrossLoader size="md" />
+              </div>
+            ) : filteredProducts.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5 sm:gap-6">
                 {filteredProducts.map((prod) => (
                   <CatalogProductCard
                     key={prod.id}
@@ -437,40 +497,36 @@ export function PrintingSolutionView({
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="bg-white rounded-3xl w-full max-w-4xl lg:max-w-5xl overflow-hidden shadow-2xl border border-slate-200 my-auto animate-in fade-in zoom-in-95 duration-200"
+            className="bg-white rounded-3xl w-full max-w-5xl lg:max-w-6xl xl:max-w-7xl overflow-hidden shadow-2xl border border-slate-200 my-auto animate-in fade-in zoom-in-95 duration-200"
           >
             {/* Modal Header */}
-            <div className="px-6 py-4 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <span className="text-xs sm:text-sm font-bold px-3 py-1 rounded-full bg-slate-900 text-white uppercase tracking-wider">
-                  {detailProduct.brand && detailProduct.brand !== "-"
-                    ? detailProduct.brand
-                    : "TOP PROVIDER"}
-                </span>
-                {detailProduct.sku &&
-                  detailProduct.sku.trim() !== "" &&
-                  detailProduct.sku.trim() !== "-" && (
-                    <span className="text-xs sm:text-sm text-slate-600 font-mono font-medium">
-                      SKU: {detailProduct.sku}
-                    </span>
-                  )}
+            <div className="px-6 sm:px-8 py-4 sm:py-5 bg-slate-50 border-b border-slate-100 flex items-center justify-between gap-4">
+              <div className="flex flex-wrap items-center gap-2.5 sm:gap-3 min-w-0 pr-2">
+                <h3 className="text-lg sm:text-xl font-bold text-slate-900 truncate">
+                  {detailProduct.name}
+                </h3>
+                {detailProduct.sub_category && (
+                  <span className="text-xs sm:text-sm font-semibold text-blue-700 bg-blue-50 px-3 py-1 rounded-full border border-blue-100 shrink-0">
+                    {detailProduct.sub_category}
+                  </span>
+                )}
               </div>
               <button
                 type="button"
                 onClick={() => setDetailProduct(null)}
-                className="w-9 h-9 rounded-full bg-slate-200/70 hover:bg-slate-300 text-slate-600 flex items-center justify-center transition-colors cursor-pointer"
+                className="w-9 h-9 rounded-full bg-slate-200/70 hover:bg-slate-300 text-slate-600 flex items-center justify-center transition-colors cursor-pointer shrink-0"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
             {/* Modal Content: 2 Columns */}
-            <div className="p-6 md:p-8 max-h-[78vh] overflow-y-auto">
-              <div className="grid grid-cols-1 md:grid-cols-12 gap-6 lg:gap-8 items-start">
+            <div className="p-6 md:p-8 lg:p-10 max-h-[85vh] overflow-y-auto">
+              <div className="grid grid-cols-1 md:grid-cols-12 gap-8 lg:gap-10 items-start">
                 
                 {/* ฝั่งซ้าย: รูปสินค้าหลัก และเอกสารดาวน์โหลด */}
-                <div className="md:col-span-5 space-y-4 md:sticky md:top-0">
-                  <div className="w-full aspect-square max-h-[380px] rounded-2xl bg-white border border-slate-200/90 flex items-center justify-center p-6 shadow-xs">
+                <div className="md:col-span-6 lg:col-span-5 xl:col-span-5 space-y-5 md:sticky md:top-0">
+                  <div className="w-full aspect-square max-h-[460px] lg:max-h-[520px] rounded-3xl bg-slate-50/60 border border-slate-200/90 flex items-center justify-center p-6 sm:p-8 lg:p-10 shadow-xs">
                     <img
                       src={
                         detailProduct.cover_image_url &&
@@ -480,7 +536,7 @@ export function PrintingSolutionView({
                           : "/images/logo.png"
                       }
                       alt={detailProduct.name}
-                      className="max-h-full max-w-full object-contain"
+                      className="max-h-full max-w-full object-contain transition-transform duration-300 hover:scale-105"
                       onError={(e) => {
                         (e.currentTarget as HTMLImageElement).src = "/images/logo.png";
                       }}
@@ -489,11 +545,11 @@ export function PrintingSolutionView({
 
                   {/* Gallery Thumbnails (ถ้ามี) */}
                   {detailProduct.gallery_images && detailProduct.gallery_images.length > 0 && (
-                    <div className="flex gap-2.5 overflow-x-auto pb-1">
+                    <div className="flex gap-3 overflow-x-auto pb-1">
                       {detailProduct.gallery_images.map((gImg, gIdx) => (
                         <div
                           key={gIdx}
-                          className="w-16 h-16 rounded-xl border border-slate-200 bg-white p-1 shrink-0 overflow-hidden"
+                          className="w-20 h-20 rounded-2xl border border-slate-200 bg-white p-1.5 shrink-0 overflow-hidden shadow-xs hover:border-blue-400 transition-colors"
                         >
                           <img
                             src={gImg}
@@ -541,28 +597,22 @@ export function PrintingSolutionView({
                 </div>
 
                 {/* ฝั่งขวา: รายละเอียด สเปก และสินค้าที่ใช้ร่วมกัน */}
-                <div className="md:col-span-7 space-y-6">
-                  {/* Title & Description */}
-                  <div>
-                    <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 leading-snug tracking-tight">
-                      {detailProduct.name}
-                    </h2>
-                    {detailProduct.sub_category && (
-                      <p className="text-sm sm:text-base text-blue-600 font-semibold mt-1.5">
-                        {detailProduct.sub_category}
-                      </p>
-                    )}
-                    {detailProduct.short_description && (
-                      <p className="text-sm sm:text-base text-slate-600 mt-2.5 leading-relaxed">
-                        {detailProduct.short_description}
-                      </p>
-                    )}
-                    {detailProduct.full_description && (
-                      <p className="text-sm sm:text-base text-slate-500 mt-2.5 leading-relaxed">
-                        {detailProduct.full_description}
-                      </p>
-                    )}
-                  </div>
+                <div className="md:col-span-6 lg:col-span-7 xl:col-span-7 space-y-6">
+                  {/* Descriptions */}
+                  {(detailProduct.short_description || detailProduct.full_description) && (
+                    <div className="space-y-2">
+                      {detailProduct.short_description && (
+                        <p className="text-sm sm:text-base text-slate-600 leading-relaxed">
+                          {detailProduct.short_description}
+                        </p>
+                      )}
+                      {detailProduct.full_description && (
+                        <p className="text-sm sm:text-base text-slate-500 leading-relaxed">
+                          {detailProduct.full_description}
+                        </p>
+                      )}
+                    </div>
+                  )}
 
                   {/* Specifications */}
                   {detailProduct.specifications && detailProduct.specifications.length > 0 && (

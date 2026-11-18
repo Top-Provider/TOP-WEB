@@ -1,10 +1,11 @@
-import { supabase } from "@/lib/supabase";
+import { listPublicSoftware } from "@/lib/public-catalog";
+import { isDbConnectionError } from "@/lib/api-error";
 import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
 import { SoftwareSolutionView } from "@/components/software-solution-view";
 import { Metadata } from "next";
 
-export const revalidate = 60;
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Software Solution | TOP PROVIDER SYSTEM GROUP",
@@ -15,22 +16,25 @@ export const metadata: Metadata = {
 export default async function SoftwareSolutionPage() {
   let initialRecords: Record<string, unknown>[] = [];
   try {
-    const fetchPromise = supabase
-      .from("TB_PRODUCT_SOFTWARE")
-      .select("*")
-      .order("id", { ascending: true });
-
-    const timeoutPromise = new Promise<{ data: null; error: Error }>((resolve) =>
-      setTimeout(() => resolve({ data: null, error: new Error("Timeout") }), 500)
-    );
-
-    const { data: records, error } = await Promise.race([fetchPromise, timeoutPromise]);
-
-    if (!error && records && records.length > 0) {
-      initialRecords = records as Record<string, unknown>[];
-    }
+    const records = await listPublicSoftware(30);
+    initialRecords = records.map((item) => ({
+      ...item,
+      cover_image_url:
+        typeof item.cover_image_url === "string" && item.cover_image_url
+          ? item.cover_image_url
+          : "/images/showcase-laptop.png",
+      feature_1_image:
+        typeof item.feature_1_image === "string" && item.feature_1_image
+          ? item.feature_1_image
+          : "/images/showcase-laptop.png",
+      feature_2_image:
+        typeof item.feature_2_image === "string" && item.feature_2_image
+          ? item.feature_2_image
+          : "/images/laptop_mockup.jpg",
+    }));
   } catch (err) {
     console.error("Error loading software programs on server:", err);
+    if (isDbConnectionError(err)) throw err;
   }
 
   return (

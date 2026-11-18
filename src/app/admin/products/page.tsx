@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import Image from "next/image";
 import { Modal } from "@/components/ui/modal";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -11,6 +12,7 @@ import { Select } from "@/components/ui/select";
 import { ImageUpload } from "@/components/ui/image-upload";
 import { PdfUpload } from "@/components/ui/pdf-upload";
 import { toast } from "@/components/ui/toast";
+import { AdminLoadingState } from "@/components/admin/admin-loading-state";
 import { saveRecord, fetchRecords } from "@/lib/crud";
 import { Plus, Search, FileText, Edit, Trash2, Loader2, Sparkles, Layers, X, UploadCloud, Link as LinkIcon, Image as ImageIcon, CheckCircle2, AlertCircle, ChevronLeft, ChevronRight, GripVertical, ChevronUp, ChevronDown } from "lucide-react";
 
@@ -56,10 +58,13 @@ const defaultFormState: ProductFormState = {
 
 const CATEGORY_OPTIONS = [
   { value: "Printing", label: "Printing & Supply" },
+  { value: "Network", label: "Network & Server Solution" },
 ];
 
 const FILTER_CATEGORY_OPTIONS = [
-  { value: "all", label: "หมวดหมู่: Printing & Supply" },
+  { value: "all", label: "ทุกหมวดหมู่ (All Categories)" },
+  { value: "Printing", label: "หมวดหมู่: Printing & Supply" },
+  { value: "Network", label: "หมวดหมู่: Network & Server" },
 ];
 
 const PRODUCT_TYPE_OPTIONS = [
@@ -113,8 +118,6 @@ const SUB_CATEGORY_HARDWARE_OPTIONS = [
 const SUB_CATEGORY_NETWORK_OPTIONS = [
   { value: "Server", label: "Server" },
   { value: "Storage", label: "Storage" },
-  { value: "License", label: "License" },
-  { value: "Software Install Client", label: "Software Install Client" },
   { value: "Other", label: "อื่นๆ (กำหนดเอง)" },
 ];
 
@@ -217,6 +220,8 @@ export default function AdminProductsPage() {
   const [draggableIndex, setDraggableIndex] = useState<number | null>(null);
   const [draggedSpecIndex, setDraggedSpecIndex] = useState<number | null>(null);
   const [dragOverSpecIndex, setDragOverSpecIndex] = useState<number | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<{ id: number; name: string } | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -527,7 +532,6 @@ export default function AdminProductsPage() {
 
   const handleSubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-    console.log("[handleSubmit Products] Submitting formData:", formData);
 
     if (!validateForm()) {
       setStatusModal({
@@ -556,7 +560,10 @@ export default function AdminProductsPage() {
         name: formData.name.trim(),
         sku: trimmedSku,
         slug: slug,
-        category_id: formData.category_id || "Printing",
+        category_id:
+          formData.product_type === "network"
+            ? "Network"
+            : formData.category_id || "Printing",
         sub_category: formData.sub_category,
         brand: trimmedBrand,
         product_type: formData.product_type || "printer",
@@ -602,22 +609,24 @@ export default function AdminProductsPage() {
     }
   };
 
-  const handleDelete = async (id: number, name: string) => {
-    if (!confirm(`ยืนยันการลบสินค้า "${name}" ?`)) return;
+  const handleConfirmDelete = async () => {
+    if (!deleteTarget) return;
 
     try {
+      setIsDeleting(true);
       await saveRecord({
         table: "TB_PRODUCTS",
         action: "delete",
-        id,
+        id: deleteTarget.id,
       });
       await loadProducts();
       setStatusModal({
         isOpen: true,
         type: "success",
         title: "ลบสินค้าสำเร็จ",
-        message: `ลบสินค้า "${name}" ออกจากระบบเรียบร้อยแล้ว`,
+        message: `ลบสินค้า "${deleteTarget.name}" ออกจากระบบเรียบร้อยแล้ว`,
       });
+      setDeleteTarget(null);
     } catch (err: unknown) {
       setStatusModal({
         isOpen: true,
@@ -625,6 +634,8 @@ export default function AdminProductsPage() {
         title: "ลบสินค้าไม่สำเร็จ",
         message: getFriendlyErrorMessage(err, "เกิดข้อผิดพลาดในการลบสินค้า"),
       });
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -661,10 +672,10 @@ export default function AdminProductsPage() {
 
         <Button
           onClick={handleOpenAdd}
-          className="rounded-full px-5 py-2.5 shadow-md shadow-blue-500/20"
+          className="rounded-xl bg-blue-600 hover:bg-blue-700 text-white h-10 px-5 text-sm font-semibold shadow-sm shadow-blue-600/20 gap-2 cursor-pointer"
         >
           <Plus className="w-4 h-4" />
-          <span>เพิ่มสินค้าใหม่ (Popup)</span>
+          <span>เพิ่มสินค้าใหม่</span>
         </Button>
       </div>
 
@@ -710,19 +721,14 @@ export default function AdminProductsPage() {
                 <th className="py-3.5 px-4">หมวดหมู่</th>
                 <th className="py-3.5 px-4">ไฟล์เอกสาร</th>
                 <th className="py-3.5 px-4">สถานะ</th>
-                <th className="py-3.5 px-4 text-right">การจัดการ</th>
+                <th className="py-3.5 px-4 text-right sticky right-0 z-10 bg-slate-50 border-l border-slate-200/70 whitespace-nowrap">การจัดการ</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 text-slate-700">
               {isLoading ? (
                 <tr>
-                  <td colSpan={6} className="py-20 text-center text-slate-500">
-                    <div className="flex flex-col items-center justify-center gap-3">
-                      <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
-                      <span className="text-xs sm:text-sm font-medium text-slate-600">
-                        กำลังโหลดข้อมูลสินค้า...
-                      </span>
-                    </div>
+                  <td colSpan={6}>
+                    <AdminLoadingState label="กำลังโหลดข้อมูลสินค้า..." />
                   </td>
                 </tr>
               ) : paginatedProducts.length === 0 ? (
@@ -807,12 +813,13 @@ export default function AdminProductsPage() {
                         เปิดแสดงผล
                       </span>
                     </td>
-                    <td className="py-3 px-4 text-right">
-                      <div className="inline-flex items-center gap-1">
+                    <td className="py-3 px-4 text-right sticky right-0 z-10 bg-white border-l border-slate-100">
+                      <div className="inline-flex items-center gap-1.5">
                         <Button
                           type="button"
                           variant="ghost"
                           size="icon-sm"
+                          className="bg-amber-50 text-amber-600 hover:bg-amber-100 hover:text-amber-700 border border-amber-200/70 rounded-lg"
                           onClick={async () => {
                             setEditingId(product.id);
                             const isCustom = !!product.brand && product.brand !== "-" && !brandOptions.some(o => o.value === product.brand && o.value !== "Other");
@@ -862,14 +869,14 @@ export default function AdminProductsPage() {
                           }}
                           title="แก้ไข"
                         >
-                          <Edit className="w-4 h-4 text-slate-500 hover:text-blue-600" />
+                          <Edit className="w-4 h-4" />
                         </Button>
                         <Button
                           type="button"
                           variant="ghost"
                           size="icon-sm"
-                          onClick={() => handleDelete(product.id, product.name)}
-                          className="hover:bg-rose-50 text-slate-500 hover:text-rose-600"
+                          onClick={() => setDeleteTarget({ id: product.id, name: product.name })}
+                          className="bg-rose-50 text-rose-600 hover:bg-rose-100 hover:text-rose-700 border border-rose-200/70 rounded-lg"
                           title="ลบ"
                         >
                           <Trash2 className="w-4 h-4" />
@@ -884,95 +891,88 @@ export default function AdminProductsPage() {
         </div>
 
         {/* Pagination Footer (แสดงผลทีละ 10 รายการ) */}
-        <div className="py-3.5 px-4 sm:px-6 bg-slate-50/80 border-t border-slate-200/80 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500">
-          <div>
-            <span>
-              {isLoading ? (
-                <span className="inline-flex items-center gap-2 text-slate-400">
-                  <Loader2 className="w-3.5 h-3.5 animate-spin text-blue-500" />
-                  กำลังโหลดข้อมูล...
-                </span>
-              ) : (
-                <>
-                  แสดง{" "}
-                  <strong className="font-semibold text-slate-800">
-                    {totalItems === 0 ? 0 : startIndex + 1}
-                  </strong>{" "}
-                  ถึง{" "}
-                  <strong className="font-semibold text-slate-800">{endIndex}</strong>{" "}
-                  จากทั้งหมด{" "}
-                  <strong className="font-semibold text-slate-800">{totalItems}</strong>{" "}
-                  รายการ (หน้าละ 10 รายการ)
-                </>
-              )}
-            </span>
-          </div>
-
-          {!isLoading && totalPages > 1 && (
-            <div className="flex items-center gap-1.5">
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                disabled={safeCurrentPage <= 1}
-                className="h-8 px-2.5 rounded-lg text-xs font-medium border-slate-200 text-slate-600 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-white"
-              >
-                <ChevronLeft className="w-3.5 h-3.5 mr-0.5" />
-                <span>ก่อนหน้า</span>
-              </Button>
-
-              <div className="flex items-center gap-1">
-                {Array.from({ length: totalPages }, (_, i) => i + 1)
-                  .filter((p) => {
-                    return (
-                      p === 1 ||
-                      p === totalPages ||
-                      Math.abs(p - safeCurrentPage) <= 1
-                    );
-                  })
-                  .reduce<(number | string)[]>((acc, p, idx, arr) => {
-                    if (idx > 0 && p - (arr[idx - 1] as number) > 1) {
-                      acc.push("...");
-                    }
-                    acc.push(p);
-                    return acc;
-                  }, [])
-                  .map((item, idx) =>
-                    typeof item === "string" ? (
-                      <span key={`ellipsis-${idx}`} className="px-1 text-slate-400">
-                        ...
-                      </span>
-                    ) : (
-                      <button
-                        key={item}
-                        type="button"
-                        onClick={() => setCurrentPage(item)}
-                        className={`w-8 h-8 rounded-lg text-xs font-semibold transition-all cursor-pointer ${safeCurrentPage === item
-                            ? "bg-[#0062FF] text-white shadow-xs shadow-blue-500/30"
-                            : "bg-white hover:bg-slate-100 text-slate-700 border border-slate-200"
-                          }`}
-                      >
-                        {item}
-                      </button>
-                    )
-                  )}
-              </div>
-
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                disabled={safeCurrentPage >= totalPages}
-                className="h-8 px-2.5 rounded-lg text-xs font-medium border-slate-200 text-slate-600 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-white"
-              >
-                <span>ถัดไป</span>
-                <ChevronRight className="w-3.5 h-3.5 ml-0.5" />
-              </Button>
+        {!isLoading && totalItems > 0 && (
+          <div className="py-3.5 px-4 sm:px-6 bg-slate-50/80 border-t border-slate-200/80 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500">
+            <div>
+              <span>
+                แสดง{" "}
+                <strong className="font-semibold text-slate-800">
+                  {totalItems === 0 ? 0 : startIndex + 1}
+                </strong>{" "}
+                ถึง{" "}
+                <strong className="font-semibold text-slate-800">{endIndex}</strong>{" "}
+                จากทั้งหมด{" "}
+                <strong className="font-semibold text-slate-800">{totalItems}</strong>{" "}
+                รายการ (หน้าละ 10 รายการ)
+              </span>
             </div>
-          )}
-        </div>
+
+            {totalPages > 1 && (
+              <div className="flex items-center gap-1.5">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                  disabled={safeCurrentPage <= 1}
+                  className="h-8 px-2.5 rounded-lg text-xs font-medium border-slate-200 text-slate-600 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-white"
+                >
+                  <ChevronLeft className="w-3.5 h-3.5 mr-0.5" />
+                  <span>ก่อนหน้า</span>
+                </Button>
+
+                <div className="flex items-center gap-1">
+                  {Array.from({ length: totalPages }, (_, i) => i + 1)
+                    .filter((p) => {
+                      return (
+                        p === 1 ||
+                        p === totalPages ||
+                        Math.abs(p - safeCurrentPage) <= 1
+                      );
+                    })
+                    .reduce<(number | string)[]>((acc, p, idx, arr) => {
+                      if (idx > 0 && p - (arr[idx - 1] as number) > 1) {
+                        acc.push("...");
+                      }
+                      acc.push(p);
+                      return acc;
+                    }, [])
+                    .map((item, idx) =>
+                      typeof item === "string" ? (
+                        <span key={`ellipsis-${idx}`} className="px-1 text-slate-400">
+                          ...
+                        </span>
+                      ) : (
+                        <button
+                          key={item}
+                          type="button"
+                          onClick={() => setCurrentPage(item)}
+                          className={`w-8 h-8 rounded-lg text-xs font-semibold transition-all cursor-pointer ${safeCurrentPage === item
+                              ? "bg-[#0062FF] text-white shadow-xs shadow-blue-500/30"
+                              : "bg-white hover:bg-slate-100 text-slate-700 border border-slate-200"
+                            }`}
+                        >
+                          {item}
+                        </button>
+                      )
+                    )}
+                </div>
+
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={safeCurrentPage >= totalPages}
+                  className="h-8 px-2.5 rounded-lg text-xs font-medium border-slate-200 text-slate-600 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-white"
+                >
+                  <span>ถัดไป</span>
+                  <ChevronRight className="w-3.5 h-3.5 ml-0.5" />
+                </Button>
+              </div>
+            )}
+          </div>
+        )}
       </Card>
 
       {/* ========================================================================= */}
@@ -983,14 +983,15 @@ export default function AdminProductsPage() {
         onClose={() => setIsModalOpen(false)}
         title={editingId ? "แก้ไขข้อมูลสินค้า" : "เพิ่มสินค้าใหม่ (Master Product)"}
         description="กรอกข้อมูลสเปก รูปภาพ และลิงก์ดาวน์โหลด Datasheet / TOR"
-        maxWidth="3xl"
+        maxWidth="5xl"
         footer={
           <>
             <Button
               type="button"
               variant="outline"
               onClick={() => setIsModalOpen(false)}
-              className="rounded-full px-5 text-xs font-medium cursor-pointer"
+              disabled={isSaving}
+              className="rounded-xl px-5 h-10 text-sm font-medium cursor-pointer"
             >
               ยกเลิก
             </Button>
@@ -998,11 +999,11 @@ export default function AdminProductsPage() {
               type="button"
               onClick={handleSubmit}
               disabled={isSaving}
-              className="rounded-full px-6 text-xs font-semibold shadow-md shadow-blue-500/25 cursor-pointer"
+              className="rounded-xl bg-blue-600 hover:bg-blue-700 text-white px-6 h-10 text-sm font-semibold shadow-sm shadow-blue-600/20 cursor-pointer flex items-center gap-2"
             >
               {isSaving ? (
                 <>
-                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  <Loader2 className="w-4 h-4 animate-spin" />
                   <span>กำลังบันทึก...</span>
                 </>
               ) : (
@@ -1701,6 +1702,18 @@ export default function AdminProductsPage() {
         onClose={() => setStatusModal((prev) => ({ ...prev, isOpen: false }))}
         title={statusModal.type === "success" ? "แจ้งเตือนการทำรายการ" : "เกิดข้อผิดพลาด"}
         maxWidth="sm"
+        footer={
+          <Button
+            type="button"
+            onClick={() => setStatusModal((prev) => ({ ...prev, isOpen: false }))}
+            className={`w-full h-10 rounded-xl text-white text-sm font-semibold cursor-pointer ${statusModal.type === "success"
+                ? "bg-emerald-600 hover:bg-emerald-700"
+                : "bg-slate-800 hover:bg-slate-900"
+              }`}
+          >
+            ตกลง
+          </Button>
+        }
       >
         <div className="py-2 text-center space-y-4">
           <div className="flex justify-center">
@@ -1726,21 +1739,24 @@ export default function AdminProductsPage() {
               {statusModal.message}
             </p>
           </div>
-
-          <div className="pt-2">
-            <Button
-              type="button"
-              onClick={() => setStatusModal((prev) => ({ ...prev, isOpen: false }))}
-              className={`w-full py-2.5 rounded-xl text-white text-xs font-semibold cursor-pointer ${statusModal.type === "success"
-                  ? "bg-emerald-600 hover:bg-emerald-700"
-                  : "bg-slate-800 hover:bg-slate-900"
-                }`}
-            >
-              ตกลง
-            </Button>
-          </div>
         </div>
       </Modal>
+
+      {/* Delete Confirmation Dialog */}
+      <ConfirmDialog
+        isOpen={!!deleteTarget}
+        onClose={() => {
+          if (!isDeleting) setDeleteTarget(null);
+        }}
+        onConfirm={handleConfirmDelete}
+        title="ยืนยันการลบสินค้า"
+        itemName={deleteTarget?.name}
+        description="คุณแน่ใจหรือไม่ว่าต้องการลบสินค้านี้ออกจากระบบ? การดำเนินการนี้ไม่สามารถย้อนกลับได้"
+        confirmText="ยืนยันการลบ"
+        cancelText="ยกเลิก"
+        isLoading={isDeleting}
+        variant="danger"
+      />
     </div>
   );
 }

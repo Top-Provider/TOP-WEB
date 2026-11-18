@@ -22,7 +22,11 @@ import {
   X,
   Sparkles,
   ArrowUpRight,
+  Loader2,
 } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
+import { MedicalCrossLoader } from "@/components/ui/medical-cross-loader";
 import type { ProductItemResponse } from "@/app/api/products/route";
 
 interface ProductCatalogViewProps {
@@ -235,18 +239,18 @@ export function ProductCatalogView({
             <div className="flex items-center gap-2.5">
               {/* Search Box */}
               <div className="relative flex-1 md:w-64">
-                <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                <input
+                <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 z-10" />
+                <Input
                   type="text"
                   placeholder="ค้นหารุ่น, SKU..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="w-full pl-9 pr-8 py-2 text-xs bg-slate-50 border border-slate-200 rounded-full focus:outline-none focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-500/10 transition-all"
+                  className="h-9 pl-9 pr-8 text-xs bg-slate-50 rounded-full"
                 />
                 {search && (
                   <button
                     onClick={() => setSearch("")}
-                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 z-10"
                   >
                     <X className="w-3.5 h-3.5" />
                   </button>
@@ -255,18 +259,16 @@ export function ProductCatalogView({
 
               {/* Brand Selector */}
               {availableBrands.length > 0 && (
-                <select
+                <Select
                   value={selectedBrand}
-                  onChange={(e) => setSelectedBrand(e.target.value)}
-                  className="px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-full text-slate-700 focus:outline-none focus:border-blue-500 font-medium cursor-pointer"
-                >
-                  <option value="all">ทุกแบรนด์</option>
-                  {availableBrands.map((b) => (
-                    <option key={b} value={b}>
-                      {b}
-                    </option>
-                  ))}
-                </select>
+                  onChange={setSelectedBrand}
+                  options={[
+                    { value: "all", label: "ทุกแบรนด์" },
+                    ...availableBrands.map((b) => ({ value: b, label: b })),
+                  ]}
+                  className="w-40"
+                  triggerClassName="h-9 text-xs bg-slate-50 rounded-full"
+                />
               )}
             </div>
           </div>
@@ -313,9 +315,8 @@ export function ProductCatalogView({
 
           {/* Product Grid */}
           {loading ? (
-            <div className="py-24 text-center">
-              <div className="inline-block w-8 h-8 border-3 border-blue-600 border-t-transparent rounded-full animate-spin mb-4" />
-              <p className="text-xs text-slate-500 font-medium">กำลังโหลดข้อมูลสินค้า...</p>
+            <div className="min-h-[460px] rounded-3xl bg-white border border-slate-200/90 shadow-sm p-8 flex flex-col items-center justify-center text-center my-6">
+              <MedicalCrossLoader size="md" />
             </div>
           ) : filteredProducts.length === 0 ? (
             <div className="py-20 text-center bg-white rounded-3xl border border-slate-200/80 p-8 max-w-md mx-auto">
@@ -362,40 +363,36 @@ export function ProductCatalogView({
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="bg-white rounded-3xl w-full max-w-4xl lg:max-w-5xl overflow-hidden shadow-2xl border border-slate-200 my-auto animate-in fade-in zoom-in-95 duration-200"
+            className="bg-white rounded-3xl w-full max-w-5xl lg:max-w-6xl xl:max-w-7xl overflow-hidden shadow-2xl border border-slate-200 my-auto animate-in fade-in zoom-in-95 duration-200"
           >
             {/* Modal Header */}
-            <div className="px-6 py-4 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <span className="text-xs sm:text-sm font-bold px-3 py-1 rounded-full bg-slate-900 text-white uppercase tracking-wider">
-                  {detailProduct.brand && detailProduct.brand !== "-"
-                    ? detailProduct.brand
-                    : "TOP PROVIDER"}
-                </span>
-                {detailProduct.sku &&
-                  detailProduct.sku.trim() !== "" &&
-                  detailProduct.sku.trim() !== "-" && (
-                    <span className="text-xs sm:text-sm text-slate-600 font-mono font-medium">
-                      SKU: {detailProduct.sku}
-                    </span>
-                  )}
+            <div className="px-6 sm:px-8 py-4 sm:py-5 bg-slate-50 border-b border-slate-100 flex items-center justify-between gap-4">
+              <div className="flex flex-wrap items-center gap-2.5 sm:gap-3 min-w-0 pr-2">
+                <h3 className="text-lg sm:text-xl font-bold text-slate-900 truncate">
+                  {detailProduct.name}
+                </h3>
+                {detailProduct.sub_category && (
+                  <span className="text-xs sm:text-sm font-semibold text-blue-700 bg-blue-50 px-3 py-1 rounded-full border border-blue-100 shrink-0">
+                    {detailProduct.sub_category}
+                  </span>
+                )}
               </div>
               <button
                 type="button"
                 onClick={() => setDetailProduct(null)}
-                className="w-9 h-9 rounded-full bg-slate-200/70 hover:bg-slate-300 text-slate-600 flex items-center justify-center transition-colors cursor-pointer"
+                className="w-9 h-9 rounded-full bg-slate-200/70 hover:bg-slate-300 text-slate-600 flex items-center justify-center transition-colors cursor-pointer shrink-0"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
             {/* Modal Content: 2 Columns */}
-            <div className="p-6 md:p-8 max-h-[78vh] overflow-y-auto">
-              <div className="grid grid-cols-1 md:grid-cols-12 gap-6 lg:gap-8 items-start">
+            <div className="p-6 md:p-8 lg:p-10 max-h-[85vh] overflow-y-auto">
+              <div className="grid grid-cols-1 md:grid-cols-12 gap-8 lg:gap-10 items-start">
                 
                 {/* ฝั่งซ้าย: รูปสินค้าหลัก และเอกสารดาวน์โหลด */}
-                <div className="md:col-span-5 space-y-4 md:sticky md:top-0">
-                  <div className="w-full aspect-square max-h-[380px] rounded-2xl bg-white border border-slate-200/90 flex items-center justify-center p-6 shadow-xs">
+                <div className="md:col-span-6 lg:col-span-5 xl:col-span-5 space-y-5 md:sticky md:top-0">
+                  <div className="w-full aspect-square max-h-[460px] lg:max-h-[520px] rounded-3xl bg-slate-50/60 border border-slate-200/90 flex items-center justify-center p-6 sm:p-8 lg:p-10 shadow-xs">
                     <img
                       src={
                         detailProduct.cover_image_url &&
@@ -405,7 +402,7 @@ export function ProductCatalogView({
                           : "/images/logo.png"
                       }
                       alt={detailProduct.name}
-                      className="max-h-full max-w-full object-contain"
+                      className="max-h-full max-w-full object-contain transition-transform duration-300 hover:scale-105"
                       onError={(e) => {
                         (e.currentTarget as HTMLImageElement).src = "/images/logo.png";
                       }}
@@ -414,11 +411,11 @@ export function ProductCatalogView({
 
                   {/* Gallery Thumbnails (ถ้ามี) */}
                   {detailProduct.gallery_images && detailProduct.gallery_images.length > 0 && (
-                    <div className="flex gap-2.5 overflow-x-auto pb-1">
+                    <div className="flex gap-3 overflow-x-auto pb-1">
                       {detailProduct.gallery_images.map((gImg, gIdx) => (
                         <div
                           key={gIdx}
-                          className="w-16 h-16 rounded-xl border border-slate-200 bg-white p-1 shrink-0 overflow-hidden"
+                          className="w-20 h-20 rounded-2xl border border-slate-200 bg-white p-1.5 shrink-0 overflow-hidden shadow-xs hover:border-blue-400 transition-colors"
                         >
                           <img
                             src={gImg}
@@ -466,28 +463,22 @@ export function ProductCatalogView({
                 </div>
 
                 {/* ฝั่งขวา: รายละเอียด สเปก และสินค้าที่ใช้ร่วมกัน */}
-                <div className="md:col-span-7 space-y-6">
-                  {/* Title & Description */}
-                  <div>
-                    <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 leading-snug tracking-tight">
-                      {detailProduct.name}
-                    </h2>
-                    {detailProduct.sub_category && (
-                      <p className="text-sm sm:text-base text-blue-600 font-semibold mt-1.5">
-                        {detailProduct.sub_category}
-                      </p>
-                    )}
-                    {detailProduct.short_description && (
-                      <p className="text-sm sm:text-base text-slate-600 mt-2.5 leading-relaxed">
-                        {detailProduct.short_description}
-                      </p>
-                    )}
-                    {detailProduct.full_description && (
-                      <p className="text-sm sm:text-base text-slate-500 mt-2.5 leading-relaxed">
-                        {detailProduct.full_description}
-                      </p>
-                    )}
-                  </div>
+                <div className="md:col-span-6 lg:col-span-7 xl:col-span-7 space-y-6">
+                  {/* Descriptions */}
+                  {(detailProduct.short_description || detailProduct.full_description) && (
+                    <div className="space-y-2">
+                      {detailProduct.short_description && (
+                        <p className="text-sm sm:text-base text-slate-600 leading-relaxed">
+                          {detailProduct.short_description}
+                        </p>
+                      )}
+                      {detailProduct.full_description && (
+                        <p className="text-sm sm:text-base text-slate-500 leading-relaxed">
+                          {detailProduct.full_description}
+                        </p>
+                      )}
+                    </div>
+                  )}
 
                   {/* Specifications */}
                   {detailProduct.specifications && detailProduct.specifications.length > 0 && (

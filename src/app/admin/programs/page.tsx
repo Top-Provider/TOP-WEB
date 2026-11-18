@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { Modal } from "@/components/ui/modal";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -11,9 +12,49 @@ import { Select } from "@/components/ui/select";
 import { ImageUpload } from "@/components/ui/image-upload";
 import { VideoUpload } from "@/components/ui/video-upload";
 import { toast } from "@/components/ui/toast";
+import { AdminLoadingState } from "@/components/admin/admin-loading-state";
 import { saveRecord, fetchRecords } from "@/lib/crud";
-import { DEFAULT_PROGRAMS } from "@/components/software-solution-view";
 import { Plus, Search, Video, Layers, Edit, Trash2, Loader2, Sparkles, PlaySquare, CheckCircle2, Award, DownloadCloud } from "lucide-react";
+
+const SAMPLE_TEMPLATES = [
+  {
+    id: "vitanix-claim",
+    name: "Vitanix Claim",
+    category: "Hospital Claim",
+    subCategory: "Healthcare Solution",
+    shortDesc: "ระบบบริหารจัดการและเบิกจ่ายค่ารักษาพยาบาลอัตโนมัติ เชื่อมต่อข้อมูลสิทธิการรักษาและประกันภัยครบวงจร ช่วยลดขั้นตอนการตรวจสอบเอกสารและเพิ่มความแม่นยำในการเคลม",
+    fullDesc: "Vitanix Claim ระบบบริหารจัดการและเบิกจ่ายค่ารักษาพยาบาลอัจฉริยะสำหรับโรงพยาบาลและสถานพยาบาลระดับองค์กร ช่วยให้การเคลมสิทธิการรักษาพยาบาล (e-Claim, ประกันสุขภาพ, สิทธิราชการ) เป็นไปอย่างถูกต้อง แม่นยำ และรวดเร็ว พร้อมระบบ Pre-audit ตรวจสอบความถูกต้องของเวชระเบียนและเอกสารก่อนส่งเคลม ลดอัตราการถูกปฏิเสธเคลมได้อย่างมีนัยสำคัญ",
+    coverImage: "/images/vitanix-dashboard-hd.png",
+    videoUrl: "https://www.youtube.com/embed/TNXBrlFZ5ps?autoplay=1&mute=1&playsinline=1&rel=0&start=1",
+    features: [
+      "Real-time Validation for OP-CR, PPFS & Fund Rules",
+      "Seamless HIS & Insurer Policy Integration",
+      "Automated ICD-10 & ICD-9 Coding Check",
+      "Business Intelligence & Denial Analytics",
+    ],
+    metricLabel: "ความแม่นยำในการส่งข้อมูลเคลม",
+    metricValue: "99.8%",
+    feature1Badge: "PRE-AUDIT & VALIDATION SYSTEM",
+    feature1Title: "Automated Healthcare Claim Validation & Pre-Audit System",
+    feature1Desc: "ระบบช่วยตรวจสอบความถูกต้องของเวชระเบียนและเงื่อนไขกองทุนสุขภาพภาครัฐและเอกชนล่วงหน้า (Pre-audit) ตรวจสอบความถูกต้องของรหัสโรค ICD-10, ICD-9-CM และสิทธิการรักษาแบบอัตโนมัติก่อนส่งเคลม",
+    feature1Bullets: [
+      "Real-time Validation for OP-CR, PPFS & Fund Rules",
+      "Seamless HIS & Insurer Policy Integration",
+      "Automated ICD-10 & ICD-9 Coding Check",
+    ],
+    feature1Image: "/images/vitanix-dashboard-hd.png",
+    feature2Badge: "HOSPITAL FINANCIAL BENEFITS",
+    feature2Title: "Why Hospital Financial Teams Choose Vitanix Claim?",
+    feature2Desc: "ลดความเสี่ยงในการสูญเสียรายได้จากการเบิกจ่ายไม่ทันเวลาหรือถูกตัดสิทธิ์ ช่วยให้ฝ่ายการเงินและเวชระเบียนมองเห็นสถานะการเคลมและลูกหนี้ค่ารักษาพยาบาลแบบ Real-time",
+    feature2Highlights: [
+      { title: "ลดความผิดพลาดก่อนส่งเบิก", desc: "ตัดปัญหาการถูกปฏิเสธเคลมหรือถูกตัดสิทธิ์ซ้ำซ้อนด้วยกฎ Pre-Audit" },
+      { title: "อัตราความสำเร็จ Pre-Audit สูง", desc: "เพิ่มโอกาสรับเงินชดเชยค่ารักษาพยาบาลเต็มจำนวนอย่างแม่นยำ" },
+      { title: "ลดรอบระยะเวลาการเบิกจ่าย", desc: "เพิ่มกระแสเงินสดหมุนเวียน (Cash Flow) ให้โรงพยาบาลได้รวดเร็วขึ้น" },
+    ],
+    feature2Tags: ["Fund Management", "E-Claim Validation", "Real-Time Analytics"],
+    feature2Image: "/images/vitanix-dashboard-hd.png",
+  },
+];
 
 interface ProgramFormState {
   name: string;
@@ -144,6 +185,10 @@ export default function AdminProgramsPage() {
   const [solutionGroupOptions, setSolutionGroupOptions] = useState(SOLUTION_GROUP_OPTIONS);
   const [programCategoryOptions, setProgramCategoryOptions] = useState(PROGRAM_CATEGORY_OPTIONS);
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+  const [deleteTarget, setDeleteTarget] = useState<{ id: number; name: string } | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [isSyncConfirmOpen, setIsSyncConfirmOpen] = useState(false);
+  const [isSyncing, setIsSyncing] = useState(false);
 
   const loadPrograms = async () => {
     try {
@@ -226,71 +271,18 @@ export default function AdminProgramsPage() {
           })
         );
       } else {
-        // Fallback to DEFAULT_PROGRAMS so the admin page displays all initial programs (e.g. Vitanix Claim)
-        setPrograms(
-          DEFAULT_PROGRAMS.map((p, idx) => ({
-            id: idx + 1,
-            name: p.name,
-            category: p.category,
-            subCategory: p.subCategory,
-            shortDesc: p.shortDesc,
-            fullDesc: p.fullDesc,
-            videoUrl: p.videoUrl || "",
-            coverImage: p.coverImage || "/images/vitanix-claim.png",
-            keyFeatures: p.features?.join("\n") || defaultProgramState.key_features,
-            metricLabel: p.metrics?.[0]?.label || defaultProgramState.metric_label,
-            metricValue: p.metrics?.[0]?.value || defaultProgramState.metric_value,
-            isActive: true,
-            feature1Badge: p.feature1Badge || "",
-            feature1Title: p.feature1Title || "",
-            feature1Desc: p.feature1Desc || "",
-            feature1Bullets: p.feature1Bullets?.join("\n") || "",
-            feature1Image: p.feature1Image || "",
-            feature2Badge: p.feature2Badge || "",
-            feature2Title: p.feature2Title || "",
-            feature2Desc: p.feature2Desc || "",
-            feature2Highlights: p.feature2Highlights?.map((h) => `${h.title} | ${h.desc}`).join("\n") || "",
-            feature2Tags: p.feature2Tags?.join(", ") || "",
-            feature2Image: p.feature2Image || "",
-          }))
-        );
+        setPrograms([]);
       }
     } catch (err) {
-      console.log("Could not load programs from API, using default programs:", err);
-      setPrograms(
-        DEFAULT_PROGRAMS.map((p, idx) => ({
-          id: idx + 1,
-          name: p.name,
-          category: p.category,
-          subCategory: p.subCategory,
-          shortDesc: p.shortDesc,
-          fullDesc: p.fullDesc,
-          videoUrl: p.videoUrl || "",
-          coverImage: p.coverImage || "/images/vitanix-claim.png",
-          keyFeatures: p.features?.join("\n") || defaultProgramState.key_features,
-          metricLabel: p.metrics?.[0]?.label || defaultProgramState.metric_label,
-          metricValue: p.metrics?.[0]?.value || defaultProgramState.metric_value,
-          isActive: true,
-          feature1Badge: p.feature1Badge || "",
-          feature1Title: p.feature1Title || "",
-          feature1Desc: p.feature1Desc || "",
-          feature1Bullets: p.feature1Bullets?.join("\n") || "",
-          feature1Image: p.feature1Image || "",
-          feature2Badge: p.feature2Badge || "",
-          feature2Title: p.feature2Title || "",
-          feature2Desc: p.feature2Desc || "",
-          feature2Highlights: p.feature2Highlights?.map((h) => `${h.title} | ${h.desc}`).join("\n") || "",
-          feature2Tags: p.feature2Tags?.join(", ") || "",
-          feature2Image: p.feature2Image || "",
-        }))
-      );
+      console.log("Could not load programs from API:", err);
+      setPrograms([]);
     } finally {
       setLoading(false);
     }
   };
 
   const handleLoadDefaultTemplate = (programKey: string = "vitanix-claim") => {
-    const p = DEFAULT_PROGRAMS.find((item) => item.id === programKey) || DEFAULT_PROGRAMS[0];
+    const p = SAMPLE_TEMPLATES.find((item) => item.id === programKey) || SAMPLE_TEMPLATES[0];
     if (!p) return;
     setFormData({
       name: p.name,
@@ -301,8 +293,8 @@ export default function AdminProgramsPage() {
       video_url: p.videoUrl || "",
       cover_image_url: p.coverImage || "/images/vitanix-claim.png",
       key_features: p.features?.join("\n") || "",
-      metric_label: p.metrics?.[0]?.label || "ความแม่นยำในการส่งข้อมูลเคลม",
-      metric_value: p.metrics?.[0]?.value || "99.8%",
+      metric_label: p.metricLabel || "ความแม่นยำในการส่งข้อมูลเคลม",
+      metric_value: p.metricValue || "99.8%",
       is_active: true,
       feature_1_badge: p.feature1Badge || "",
       feature_1_title: p.feature1Title || "",
@@ -318,11 +310,10 @@ export default function AdminProgramsPage() {
     });
   };
 
-  const handleSyncDefaultsToDb = async () => {
-    if (!confirm("คุณต้องการนำเข้าข้อมูลโปรแกรมเริ่มต้นทั้งหมด (Vitanix Claim, HIS ฯลฯ) เข้าสู่ฐานข้อมูล Supabase ใช่หรือไม่?")) return;
+  const handleExecuteSyncDefaults = async () => {
     try {
-      setIsSaving(true);
-      for (const p of DEFAULT_PROGRAMS) {
+      setIsSyncing(true);
+      for (const p of SAMPLE_TEMPLATES) {
         await saveRecord({
           table: "TB_PRODUCT_SOFTWARE",
           action: "insert",
@@ -337,8 +328,8 @@ export default function AdminProgramsPage() {
             video_url: p.videoUrl || "",
             cover_image_url: p.coverImage || "/images/vitanix-claim.png",
             key_features: p.features || [],
-            metric_label: p.metrics?.[0]?.label || "ความแม่นยำในการส่งข้อมูลเคลม",
-            metric_value: p.metrics?.[0]?.value || "99.8%",
+            metric_label: p.metricLabel || "ความแม่นยำในการส่งข้อมูลเคลม",
+            metric_value: p.metricValue || "99.8%",
             is_active: true,
             feature_1_badge: p.feature1Badge || "",
             feature_1_title: p.feature1Title || "",
@@ -355,11 +346,12 @@ export default function AdminProgramsPage() {
         });
       }
       toast.success("นำเข้าข้อมูลโปรแกรมเริ่มต้นเข้าฐานข้อมูล Supabase เรียบร้อยแล้ว!");
+      setIsSyncConfirmOpen(false);
       await loadPrograms();
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : String(err), "เกิดข้อผิดพลาดในการนำเข้า");
     } finally {
-      setIsSaving(false);
+      setIsSyncing(false);
     }
   };
 
@@ -448,7 +440,6 @@ export default function AdminProgramsPage() {
 
   const handleSubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-    console.log("[handleSubmit Programs] Submitting formData:", formData);
 
     if (!validateProgramForm()) {
       return;
@@ -512,20 +503,24 @@ export default function AdminProgramsPage() {
     }
   };
 
-  const handleDelete = async (id: number, name: string) => {
-    if (!confirm(`ยืนยันการลบโปรแกรม "${name}" ?`)) return;
+  const handleConfirmDelete = async () => {
+    if (!deleteTarget) return;
 
     try {
+      setIsDeleting(true);
       await saveRecord({
         table: "TB_PRODUCT_SOFTWARE",
         action: "delete",
-        id,
+        id: deleteTarget.id,
       });
       await loadPrograms();
-      toast.success(`ลบโปรแกรม "${name}" เรียบร้อยแล้ว`, "สำเร็จ");
+      toast.success(`ลบโปรแกรม "${deleteTarget.name}" เรียบร้อยแล้ว`, "สำเร็จ");
+      setDeleteTarget(null);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
       toast.error(msg, "ลบข้อมูลไม่สำเร็จ");
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -568,8 +563,8 @@ export default function AdminProgramsPage() {
           <Button
             type="button"
             variant="outline"
-            onClick={handleSyncDefaultsToDb}
-            disabled={isSaving}
+            onClick={() => setIsSyncConfirmOpen(true)}
+            disabled={isSaving || isSyncing}
             className="rounded-full px-4 py-2.5 text-xs text-slate-700 border-slate-300 hover:bg-slate-50 cursor-pointer shadow-xs"
             title="นำเข้าข้อมูลโปรแกรมเริ่มต้นทั้งหมดเข้าฐานข้อมูล Supabase"
           >
@@ -578,9 +573,8 @@ export default function AdminProgramsPage() {
           </Button>
 
           <Button
-            variant="emerald"
             onClick={handleOpenAdd}
-            className="rounded-full px-5 py-2.5 shadow-md shadow-emerald-500/20 cursor-pointer"
+            className="rounded-xl bg-blue-600 hover:bg-blue-700 text-white h-10 px-5 text-sm font-semibold shadow-sm shadow-blue-600/20 gap-2 cursor-pointer"
           >
             <Plus className="w-4 h-4" />
             <span>เพิ่มข้อมูล</span>
@@ -622,7 +616,7 @@ export default function AdminProgramsPage() {
       {/* Programs List Table */}
       <Card className="rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
+          <table className="w-full min-w-[720px] text-left text-xs">
             <thead className="bg-slate-50 border-b border-slate-200 text-slate-600 font-semibold uppercase tracking-wider text-[11px]">
               <tr>
                 <th className="py-3.5 px-4">รูปภาพ</th>
@@ -630,17 +624,14 @@ export default function AdminProgramsPage() {
                 <th className="py-3.5 px-4">หมวดหมู่</th>
                 <th className="py-3.5 px-4">วิดีโอสาธิต (Video)</th>
                 <th className="py-3.5 px-4">สถานะ</th>
-                <th className="py-3.5 px-4 text-right">การจัดการ</th>
+                <th className="py-3.5 px-4 text-right sticky right-0 z-10 bg-slate-50 border-l border-slate-200/70 whitespace-nowrap">การจัดการ</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 text-slate-700">
               {loading ? (
                 <tr>
-                  <td colSpan={6} className="py-12 text-center text-slate-400">
-                    <div className="flex items-center justify-center gap-2 text-xs font-medium">
-                      <Loader2 className="w-4 h-4 animate-spin text-emerald-600" />
-                      <span>กำลังโหลดข้อมูลโปรแกรมจากฐานข้อมูล...</span>
-                    </div>
+                  <td colSpan={6}>
+                    <AdminLoadingState label="กำลังโหลดข้อมูลโปรแกรม..." />
                   </td>
                 </tr>
               ) : filtered.length === 0 ? (
@@ -659,7 +650,7 @@ export default function AdminProgramsPage() {
                           alt={item.name}
                           fill
                           unoptimized
-                          className="object-cover"
+                          className="object-cover object-top"
                         />
                       </div>
                     </td>
@@ -689,12 +680,13 @@ export default function AdminProgramsPage() {
                         เปิดแสดงผล
                       </span>
                     </td>
-                    <td className="py-3 px-4 text-right">
-                      <div className="inline-flex items-center gap-1">
+                    <td className="py-3 px-4 text-right sticky right-0 z-10 bg-white border-l border-slate-100">
+                      <div className="inline-flex items-center gap-1.5">
                         <Button
                           type="button"
                           variant="ghost"
                           size="icon-sm"
+                          className="bg-amber-50 text-amber-600 hover:bg-amber-100 hover:text-amber-700 border border-amber-200/70 rounded-lg"
                           onClick={() => {
                             setEditingId(item.id);
                             setFormData({
@@ -725,14 +717,14 @@ export default function AdminProgramsPage() {
                           }}
                           title="แก้ไข"
                         >
-                          <Edit className="w-4 h-4 text-slate-500 hover:text-emerald-600" />
+                          <Edit className="w-4 h-4" />
                         </Button>
                         <Button
                           type="button"
                           variant="ghost"
                           size="icon-sm"
-                          onClick={() => handleDelete(item.id, item.name)}
-                          className="hover:bg-rose-50 text-slate-500 hover:text-rose-600"
+                          onClick={() => setDeleteTarget({ id: item.id, name: item.name })}
+                          className="bg-rose-50 text-rose-600 hover:bg-rose-100 hover:text-rose-700 border border-rose-200/70 rounded-lg"
                           title="ลบ"
                         >
                           <Trash2 className="w-4 h-4" />
@@ -754,9 +746,37 @@ export default function AdminProgramsPage() {
         onClose={() => setIsModalOpen(false)}
         title={editingId ? "แก้ไขโปรแกรมซอฟต์แวร์" : "เพิ่มโปรแกรมใหม่ (Product Program)"}
         description="กรอกข้อความอธิบาย (Text), รูปภาพหน้าจอ, ลิงก์คลิปวิดีโอ (YouTube/MP4)"
-        maxWidth="3xl"
+        maxWidth="5xl"
+        footer={
+          <>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setIsModalOpen(false)}
+              disabled={isSaving}
+              className="rounded-xl px-5 h-10 text-sm font-medium cursor-pointer"
+            >
+              ยกเลิก
+            </Button>
+            <Button
+              type="submit"
+              form="program-form"
+              disabled={isSaving}
+              className="rounded-xl bg-blue-600 hover:bg-blue-700 text-white px-6 h-10 text-sm font-semibold shadow-sm shadow-blue-600/20 cursor-pointer flex items-center gap-2"
+            >
+              {isSaving ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span>กำลังบันทึก...</span>
+                </>
+              ) : (
+                <span>บันทึกข้อมูลโปรแกรม</span>
+              )}
+            </Button>
+          </>
+        }
       >
-        <form onSubmit={handleSubmit} noValidate className="space-y-6">
+        <form id="program-form" onSubmit={handleSubmit} noValidate className="space-y-6">
           {/* Quick Template Selector */}
           {!editingId && (
             <div className="p-3.5 bg-blue-50/70 border border-blue-200/80 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -889,7 +909,7 @@ export default function AdminProgramsPage() {
 
             <div>
               <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                ข้อความอธิบายแบบเต็ม (Full Description - แสดงใน Popup)
+                ข้อความอธิบายแบบเต็ม (Full Description)
               </label>
               <Textarea
                 rows={3}
@@ -1128,36 +1148,39 @@ export default function AdminProgramsPage() {
               description="ภาพหน้าจอแดชบอร์ดสถิติ กราฟ หรือการรายงานผลของระบบ"
             />
           </div>
-
-          {/* ปุ่มบันทึก */}
-          <div className="pt-4 border-t border-slate-100 flex items-center justify-end gap-3">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setIsModalOpen(false)}
-              className="rounded-full px-5 text-xs font-medium"
-            >
-              ยกเลิก
-            </Button>
-            <Button
-              type="submit"
-              variant="emerald"
-              onClick={handleSubmit}
-              disabled={isSaving}
-              className="rounded-full px-6 text-xs font-semibold shadow-md shadow-emerald-500/25"
-            >
-              {isSaving ? (
-                <>
-                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                  <span>กำลังบันทึก...</span>
-                </>
-              ) : (
-                <span>บันทึกข้อมูลโปรแกรม</span>
-              )}
-            </Button>
-          </div>
         </form>
       </Modal>
+
+      {/* Delete Confirmation Dialog */}
+      <ConfirmDialog
+        isOpen={!!deleteTarget}
+        onClose={() => {
+          if (!isDeleting) setDeleteTarget(null);
+        }}
+        onConfirm={handleConfirmDelete}
+        title="ยืนยันการลบโปรแกรม"
+        itemName={deleteTarget?.name}
+        description="คุณแน่ใจหรือไม่ว่าต้องการลบโปรแกรมนี้ออกจากระบบ? การดำเนินการนี้ไม่สามารถย้อนกลับได้"
+        confirmText="ยืนยันการลบ"
+        cancelText="ยกเลิก"
+        isLoading={isDeleting}
+        variant="danger"
+      />
+
+      {/* Sync Defaults Confirmation Dialog */}
+      <ConfirmDialog
+        isOpen={isSyncConfirmOpen}
+        onClose={() => {
+          if (!isSyncing) setIsSyncConfirmOpen(false);
+        }}
+        onConfirm={handleExecuteSyncDefaults}
+        title="ยืนยันการนำเข้าข้อมูลเริ่มต้น (Sync DB)"
+        description="คุณต้องการนำเข้าข้อมูลโปรแกรมเริ่มต้นทั้งหมด (Vitanix Claim, HIS ฯลฯ) เข้าสู่ฐานข้อมูล Supabase ใช่หรือไม่?"
+        confirmText="ยืนยันการนำเข้า"
+        cancelText="ยกเลิก"
+        isLoading={isSyncing}
+        variant="info"
+      />
     </div>
   );
 }

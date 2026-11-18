@@ -1,17 +1,21 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ArrowUpRight, CheckCircle2, Play, Pause } from 'lucide-react';
+import { ArrowUpRight, CheckCircle2, Play, Pause, Package, Loader2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import type { Project } from '../types';
 import { ProjectModal } from './project-modal';
-import { fetchRecords } from '@/lib/crud';
+import { fetchPublicRecords } from '@/lib/crud';
+import { MedicalCrossLoader } from './ui/medical-cross-loader';
 
 interface StickyProjectSectionProps {
   onSelectProject?: (project: Project) => void;
+  initialCategories?: { id?: number; category_id: string; name: string }[];
   initialSoftwareRecords?: Record<string, unknown>[];
+  initialProducts?: Record<string, unknown>[];
+  initialSolutionTopics?: Record<string, unknown>[];
 }
 
 export interface SolutionCardItem {
@@ -21,6 +25,7 @@ export interface SolutionCardItem {
   urlPath: string;
   clientSubtitle: string;
   ctaText?: string;
+  ctaLink?: string;
   isProductPhoto?: boolean;
   project: Project;
 }
@@ -30,147 +35,25 @@ export const SOLUTION_TABS = [
   { id: 'hardware', label: 'Hardware Solution' },
   { id: 'software', label: 'Software Solution' },
   { id: 'network', label: 'Network Solution' },
-  { id: 'medical', label: 'Medical Equipment' },
-  { id: 'iot', label: 'Smart Solution (IoT)' },
 ] as const;
 
 export type TabId = typeof SOLUTION_TABS[number]['id'];
 
 const BASE_URL = '/';
 
-// Comprehensive Solution Cards with Sticky Stacked Scroll Behavior
-const ALL_SOLUTION_CARDS: SolutionCardItem[] = [
-  // =================== 1. SOFTWARE SOLUTION (Default Active Tab) ===================
-  {
-    id: 'software-vitanix-claim',
-    tabCategory: 'software',
-    counterText: '01 / 12',
-    urlPath: 'Topprovider.co.th / Vitanix Claim',
-    clientSubtitle: '2026 • Healthcare Management',
-    project: {
-      id: 'vitanix-claim',
-      name: 'Vitanix Claim',
-      client: 'Healthcare Management',
-      year: '2026',
-      category: 'Hospital Claim',
-      subCategory: 'Healthcare Solution',
-      shortDescription: 'ระบบบริหารจัดการและเบิกจ่ายค่ารักษาพยาบาลอัตโนมัติ เชื่อมต่อข้อมูลสิทธิการรักษาและประกันภัยแบบครบวงจร ช่วยลดขั้นตอนการตรวจสอบเอกสารและเพิ่มความแม่นยำในการเคลม',
-      fullDescription: 'Vitanix Claim ระบบบริหารจัดการและเบิกจ่ายค่ารักษาพยาบาลอัจฉริยะสำหรับโรงพยาบาลและสถานพยาบาลระดับองค์กร ช่วยให้การเคลมสิทธิการรักษาพยาบาล (e-Claim, ประกันสุขภาพ, สิทธิราชการ) เป็นไปอย่างถูกต้อง แม่นยำ และรวดเร็ว พร้อมระบบ Pre-audit ตรวจสอบความถูกต้องของเวชระเบียนและเอกสารก่อนส่งเคลม ลดอัตราการถูกปฏิเสธเคลมได้อย่างมีนัยสำคัญ',
-      challenge: 'การเบิกจ่ายค่ารักษาพยาบาลมีความซับซ้อนในเรื่องสิทธิ เงื่อนไขกองทุน และรหัสโรค-หัตถการ ซึ่งหากส่งข้อมูลผิดพลาดจะทำให้การเบิกจ่ายล่าช้าหรือถูกตัดสิทธิ์',
-      solution: 'พัฒนาระบบตรวจสอบความถูกต้องล่วงหน้า (Pre-audit), ติดตามสถานะเคลมแบบ Real-time, และเชื่อมต่อระบบ e-Claim กองทุนสุขภาพภาครัฐและเอกชนแบบครบวงจร',
-      deliverables: [
-        'Real-time Claim Tracking',
-        'Pre-audit & Error Detection',
-        'Automated e-Claim Processing',
-        'Business Intelligence Dashboard',
-        'Fund & Rule Validation Engine',
-      ],
-      metrics: [
-        { label: 'ความแม่นยำในการส่งข้อมูลเคลม', value: '99.8%' },
-        { label: 'เจ้าหน้าที่จัดการงานเคลมได้เร็วขึ้น', value: '2.4x' },
-      ],
-      technologies: ['React', 'TypeScript', 'Tailwind CSS', 'PostgreSQL', 'HL7/FHIR'],
-      coverImage: `${BASE_URL}images/vitanix-claim.png`,
-      videoUrl: 'https://www.youtube.com/embed/TNXBrlFZ5ps?autoplay=1&mute=1&playsinline=1&rel=0&start=1',
-      galleryImages: [`${BASE_URL}images/vitanix-claim.png`],
-      testimonial: {
-        quote: 'ระบบ Vitanix Claim ช่วยให้งานเบิกจ่ายของโรงพยาบาลรวดเร็วขึ้นกว่าเดิมอย่างมาก ตรวจจับข้อผิดพลาดก่อนส่งเบิกได้แบบเรียลไทม์',
-        author: 'โรงพยาบาลพันธมิตร',
-        role: 'ผู้อำนวยการฝ่ายการเงินและบริหารเวชระเบียน',
-      },
-      featured: true,
-      accentColor: '#0066FF',
-    },
-  },
-  {
-    id: 'software-panacea-his',
-    tabCategory: 'software',
-    counterText: '02 / 12',
-    urlPath: 'Topprovider.co.th / Panacea Plus HIS',
-    clientSubtitle: '2026 • Core Hospital HIS',
-    project: {
-      id: 'panacea-his',
-      name: 'Panacea Plus Hospital Solution (HIS)',
-      client: 'Top Provider HIS Suite',
-      year: '2026',
-      category: 'Hospital HIS',
-      subCategory: 'Cloud Hospital SaaS',
-      shortDescription: 'โปรแกรมบริหารจัดการโรงพยาบาลครบวงจร Standard Module 30 ระบบ และ Special Module 34 ระบบ ครอบคลุมงานเวชระเบียน, ตรวจสอบสิทธิ, OPD, IPD, ห้องยา, แล็บ, เอกซเรย์ และการเงิน',
-      fullDescription: 'Panacea Plus Hospital Solution (PPHS) เป็นซอฟต์แวร์ระดับ Enterprise ออกแบบและพัฒนาในลักษณะ One System & Software as a Service (On Cloud) รองรับการเชื่อมต่อข้อมูลผู้ป่วย แผนกเวชระเบียน พยาธิวิทยา รังสีวิทยา และระบบบัญชีหลังบ้านอย่างสมบูรณ์แบบ',
-      challenge: 'ระบบโรงพยาบาลเดิมแยกส่วนฐานข้อมูล ทำให้การส่งต่อข้อมูลคนไข้ระหว่างแผนกเกิดความล่าช้าและผิดพลาด',
-      solution: 'รวมศูนย์ระบบทั้งหมดเป็น One System บนคลาวด์ พร้อมสถาปัตยกรรม High Availability และระบบความปลอดภัยระดับสากล',
-      deliverables: [
-        'Front & Back HIS Standard (30 Modules)',
-        'Special Clinical Modules (34 Modules)',
-        'Cloud-Native SaaS Infrastructure',
-        'HL7/FHIR Interoperability Standard',
-        'Integrated Lab & PACS Communication',
-      ],
-      metrics: [
-        { label: 'โมดูลระบบมาตรฐานครบวงจร', value: '30+ ระบบ' },
-        { label: 'เสถียรภาพระบบบนคลาวด์', value: '99.9%' },
-      ],
-      technologies: ['Cloud HIS', 'PostgreSQL', 'HL7/FHIR', 'Docker', 'Kubernetes'],
-      coverImage: `${BASE_URL}images/pphs-banner.jpg`,
-      galleryImages: [`${BASE_URL}images/pphs-banner.jpg`],
-      testimonial: {
-        quote: 'Panacea Plus ช่วยให้แพทย์และพยาบาลเข้าถึงประวัติคนไข้ได้ทันทีจากทุกแผนก ลดเวลาการทำงานและเพิ่มความปลอดภัยแก่ผู้ป่วย',
-        author: 'ผู้อำนวยการโรงพยาบาล',
-        role: 'ศูนย์การแพทย์เฉพาะทาง',
-      },
-      featured: true,
-      accentColor: '#0066FF',
-    },
-  },
-  {
-    id: 'software-emr-tablet',
-    tabCategory: 'software',
-    counterText: '03 / 12',
-    urlPath: 'Topprovider.co.th / Smart EMR & Mobile',
-    clientSubtitle: '2026 • Mobile Clinical & PHR',
-    project: {
-      id: 'emr-tablet',
-      name: 'Smart EMR Tablet & Mobile Patients (PHR/EHR)',
-      client: 'Clinical Mobile Systems',
-      year: '2026',
-      category: 'EMR Tablet',
-      subCategory: 'Mobile Health',
-      shortDescription: 'ระบบเวชระเบียนอิเล็กทรอนิกส์สำหรับแพทย์และพยาบาลบนแท็บเล็ต (EMR Tablet) พร้อมแอปพลิเคชันสำหรับผู้ป่วย ตรวจสอบผลตรวจ จองคิวออนไลน์ และบันทึกประวัติสุขภาพตนเอง',
-      fullDescription: 'โซลูชันเปลี่ยนผ่านโรงพยาบาลสู่ยุคไร้กระดาษ (Paperless Hospital) ด้วยระบบ EMR Tablet สำหรับการราวน์วอร์ดของแพทย์ (Doctor Inpatient Care, Nurse Note, Pre-admit) เชื่อมโยงกับแอปพลิเคชันมือถือสำหรับคนไข้ (PHR/EHR) ให้บริการจองคิวและแจ้งเตือนนัดหมายอัตโนมัติ',
-      challenge: 'การบันทึกประวัติคนไข้บนกระดาษทำให้ค้นหาข้อมูลช้า และคนไข้ต้องรอคอยคิวนานโดยไม่ทราบเวลาตรวจที่แน่นอน',
-      solution: 'นำระบบ EMR บนแท็บเล็ตมาใช้ในการตรวจรักษา พร้อมเปิดให้คนไข้ดูประวัติและรับการแจ้งเตือนคิวผ่าน Mobile App',
-      deliverables: [
-        'Doctor Inpatient Care & Round Ward UI',
-        'Nurse Note & Real-time Vitals Charting',
-        'Patient Mobile Application (PHR/EHR)',
-        'Smart Queue & Appointment Online',
-        'Digital Signature & Consent Forms',
-      ],
-      metrics: [
-        { label: 'ลดการใช้กระดาษในหอผู้ป่วย', value: '100%' },
-        { label: 'แพทย์บันทึกข้อมูลราวน์วอร์ดเร็วขึ้น', value: '70%' },
-      ],
-      technologies: ['React Native', 'TypeScript', 'Secure Biometrics', 'WebSockets'],
-      coverImage: `${BASE_URL}images/showcase-laptop.png`,
-      galleryImages: [`${BASE_URL}images/showcase-laptop.png`],
-      testimonial: {
-        quote: 'แพทย์ราวน์วอร์ดได้สะดวกรวดเร็วมากผ่านแท็บเล็ต ตรวจสอบผลแล็บและภาพเอกซเรย์ได้ทันทีข้างเตียงคนไข้',
-        author: 'หัวหน้าฝ่ายการพยาบาล',
-        role: 'โรงพยาบาลเอกชน',
-      },
-      featured: true,
-      accentColor: '#0066FF',
-    },
-  },
-
-  // =================== 2. PRINTING & SUPPLY SOLUTION (Matching Reference Image 2) ===================
+// =========================================================================
+// Overview โซลูชันหลักของแต่ละด้าน (Printing, Hardware, Network, Medical, IoT)
+// =========================================================================
+export const ALL_SOLUTION_CARDS: SolutionCardItem[] = [
+  // =================== 1. PRINTING & SUPPLY SOLUTION (Overview) ===================
   {
     id: 'printing-printer',
     tabCategory: 'printing',
     counterText: '01 / 02',
-    urlPath: 'Topprovider.co.th / Printing & Supply Solution',
-    clientSubtitle: '2026 • Printing & Supply Solution',
-    ctaText: 'ดูสินค้าทั้งหมด',
+    urlPath: 'Topprovider.co.th / Printer',
+    clientSubtitle: 'Printing & Supply Solution',
+    ctaText: 'ดูสินค้า Printer ทั้งหมด',
+    ctaLink: '/solutions/printing?type=printer',
     isProductPhoto: true,
     project: {
       id: 'printing-printer',
@@ -178,11 +61,15 @@ const ALL_SOLUTION_CARDS: SolutionCardItem[] = [
       client: 'Printing & Supply Solution',
       year: '2026',
       category: 'Printing',
-      subCategory: '',
-      shortDescription: 'ศูนย์รวมเครื่องพิมพ์คุณภาพสูงครบวงจรสำหรับองค์กรและสถานพยาบาล รองรับตั้งแต่การพิมพ์เอกสารสำนักงานความเร็วสูง ฉลากยา บาร์โค้ด ไปจนถึงสายรัดข้อมือผู้ป่วย (Wristband) ช่วยเพิ่มความแม่นยำในการระบุตัวตน ลดต้นทุนการพิมพ์ และรองรับการทำงานร่วมกับระบบสารสนเทศได้อย่างไร้รอยต่อ',
-      fullDescription: 'ศูนย์รวมเครื่องพิมพ์คุณภาพสูงครบวงจรสำหรับองค์กรและสถานพยาบาล รองรับตั้งแต่การพิมพ์เอกสารสำนักงานความเร็วสูง ฉลากยา บาร์โค้ด ไปจนถึงสายรัดข้อมือผู้ป่วย (Wristband) ช่วยเพิ่มความแม่นยำในการระบุตัวตน ลดต้นทุนการพิมพ์ และรองรับการทำงานร่วมกับระบบสารสนเทศได้อย่างไร้รอยต่อ พร้อมบริการติดตั้ง ดูแลบำรุงรักษา และจัดจำหน่ายวัสดุสิ้นเปลืองครบวงจร',
-      challenge: 'องค์กรและสถานพยาบาลต้องการเครื่องพิมพ์หลากหลายประเภท ทั้งงานพิมพ์เอกสารทั่วไป งานพิมพ์ฉลากยาความเร็วสูง และสายรัดข้อมือผู้ป่วยที่ต้องเชื่อมต่อกับระบบเครือข่ายโรงพยาบาลได้เสถียร',
-      solution: 'จัดหาโซลูชันเครื่องพิมพ์ครบทุกประเภท Laser, Inkjet, Thermal, Wristband, Dot Matrix พร้อมบริการติดตั้ง เชื่อมต่อกับระบบ HIS และดูแลแบบ Onsite ทั่วประเทศ',
+      subCategory: 'Printer Overview',
+      shortDescription:
+        'ศูนย์รวมเครื่องพิมพ์คุณภาพสูงครบวงจรสำหรับองค์กรและสถานพยาบาล รองรับตั้งแต่ Laser, Inkjet, Thermal, Wristband ไปจนถึง Dot Matrix',
+      fullDescription:
+        'ศูนย์รวมเครื่องพิมพ์คุณภาพสูงครบวงจรสำหรับองค์กรและสถานพยาบาล รองรับตั้งแต่ Laser, Inkjet, Thermal, Wristband ไปจนถึง Dot Matrix พร้อมบริการติดตั้ง ดูแลบำรุงรักษา และจัดจำหน่ายวัสดุสิ้นเปลืองครบวงจร',
+      challenge:
+        'องค์กรและสถานพยาบาลต้องการเครื่องพิมพ์หลากหลายประเภท ทั้งงานพิมพ์เอกสารทั่วไป งานพิมพ์ฉลากยาความเร็วสูง และสายรัดข้อมือผู้ป่วยที่ต้องเชื่อมต่อกับระบบเครือข่ายโรงพยาบาลได้เสถียร',
+      solution:
+        'จัดหาโซลูชันเครื่องพิมพ์ครบทุกประเภท Laser, Inkjet, Thermal, Wristband, Dot Matrix พร้อมบริการติดตั้ง เชื่อมต่อกับระบบ HIS และดูแลแบบ Onsite ทั่วประเทศ',
       deliverables: [
         'Laser & Inkjet Printer',
         'Thermal & Wristband Printer',
@@ -190,10 +77,11 @@ const ALL_SOLUTION_CARDS: SolutionCardItem[] = [
       ],
       metrics: [],
       technologies: ['Laser Printing', 'Thermal Wristband', 'High-Speed Inkjet', 'Network Fleet'],
-      coverImage: `${BASE_URL}images/printer-product.png`,
-      galleryImages: [`${BASE_URL}images/printer-product.png`],
+      coverImage: `${BASE_URL}images/printer-podium-showcase.jpg`,
+      galleryImages: [`${BASE_URL}images/printer-podium-showcase.jpg`],
       testimonial: {
-        quote: 'เครื่องพิมพ์ของ Top Provider มีครบทุกประเภทที่โรงพยาบาลต้องการ ใช้งานทนทานและมีทีมช่างคอยดูแลรวดเร็วมาก',
+        quote:
+          'เครื่องพิมพ์ของ Top Provider มีครบทุกประเภทที่โรงพยาบาลต้องการ ใช้งานทนทานและมีทีมช่างคอยดูแลรวดเร็วมาก',
         author: 'หัวหน้างานพัสดุและจัดซื้อ',
         role: 'โรงพยาบาลทั่วไป',
       },
@@ -207,18 +95,23 @@ const ALL_SOLUTION_CARDS: SolutionCardItem[] = [
     counterText: '02 / 02',
     urlPath: 'Topprovider.co.th / Printing & Supply Solution',
     clientSubtitle: '2026 • Printing & Supply Solution',
-    ctaText: 'ดูสินค้าทั้งหมด',
+    ctaText: 'ดูสินค้า Supply ทั้งหมด',
+    isProductPhoto: true,
     project: {
       id: 'printing-supplies',
       name: 'Supply',
       client: 'Printing & Supply Solution',
       year: '2026',
       category: 'Printing',
-      subCategory: 'Supply',
-      shortDescription: 'ศูนย์รวมวัสดุสิ้นเปลืองการพิมพ์ครบวงจร ทั้งตลับหมึกเลเซอร์ (Toner Cartridge), ผ้าหมึกพิมพ์ดอทเมทริกซ์ (Ribbon), หมึกอิงค์เจ็ท, ริบบอนบาร์โค้ด และสายรัดข้อมือผู้ป่วย (Wristband) คุณภาพสูง ได้มาตรฐาน ช่วยยืดอายุการใช้งานของเครื่องพิมพ์และให้งานพิมพ์คมชัดสม่ำเสมอ',
-      fullDescription: 'ศูนย์รวมวัสดุสิ้นเปลืองการพิมพ์ครบวงจร ทั้งตลับหมึกเลเซอร์ (Toner Cartridge), ผ้าหมึกพิมพ์ดอทเมทริกซ์ (Ribbon), หมึกอิงค์เจ็ท, ริบบอนบาร์โค้ด และสายรัดข้อมือผู้ป่วย (Wristband) คุณภาพสูง ได้มาตรฐาน ปลอดภัย มั่นใจได้ในความคมชัดและประสิทธิภาพสูงสุดในการทำงานร่วมกับเครื่องพิมพ์ทุกแบรนด์ชั้นนำ พร้อมบริการจัดส่งด่วนและการันตีคุณภาพทุกชิ้น',
-      challenge: 'การใช้วัสดุสิ้นเปลืองที่ไม่ได้มาตรฐานส่งผลให้เครื่องพิมพ์เสียหายง่าย และงานพิมพ์บาร์โค้ดเลือนราง สแกนติดยาก',
-      solution: 'จัดหาตลับหมึก ริบบอนบาร์โค้ด และวัสดุสิ้นเปลืองแท้และเกรดพรีเมียมที่ผ่านการทดสอบความเข้ากันได้ 100% พร้อมรับประกันเปลี่ยนคืนหากมีปัญหา',
+      subCategory: 'Supply Overview',
+      shortDescription:
+        'ศูนย์รวมวัสดุสิ้นเปลืองการพิมพ์ครบวงจร ทั้งตลับหมึกเลเซอร์ (Toner Cartridge), ผ้าหมึกพิมพ์ดอทเมทริกซ์ (Ribbon), หมึกอิงค์เจ็ท, ริบบอนบาร์โค้ด และสายรัดข้อมือผู้ป่วย (Wristband) คุณภาพสูง ได้มาตรฐาน ช่วยยืดอายุการใช้งานของเครื่องพิมพ์และให้งานพิมพ์คมชัดสม่ำเสมอ',
+      fullDescription:
+        'ศูนย์รวมวัสดุสิ้นเปลืองการพิมพ์ครบวงจร ทั้งตลับหมึกเลเซอร์ (Toner Cartridge), ผ้าหมึกพิมพ์ดอทเมทริกซ์ (Ribbon), หมึกอิงค์เจ็ท, ริบบอนบาร์โค้ด และสายรัดข้อมือผู้ป่วย (Wristband) คุณภาพสูง ได้มาตรฐาน ปลอดภัย มั่นใจได้ในความคมชัดและประสิทธิภาพสูงสุดในการทำงานร่วมกับเครื่องพิมพ์ทุกแบรนด์ชั้นนำ พร้อมบริการจัดส่งด่วนและการันตีคุณภาพทุกชิ้น',
+      challenge:
+        'การใช้วัสดุสิ้นเปลืองที่ไม่ได้มาตรฐานส่งผลให้เครื่องพิมพ์เสียหายง่าย และงานพิมพ์บาร์โค้ดเลือนราง สแกนติดยาก',
+      solution:
+        'จัดหาตลับหมึก ริบบอนบาร์โค้ด และวัสดุสิ้นเปลืองแท้และเกรดพรีเมียมที่ผ่านการทดสอบความเข้ากันได้ 100% พร้อมรับประกันเปลี่ยนคืนหากมีปัญหา',
       deliverables: [
         'Laser Toner Cartridge (ตลับหมึกเลเซอร์)',
         'Ribbon & Barcode Label (ผ้าหมึกและริบบอน)',
@@ -238,124 +131,185 @@ const ALL_SOLUTION_CARDS: SolutionCardItem[] = [
     },
   },
 
-  // =================== 3. HARDWARE SOLUTION ===================
+  // =================== 2. HARDWARE SOLUTION (Overview) ===================
   {
-    id: 'hardware-aio-pc',
+    id: 'hardware-barcode-scanner',
     tabCategory: 'hardware',
-    counterText: '01 / 02',
-    urlPath: 'Topprovider.co.th / Medical All-in-One PC',
-    clientSubtitle: '2026 • Medical Grade Hardware',
+    counterText: '01 / 03',
+    urlPath: 'Topprovider.co.th / Hardware Solution / Barcode & Scanner',
+    clientSubtitle: '2026 • Barcode & Scanner Solution',
+    ctaText: 'ดูสินค้า Barcode & Scanner ทั้งหมด',
+    isProductPhoto: true,
     project: {
-      id: 'medical-aio-pc',
-      name: 'Medical-Grade All-in-One PC Workstations',
-      client: 'Hospital Hardware Infrastructure',
+      id: 'hardware-barcode-scanner',
+      name: 'Barcode & Scanner',
+      client: 'Clinical & Enterprise Barcode Solution',
       year: '2026',
       category: 'Hardware Solution',
-      subCategory: 'Medical PC',
-      shortDescription: 'จัดจำหน่ายและติดตั้งเครื่องคอมพิวเตอร์ประสิทธิภาพสูง All-in-One PC เกรดการแพทย์ ตัวเครื่องป้องกันน้ำและฝุ่น ทนทานต่อน้ำยาฆ่าเชื้อ รองรับการทำงานต่อเนื่อง 24 ชั่วโมง',
-      fullDescription: 'คอมพิวเตอร์ระดับอุตสาหกรรมการแพทย์สำหรับเคาน์เตอร์พยาบาล ห้องตรวจ และห้องผ่าตัด ออกแบบไร้พัดลม (Fanless) ลดการสะสมของเชื้อโรค ตัวเครื่องเคลือบสารต้านจุลชีพและมีมาตรฐานกันน้ำ IP65 ที่แผงหน้าจอ ทนทานต่อการเช็ดทำความสะอาดตลอดเวลา',
-      challenge: 'คอมพิวเตอร์สำนักงานทั่วไปมีช่องพัดลมดูดฝุ่นและเชื้อโรคเข้ามาสะสม และพังง่ายเมื่อโดนน้ำยาฆ่าเชื้อเช็ดหน้าจอ',
-      solution: 'นำเข้าคอมพิวเตอร์เกรดการแพทย์แบบ Fanless หน้าจอป้องกันรอยขีดข่วนและของเหลว พร้อมการรับประกัน Onsite แบบเปลี่ยนเครื่องทันที',
+      subCategory: 'Barcode & Scanner',
+      shortDescription:
+        'ศูนย์รวมเครื่องอ่านบาร์โค้ดมือถือ (Handheld Barcode Scanner), เครื่องสแกนบาร์โค้ด 2 มิติเกรดการแพทย์ และเครื่องสแกนเนอร์ความเร็วสูง รองรับการสแกนฉลากยา สายรัดข้อมือ และเอกสารเวชระเบียนได้อย่างรวดเร็ว แม่นยำ',
+      fullDescription:
+        'จัดจำหน่ายและติดตั้งเครื่องอ่านบาร์โค้ดคุณภาพสูง ทั้งแบบมีสาย ไร้สาย และมือถือพกพา (Handheld Barcode) ออกแบบสำหรับโรงพยาบาลและคลังเวชภัณฑ์ ทนต่อสารเคมีทำความสะอาด มีระบบเซนเซอร์ความไวสูง อ่านโค้ดยับหรือเปียกน้ำได้แม่นยำ พร้อมเครื่องสแกนเนอร์ความเร็วสูงสำหรับงานเอกสาร',
+      challenge:
+        'โรงพยาบาลและองค์กรต้องการความเร็วและความแม่นยำในการระบุตัวตนผู้ป่วย สแกนฉลากยา และแปลงเอกสารเวชระเบียนเป็นดิจิทัล',
+      solution:
+        'นำเสนอเครื่องสแกนบาร์โค้ด 1D/2D, Handheld Barcode Scanner (Casio, CipherLab) และ Document Scanner (Fujitsu, Canon) พร้อมรับประกันและบริการ Onsite ทั่วประเทศ',
       deliverables: [
-        'Fanless Antimicrobial Medical PC',
-        'IP65 Waterproof Front Bezel',
-        'High-Brightness Anti-Glare Medical Display',
-        'Hot-Swappable UPS Battery Backup',
-        'Onsite Hardware Maintenance SLA',
+        'Handheld Barcode Scanner (Casio, CipherLab)',
+        '2D Medical Barcode Scanner (Honeywell, Opticon)',
+        'High-Speed Document Scanner (Fujitsu, Canon)',
+        'Healthcare Disinfectant-Ready Housing',
+        'Long-Range Wireless Bluetooth & Drop Resistance',
       ],
       metrics: [
-        { label: 'รองรับการทำงานต่อเนื่องแบบ Non-stop', value: '24/7' },
-        { label: 'มาตรฐานป้องกันน้ำและฝุ่นละออง', value: 'IP65' },
+        { label: 'ความเร็วในการอ่านบาร์โค้ด', value: '< 0.1 วินาที' },
+        { label: 'ความแม่นยำในการระบุข้อมูล', value: '100%' },
       ],
-      technologies: ['Fanless Cooling', 'Antimicrobial Chassis', 'Medical Touchscreen'],
-      coverImage: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1400&q=80',
-      galleryImages: ['https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1200&q=80'],
+      technologies: ['2D Area Imager', 'Bluetooth LE', 'Antimicrobial Enclosure', 'High-Speed ADF Scanner'],
+      coverImage: 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&w=1400&q=80',
+      galleryImages: ['https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&w=1200&q=80'],
       testimonial: {
-        quote: 'เครื่องคอมพิวเตอร์ทนทานมาก เช็ดน้ำยาฆ่าเชื้อได้ทั้งวันไม่มีปัญหา และเครื่องเงียบสนิทเหมาะกับห้องผู้ป่วย',
-        author: 'ผู้จัดการฝ่ายวิศวกรรมการแพทย์',
-        role: 'โรงพยาบาลกรุงเทพและปริมณฑล',
+        quote: 'เครื่องสแกนไวและทนทานมาก สแกนสายรัดข้อมือและฉลากยาได้ในเสี้ยววินาที ช่วยลดเวลาทำงานของพยาบาลได้อย่างชัดเจน',
+        author: 'หัวหน้าพยาบาลแผนกผู้ป่วยนอก',
+        role: 'โรงพยาบาลศูนย์',
       },
       featured: true,
       accentColor: '#0066FF',
     },
   },
   {
-    id: 'hardware-scanners',
+    id: 'hardware-computer-display',
     tabCategory: 'hardware',
-    counterText: '02 / 02',
-    urlPath: 'Topprovider.co.th / 2D Medical Scanners',
-    clientSubtitle: '2026 • High-Speed Barcode Readers',
+    counterText: '02 / 03',
+    urlPath: 'Topprovider.co.th / Hardware Solution / Computer & Display',
+    clientSubtitle: '2026 • Computer & Display Workstations',
+    ctaText: 'ดูสินค้า Computer & Display ทั้งหมด',
+    isProductPhoto: true,
     project: {
-      id: 'medical-scanners',
-      name: 'High-Speed 2D Medical Barcode Scanners',
-      client: 'Clinical Devices',
+      id: 'hardware-computer-display',
+      name: 'Computer & Display',
+      client: 'Hospital Computer & Display Infrastructure',
       year: '2026',
       category: 'Hardware Solution',
-      subCategory: 'Barcode Readers',
-      shortDescription: 'เครื่องอ่านบาร์โค้ด 2 มิติเกรดการแพทย์ สแกนสายรัดข้อมือและฉลากยาได้ในเสี้ยววินาที รองรับการอ่านบาร์โค้ดที่ยับหรือเปียกน้ำ พร้อมระบบเสียงและแสงยืนยันการอ่านสำเร็จ',
-      fullDescription: 'เครื่องอ่านบาร์โค้ดแบบไร้สายและมีสาย ออกแบบสำหรับโรงพยาบาลโดยเฉพาะ ตัวเครื่องทนต่อสารเคมีทำความสะอาด มีระบบเล็งและสแกนความเร็วสูง อ่านโค้ดบนพื้นผิวโค้งของขวดยาหรือสายรัดข้อมือได้อย่างแม่นยำในครั้งเดียว',
-      challenge: 'พยาบาลเสียเวลาในการสแกนบาร์โค้ดบนสายรัดข้อมือที่ไม่ค่อยติด หรือบาร์โค้ดยับบนซองยา',
-      solution: 'ใช้เซนเซอร์ออปติคอลความไวสูง จับภาพได้ 360 องศา อ่านโค้ดที่มีความเปรียบต่างต่ำหรือยับได้อย่างแม่นยำ',
+      subCategory: 'Computer & Display',
+      shortDescription:
+        'จัดจำหน่ายและติดตั้งเครื่องคอมพิวเตอร์ประสิทธิภาพสูง All-in-One PC สำหรับงานสำนักงานและเกรดการแพทย์ ตัวเครื่องป้องกันน้ำและฝุ่น ทนต่อน้ำยาฆ่าเชื้อ พร้อมจอแสดงภาพ Display ขนาด 19 - 21.5 นิ้ว มาตรฐานสากล',
+      fullDescription:
+        'คอมพิวเตอร์ All-in-One PC และจอภาพประสิทธิภาพสูงสำหรับเคาน์เตอร์พยาบาล ห้องตรวจ ห้องยา และสำนักงาน ออกแบบไร้พัดลม (Fanless) ลดการสะสมเชื้อโรค เคลือบสารต้านจุลชีพ และมีมาตรฐานกันน้ำ IP65 ที่แผงหน้าจอ รองรับการทำงานต่อเนื่อง 24 ชั่วโมง',
+      challenge:
+        'คอมพิวเตอร์สำนักงานทั่วไปเกิดปัญหาบ่อยเมื่อต้องเปิดทำงานตลอด 24 ชั่วโมง และพังง่ายเมื่อโดนน้ำยาฆ่าเชื้อเช็ดทำความสะอาดหน้าจอ',
+      solution:
+        'จัดหาเครื่องคอมพิวเตอร์ All-in-One PC เกรดการแพทย์และสำนักงานที่ทนทาน พร้อมจอแสดงภาพ Display ความคมชัดสูง รองรับการเชื่อมต่อกับระบบ HIS ได้อย่างสมบูรณ์แบบ',
       deliverables: [
-        'Healthcare Disinfectant-Ready Housing',
-        'Omnidirectional 1D/2D High-Speed Scanning',
-        'Night-Mode Vibration & LED Feedback',
-        'Long-Range Wireless Bluetooth Base',
-        '1.8m Drop Resistance Rating',
+        'Computer All-in-One สำหรับงานสำนักงานและโรงพยาบาล',
+        'Display จอแสดงภาพขนาด 19 นิ้ว และ 21.5 นิ้ว',
+        'Fanless Antimicrobial Medical PC Housing',
+        'IP65 Waterproof Front Bezel ป้องกันน้ำและของเหลว',
+        'Onsite Hardware Maintenance SLA ตลอดอายุสัญญา',
       ],
       metrics: [
-        { label: 'ความเร็วในการอ่านบาร์โค้ด', value: '< 0.1 วินาที' },
-        { label: 'ความแม่นยำในการระบุตัวยา', value: '100%' },
+        { label: 'รองรับการทำงานต่อเนื่องแบบ Non-stop', value: '24/7' },
+        { label: 'มาตรฐานป้องกันน้ำและฝุ่นละออง', value: 'IP65' },
       ],
-      technologies: ['2D Area Imager', 'Bluetooth LE', 'Antimicrobial Enclosure'],
-      coverImage: 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&w=1400&q=80',
-      galleryImages: ['https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&w=1200&q=80'],
+      technologies: ['Fanless Cooling', 'Antimicrobial Chassis', 'Medical Display', 'All-in-One Architecture'],
+      coverImage: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1400&q=80',
+      galleryImages: ['https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1200&q=80'],
       testimonial: {
-        quote: 'เครื่องสแกนบาร์โค้ดอ่านเร็วมาก แม้สายรัดข้อมือจะโค้งหรือเปียกน้ำก็อ่านได้ในคลิกเดียว ช่วยลดเวลาทำงานได้เยอะ',
-        author: 'พยาบาลวิชาชีพ แผนกผู้ป่วยใน',
+        quote: 'เครื่องคอมพิวเตอร์ All-in-One ทนทานและประหยัดพื้นที่มาก เช็ดทำความสะอาดได้ทั้งวัน เครื่องเงียบและเสถียรมาก',
+        author: 'ผู้จัดการฝ่ายสารสนเทศและเทคโนโลยี',
         role: 'โรงพยาบาลทั่วไป',
       },
       featured: true,
       accentColor: '#0066FF',
     },
   },
+  {
+    id: 'hardware-equipment-power',
+    tabCategory: 'hardware',
+    counterText: '03 / 03',
+    urlPath: 'Topprovider.co.th / Hardware Solution / Equipment & Power',
+    clientSubtitle: '2026 • UPS, Projector & Enterprise Equipment',
+    ctaText: 'ดูสินค้า Equipment & Power ทั้งหมด',
+    isProductPhoto: true,
+    project: {
+      id: 'hardware-equipment-power',
+      name: 'Equipment & Power',
+      client: 'Enterprise Power & Multimedia Infrastructure',
+      year: '2026',
+      category: 'Hardware Solution',
+      subCategory: 'Equipment & Power',
+      shortDescription:
+        'ศูนย์รวมเครื่องสำรองไฟฟ้า (UPS) ประสิทธิภาพสูงเพื่อความต่อเนื่องของระบบไอทีโรงพยาบาล เครื่องฉายโปรเจกเตอร์ (Projector) ห้องประชุม และอุปกรณ์แท็บเล็ต กล้องพกพาสำหรับองค์กร (Mobile & Camera)',
+      fullDescription:
+        'ระบบสำรองไฟฟ้าอัตโนมัติ (UPS) คุณภาพสูง ช่วยป้องกันไฟตก ไฟกระชาก และไฟฟ้าดับ เพื่อปกป้องเครื่องมือแพทย์และเซิร์ฟเวอร์ พร้อมโปรเจกเตอร์คุณภาพสูงสำหรับห้องประชุมและห้องเรียนรู้ และอุปกรณ์พกพาสำหรับตรวจการณ์',
+      challenge:
+        'ปัญหาไฟตกหรือไฟดับกะทันหันอาจสร้างความเสียหายร้ายแรงต่อระบบคอมพิวเตอร์และข้อมูลเวชระเบียนผู้ป่วย',
+      solution:
+        'ติดตั้งเครื่องสำรองไฟฟ้า Pure Sine Wave UPS ที่เชื่อถือได้ พร้อมโซลูชันอุปกรณ์แสดงภาพโปรเจกเตอร์ความสว่างสูงและอุปกรณ์พกพาครบวงจร',
+      deliverables: [
+        'เครื่องสำรองไฟฟ้าฉุกเฉิน (UPS) ประสิทธิภาพสูง',
+        'เครื่องฉายภาพโปรเจกเตอร์ความสว่างสูงสำหรับห้องประชุม (Projector)',
+        'อุปกรณ์แท็บเล็ตและกล้องสำหรับองค์กร (Mobile & Camera)',
+        'Surge Protection ป้องกันไฟฟ้ากระชากและสัญญาณรบกวน',
+        'บริการตรวจเช็กสภาพแบตเตอรี่และบำรุงรักษาเชิงป้องกัน',
+      ],
+      metrics: [
+        { label: 'ความต่อเนื่องในการจ่ายกระแสไฟฟ้า', value: '100%' },
+        { label: 'ระบบป้องกันไฟกระชากและสัญญาณรบกวน', value: 'True Online' },
+      ],
+      technologies: ['Pure Sine Wave UPS', 'High-Lumen 3LCD/DLP Projector', 'Surge Protection', 'Mobile Solutions'],
+      coverImage: 'https://images.unsplash.com/photo-1588508065123-287b28e013da?auto=format&fit=crop&w=1400&q=80',
+      galleryImages: ['https://images.unsplash.com/photo-1588508065123-287b28e013da?auto=format&fit=crop&w=1200&q=80'],
+      testimonial: {
+        quote: 'ระบบ UPS ของ Top Provider ช่วยป้องกันความเสียหายจากไฟตกในโรงพยาบาลได้อย่างดีเยี่ยม มั่นใจได้ในความปลอดภัยของข้อมูล',
+        author: 'หัวหน้างานระบบไฟฟ้าและสื่อสาร',
+        role: 'ศูนย์การแพทย์เฉพาะทาง',
+      },
+      featured: true,
+      accentColor: '#0066FF',
+    },
+  },
 
-  // =================== 4. NETWORK SOLUTION ===================
+  // =================== 3. NETWORK SOLUTION (Overview) ===================
   {
     id: 'network-datacenter',
     tabCategory: 'network',
     counterText: '01 / 02',
-    urlPath: 'Topprovider.co.th / Network & Server Infrastructure',
-    clientSubtitle: '2026 • Core Hospital Infrastructure',
+    urlPath: 'Topprovider.co.th / Network Solution / Server & Switch',
+    clientSubtitle: '2026 • Server & Network Infrastructure',
+    ctaText: 'ดูสินค้า Server ทั้งหมด',
     project: {
       id: 'network-datacenter',
-      name: 'Hospital Core Server & SAN Storage Cluster',
-      client: 'Healthcare Infrastructure',
+      name: 'Server & Network Infrastructure',
+      client: 'Hospital Core Server & Network Infrastructure',
       year: '2026',
       category: 'Network Solution',
-      subCategory: 'Core Server & Storage',
-      shortDescription: 'วางระบบโครงสร้างพื้นฐานเครือข่ายและศูนย์ข้อมูลสำหรับโรงพยาบาล ออกแบบระบบ Server, Storage, Firewall ความปลอดภัยขั้นสูง เพื่อการส่งผ่านข้อมูลเวชระเบียนและภาพ PACS ไร้รอยต่อ',
-      fullDescription: 'การออกแบบและวางระบบโครงสร้างพื้นฐานเครือข่ายระดับ Mission-Critical รองรับการส่งถ่ายข้อมูลภาพทางการแพทย์ (PACS) ขนาดใหญ่ และฐานข้อมูลคนไข้ที่เติบโตอย่างต่อเนื่อง มั่นใจได้ด้วยระบบ Server Cluster สำรองข้อมูลแบบ Real-time และโครงข่ายไฟเบอร์ 10Gbps ทั่วทั้งโรงพยาบาล',
-      challenge: 'ระบบเครือข่ายเดิมแบนด์วิดท์ไม่พอ ทำให้การเปิดดูภาพเอกซเรย์ CT/MRI ช้า และมีความเสี่ยงต่อระบบล่ม',
-      solution: 'อัปเกรดเป็น Core Fiber 10Gbps พร้อม SAN All-Flash Storage และระบบกระจายภาระงาน (Load Balancing)',
+      subCategory: 'Server & Network Infrastructure',
+      shortDescription:
+        'วางระบบโครงสร้างพื้นฐานแม่ข่ายคอมพิวเตอร์และเครือข่ายสำหรับโรงพยาบาล จัดจำหน่าย Server Load Balancer, L2 Switch 16/24 Ports, Link Load Balancer และ Wireless Access Point ความเร็วสูง',
+      fullDescription:
+        'การออกแบบและวางระบบโครงสร้างพื้นฐานเครือข่ายระดับ Mission-Critical สำหรับโรงพยาบาลและศูนย์ข้อมูล ด้วยระบบ Server Load Balancer กระจายภาระงาน, L2 Switch ประสิทธิภาพสูง และ Access Point ที่ครอบคลุมทุกจุดบริการ มั่นใจได้ในเสถียรภาพการทำงานตลอด 24 ชั่วโมง',
+      challenge: 'ระบบเครือข่ายเดิมแบนด์วิดท์ไม่พอ และเครื่องแม่ข่ายทำงานหนักจนระบบค้างในชั่วโมงเร่งด่วน',
+      solution: 'ติดตั้ง Server Load Balancer และ L2 Switch ความเร็วสูง พร้อมระบบกระจายสัญญาณ Wi-Fi ที่รองรับอุปกรณ์แพทย์นับหมื่นเครื่อง',
       deliverables: [
-        'High-Availability Server & Storage Cluster',
-        '10Gbps Core Fiber Optic Backbone',
-        'Sub-millisecond PACS Storage Access',
-        'Automated Disaster Recovery Replication',
+        'Server Load Balancer กระจายการทำงานเครื่องแม่ข่าย',
+        'L2 Switch ขนาด 16 ช่อง และ 24 ช่อง',
+        'Link Load Balancer & Wireless Access Point',
+        '10Gbps High-Availability Architecture',
         '24/7 Network Operations Center (NOC)',
       ],
       metrics: [
         { label: 'Uptime เสถียรภาพเครือข่าย', value: '99.99%' },
         { label: 'ความเร็วเชื่อมต่อ Core Backbone', value: '10 Gbps' },
       ],
-      technologies: ['Cisco/Aruba', 'SAN All-Flash', 'Fiber Optic 10G', 'VMware HA'],
+      technologies: ['Server Load Balancing', 'L2 Switch Architecture', 'Wireless Access Point', 'Link Redundancy'],
       coverImage: 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=1400&q=80',
       galleryImages: ['https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=1200&q=80'],
       testimonial: {
-        quote: 'การเปิดดูภาพสแกน MRI ทำได้เร็วขึ้นแบบทันทีทันใด แพทย์รังสีวินิจฉัยทำงานได้ราบรื่นมาก',
+        quote: 'ระบบเครือข่ายและสวิตช์ของ Top Provider เสถียรมาก เปิดใช้งานระบบพร้อมกันทั้งโรงพยาบาลได้ราบรื่นไม่มีสะดุด',
         author: 'ผู้อำนวยการฝ่ายสารสนเทศ',
-        role: 'ศูนย์รังสีวิทยาและโรงพยาบาล',
+        role: 'ศูนย์การแพทย์เฉพาะทาง',
       },
       featured: true,
       accentColor: '#0066FF',
@@ -365,50 +319,54 @@ const ALL_SOLUTION_CARDS: SolutionCardItem[] = [
     id: 'network-firewall-wifi',
     tabCategory: 'network',
     counterText: '02 / 02',
-    urlPath: 'Topprovider.co.th / Next-Gen Firewall & Wi-Fi 6',
-    clientSubtitle: '2026 • Security & Wireless Connectivity',
+    urlPath: 'Topprovider.co.th / Network Solution / SAN & NAS Storage',
+    clientSubtitle: '2026 • Enterprise Storage & Backup',
+    ctaText: 'ดูสินค้า Storage ทั้งหมด',
     project: {
       id: 'network-firewall-wifi',
-      name: 'Next-Gen Firewall & Healthcare Wi-Fi 6',
-      client: 'Cyber Security & Network',
+      name: 'SAN & NAS Storage Solutions',
+      client: 'Enterprise Storage & Data Protection',
       year: '2026',
       category: 'Network Solution',
-      subCategory: 'Firewall & Wi-Fi 6',
-      shortDescription: 'ระบบไฟร์วอลล์ความปลอดภัยสูงป้องกัน Ransomware ตามมาตรฐาน PDPA พร้อมระบบ Wi-Fi 6 เกรดการแพทย์ รองรับอุปกรณ์แท็บเล็ตและเครื่องมือแพทย์นับหมื่นเครื่องพร้อมกัน',
-      fullDescription: 'การสร้างเครือข่ายไร้สายความหนาแน่นสูง (High-Density Wi-Fi 6) ครอบคลุมทุกอาคารและห้องผ่าตัด สัญญาณเสถียรไม่มีจุดอับสัญญาณ รองรับการโรมมิ่งอย่างราบรื่นสำหรับรถเข็นพยาบาลและแท็บเล็ต พร้อมระบบไฟร์วอลล์ระดับ Enterprise คอยป้องกันภัยคุกคามทางไซเบอร์ตลอด 24 ชั่วโมง',
-      challenge: 'สัญญาณ Wi-Fi หลุดบ่อยเมื่อเข็นรถยาข้ามตึก และมีความเสี่ยงถูกโจมตีทางไซเบอร์เพื่อเรียกค่าไถ่ข้อมูลคนไข้',
-      solution: 'ติดตั้ง Healthcare Wi-Fi 6 พร้อม Fast Roaming และระบบ Next-Gen Firewall ที่ตรวจจับมัลแวร์แบบ Real-time',
+      subCategory: 'SAN & NAS Storage',
+      shortDescription:
+        'ศูนย์รวมระบบจัดเก็บข้อมูล SAN Storage และ NAS Storage ประสิทธิภาพสูง รองรับการจัดเก็บภาพทางการแพทย์ (PACS) ฐานข้อมูลเวชระเบียน และระบบสำรองข้อมูลอัตโนมัติ',
+      fullDescription:
+        'โซลูชันระบบจัดเก็บข้อมูลระดับองค์กร (SAN All-Flash & NAS Storage) ออกแบบเพื่อความปลอดภัยสูงสุดของข้อมูลคนไข้ รองรับการอ่านและเขียนข้อมูลขนาดใหญ่ด้วยความเร็ว Sub-millisecond พร้อมระบบสำรองและกู้คืนข้อมูลกรณีเกิดภัยพิบัติ (Disaster Recovery)',
+      challenge: 'พื้นที่จัดเก็บข้อมูลภาพเอกซเรย์ CT/MRI ไม่เพียงพอ และการค้นหาไฟล์ภาพคนไข้ย้อนหลังทำได้ช้ามาก',
+      solution: 'ติดตั้ง SAN Storage ความเร็วสูงและ NAS Storage ความจุสูง พร้อมระบบคัดแยกและสำรองข้อมูลอัตโนมัติ',
       deliverables: [
-        'Zero-Trust Next-Gen Firewall Security',
-        'Hospital-Wide Seamless Wi-Fi 6 Roaming',
-        'IoT & Medical Device Network Segmentation',
-        'PDPA Compliance Data Protection Policy',
-        'Real-Time Threat Detection & Automated Block',
+        'อุปกรณ์สำหรับจัดเก็บข้อมูลแบบ SAN Storage',
+        'อุปกรณ์สำหรับจัดเก็บข้อมูลแบบ NAS Storage',
+        'Sub-millisecond PACS Storage Access',
+        'Automated Disaster Recovery Replication',
+        'PDPA & Healthcare Data Compliance',
       ],
       metrics: [
-        { label: 'อัตราการตรวจจับภัยคุกคามไซเบอร์', value: '100%' },
-        { label: 'ความครอบคลุมสัญญาณ Wi-Fi ทั่วอาคาร', value: '99.9%' },
+        { label: 'ความเร็วในการเข้าถึงข้อมูล PACS', value: '< 1 ms' },
+        { label: 'ความปลอดภัยและสำรองข้อมูล', value: '100%' },
       ],
-      technologies: ['Wi-Fi 6', 'Next-Gen Firewall', 'Zero Trust', 'WPA3 Enterprise'],
-      coverImage: 'https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&w=1400&q=80',
-      galleryImages: ['https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&w=1200&q=80'],
+      technologies: ['SAN All-Flash Storage', 'NAS Data Protection', 'PACS Archiving', 'Automated Replication'],
+      coverImage: 'https://images.unsplash.com/photo-1544197150-b99a580bb7a8?auto=format&fit=crop&w=1400&q=80',
+      galleryImages: ['https://images.unsplash.com/photo-1544197150-b99a580bb7a8?auto=format&fit=crop&w=1200&q=80'],
       testimonial: {
-        quote: 'สัญญาณ Wi-Fi นิ่งและเร็วมาก เข็นรถพยาบาลข้ามตึกแท็บเล็ตไม่มีหลุด และมั่นใจในความปลอดภัยข้อมูลคนไข้',
-        author: 'หัวหน้างานความมั่นคงปลอดภัยไซเบอร์',
-        role: 'เครือโรงพยาบาลชั้นนำ',
+        quote: 'การเปิดดูภาพสแกน MRI และ CT ทำได้เร็วทันใจ แพทย์รังสีวินิจฉัยทำงานได้รวดเร็วและปลอดภัยขึ้นอย่างมาก',
+        author: 'หัวหน้างานรังสีวิทยาและเวชสารสนเทศ',
+        role: 'โรงพยาบาลศูนย์',
       },
       featured: true,
       accentColor: '#0066FF',
     },
   },
 
-  // =================== 5. MEDICAL EQUIPMENT ===================
+  // =================== 4. MEDICAL EQUIPMENT (Overview) ===================
   {
     id: 'medical-kiosk',
     tabCategory: 'medical',
     counterText: '01 / 02',
     urlPath: 'Topprovider.co.th / Smart Kiosk',
     clientSubtitle: '2026 • Patient Self-Service Systems',
+    ctaText: 'ดูรายละเอียดโซลูชัน',
     project: {
       id: 'smart-kiosk',
       name: 'Smart Self-Registration & Payment Kiosk',
@@ -416,8 +374,10 @@ const ALL_SOLUTION_CARDS: SolutionCardItem[] = [
       year: '2026',
       category: 'Medical Equipment',
       subCategory: 'Self-Service Kiosk',
-      shortDescription: 'นวัตกรรมตู้บริการตนเองอัจฉริยะ (Self-Service Kiosk) สำหรับลงทะเบียนผู้ป่วย ตรวจสอบสิทธิ ชำระเงินค่ารักษาพยาบาล ลดความแออัดและลดเวลารอคอยของผู้รับบริการ',
-      fullDescription: 'ตู้บริการอัตโนมัติอัจฉริยะที่ช่วยยกระดับประสบการณ์ผู้ป่วย ผู้รับบริการสามารถเสียบบัตรประชาชนเพื่อเช็คสิทธิการรักษา จองคิว หรือชำระเงินผ่าน QR Code และบัตรเครดิตได้ด้วยตนเอง มีเสียงและคำแนะนำภาษาไทยและภาษาอังกฤษ ใช้งานง่ายและสะดวกรวดเร็วใน 1 นาที',
+      shortDescription:
+        'นวัตกรรมตู้บริการตนเองอัจฉริยะ (Self-Service Kiosk) สำหรับลงทะเบียนผู้ป่วย ตรวจสอบสิทธิ ชำระเงินค่ารักษาพยาบาล ลดความแออัดและลดเวลารอคอยของผู้รับบริการ',
+      fullDescription:
+        'ตู้บริการอัตโนมัติอัจฉริยะที่ช่วยยกระดับประสบการณ์ผู้ป่วย ผู้รับบริการสามารถเสียบบัตรประชาชนเพื่อเช็คสิทธิการรักษา จองคิว หรือชำระเงินผ่าน QR Code และบัตรเครดิตได้ด้วยตนเอง มีเสียงและคำแนะนำภาษาไทยและภาษาอังกฤษ ใช้งานง่ายและสะดวกรวดเร็วใน 1 นาที',
       challenge: 'ผู้ป่วยต้องต่อแถวรอคิวยาวที่เคาน์เตอร์เวชระเบียนและห้องการเงิน ทำให้เกิดความแออัดบริเวณทางเข้าโรงพยาบาล',
       solution: 'ติดตั้งตู้ Smart Kiosk กระจายตามจุดสำคัญ เชื่อมต่อกับระบบ HIS ของโรงพยาบาลแบบ Real-time',
       deliverables: [
@@ -449,6 +409,7 @@ const ALL_SOLUTION_CARDS: SolutionCardItem[] = [
     counterText: '02 / 02',
     urlPath: 'Topprovider.co.th / Vital Signs Station',
     clientSubtitle: '2026 • Automated Clinical Measurement',
+    ctaText: 'ดูรายละเอียดโซลูชัน',
     project: {
       id: 'vital-signs-station',
       name: 'Direct HIS-Synced Vital Signs Station',
@@ -456,8 +417,10 @@ const ALL_SOLUTION_CARDS: SolutionCardItem[] = [
       year: '2026',
       category: 'Medical Equipment',
       subCategory: 'Vital Signs',
-      shortDescription: 'สถานีตรวจวัดสัญญาณชีพและเครื่องวัดความดันอัตโนมัติที่ซิงค์ข้อมูลผลตรวจ (ความดัน, ชีพจร, น้ำหนัก, ส่วนสูง, BMI) ตรงเข้าสู่ระบบ HIS ทันที พยาบาลไม่ต้องจดหรือคีย์ข้อมูลซ้ำ',
-      fullDescription: 'การผสานเครื่องวัดความดันโลหิต เครื่องวัดค่าออกซิเจนในเลือด และเครื่องชั่งน้ำหนัก-วัดส่วนสูงเข้ากับระบบ HIS โดยตรง เมื่อผู้ป่วยสแกนสายรัดข้อมือหรือบัตรประชาชน ข้อมูลสัญญาณชีพจะถูกบันทึกลงเวชระเบียนอิเล็กทรอนิกส์ของแพทย์ทันที ป้องกันความผิดพลาดจากการจดบันทึกด้วยมือ',
+      shortDescription:
+        'สถานีตรวจวัดสัญญาณชีพและเครื่องวัดความดันอัตโนมัติที่ซิงค์ข้อมูลผลตรวจ (ความดัน, ชีพจร, น้ำหนัก, ส่วนสูง, BMI) ตรงเข้าสู่ระบบ HIS ทันที พยาบาลไม่ต้องจดหรือคีย์ข้อมูลซ้ำ',
+      fullDescription:
+        'การผสานเครื่องวัดความดันโลหิต เครื่องวัดค่าออกซิเจนในเลือด และเครื่องชั่งน้ำหนัก-วัดส่วนสูงเข้ากับระบบ HIS โดยตรง เมื่อผู้ป่วยสแกนสายรัดข้อมือหรือบัตรประชาชน ข้อมูลสัญญาณชีพจะถูกบันทึกลงเวชระเบียนอิเล็กทรอนิกส์ของแพทย์ทันที ป้องกันความผิดพลาดจากการจดบันทึกด้วยมือ',
       challenge: 'พยาบาลจุดคัดกรองต้องจดค่าความดันและคีย์ลงคอมพิวเตอร์ทีละราย เสี่ยงต่อการพิมพ์ตัวเลขผิดพลาดและทำให้คิวยาว',
       solution: 'ติดตั้งสถานีวัดสัญญาณชีพอัตโนมัติที่เชื่อมต่อผ่านระบบบลูทูธและเครือข่าย ส่งผลตรวจเข้าหน้าจอแพทย์ทันทีที่วัดเสร็จ',
       deliverables: [
@@ -484,13 +447,14 @@ const ALL_SOLUTION_CARDS: SolutionCardItem[] = [
     },
   },
 
-  // =================== 6. SMART SOLUTION (IoT) ===================
+  // =================== 5. SMART SOLUTION (IoT) (Overview) ===================
   {
     id: 'iot-facial-security',
     tabCategory: 'iot',
     counterText: '01 / 02',
     urlPath: 'Topprovider.co.th / AI Facial Recognition',
     clientSubtitle: '2026 • AI Computer Vision Security',
+    ctaText: 'ดูรายละเอียดโซลูชัน',
     project: {
       id: 'ai-facial-security',
       name: 'AI Facial Recognition & CCTV Surveillance',
@@ -498,8 +462,10 @@ const ALL_SOLUTION_CARDS: SolutionCardItem[] = [
       year: '2026',
       category: 'Smart Solution (IoT)',
       subCategory: 'AI Surveillance',
-      shortDescription: 'ระบบกล้องโทรทัศน์วงจรปิดอัจฉริยะวิเคราะห์ใบหน้า ตรวจจับบุคคลต้องสงสัย แจ้งเตือนเมื่อมีผู้ป่วยพลัดหลง และควบคุมการเข้าออกพื้นที่หวงห้ามได้อย่างแม่นยำ',
-      fullDescription: 'การยกระดับความปลอดภัยในโรงพยาบาลด้วยเทคโนโลยี AI คอมพิวเตอร์วิทัศน์ สามารถตรวจจับใบหน้าในระยะไกล ค้นหาเส้นทางการเคลื่อนที่ของผู้ป่วยกลุ่มเสี่ยงหรือเด็กแรกเกิด พร้อมระบบแจ้งเตือนแบบเรียลไทม์ไปยังห้องควบคุมความปลอดภัยเมื่อมีเหตุผิดปกติ',
+      shortDescription:
+        'ระบบกล้องโทรทัศน์วงจรปิดอัจฉริยะวิเคราะห์ใบหน้า ตรวจจับบุคคลต้องสงสัย แจ้งเตือนเมื่อมีผู้ป่วยพลัดหลง และควบคุมการเข้าออกพื้นที่หวงห้ามได้อย่างแม่นยำ',
+      fullDescription:
+        'การยกระดับความปลอดภัยในโรงพยาบาลด้วยเทคโนโลยี AI คอมพิวเตอร์วิทัศน์ สามารถตรวจจับใบหน้าในระยะไกล ค้นหาเส้นทางการเคลื่อนที่ของผู้ป่วยกลุ่มเสี่ยงหรือเด็กแรกเกิด พร้อมระบบแจ้งเตือนแบบเรียลไทม์ไปยังห้องควบคุมความปลอดภัยเมื่อมีเหตุผิดปกติ',
       challenge: 'การดูแลความปลอดภัยในโรงพยาบาลขนาดใหญ่ที่มีคนเข้าออกหลักพันต่อวัน และการติดตามผู้ป่วยสมองเสื่อมที่อาจพลัดหลง',
       solution: 'ติดตั้งกล้อง AI CCTV พร้อมระบบประมวลผลใบหน้าอัจฉริยะ ค้นหาตำแหน่งบุคคลได้ใน 1 วินาทีจากภาพถ่าย',
       deliverables: [
@@ -531,6 +497,7 @@ const ALL_SOLUTION_CARDS: SolutionCardItem[] = [
     counterText: '02 / 02',
     urlPath: 'Topprovider.co.th / RTLS Asset Tracking',
     clientSubtitle: '2026 • Real-Time Location Systems',
+    ctaText: 'ดูรายละเอียดโซลูชัน',
     project: {
       id: 'rtls-asset-tracking',
       name: 'Real-Time Asset & Patient Tracking (RTLS)',
@@ -538,8 +505,10 @@ const ALL_SOLUTION_CARDS: SolutionCardItem[] = [
       year: '2026',
       category: 'Smart Solution (IoT)',
       subCategory: 'RTLS Tracking',
-      shortDescription: 'ระบบติดตามพิกัดตำแหน่งอุปกรณ์ทางการแพทย์ (เครื่องกระตุกหัวใจ, เครื่องช่วยหายใจ, รถเข็น) และผู้ป่วยกลุ่มเสี่ยงด้วยสัญญาณ BLE/RFID แสดงผลบนแผนผังดิจิทัลแบบเรียลไทม์',
-      fullDescription: 'โซลูชัน IoT แท็กอัจฉริยะติดเครื่องมือแพทย์ ช่วยให้แพทย์และพยาบาลสามารถค้นหาตำแหน่งเครื่องมือกู้ชีพที่ใกล้ที่สุดได้ทันทีในเวลาฉุกเฉิน พร้อมระบบแจ้งเตือนการบำรุงรักษาเครื่องมือตามรอบระยะเวลา และระบบเตือนเมื่ออุปกรณ์ถูกเคลื่อนย้ายออกนอกแผนก',
+      shortDescription:
+        'ระบบติดตามพิกัดตำแหน่งอุปกรณ์ทางการแพทย์ (เครื่องกระตุกหัวใจ, เครื่องช่วยหายใจ, รถเข็น) และผู้ป่วยกลุ่มเสี่ยงด้วยสัญญาณ BLE/RFID แสดงผลบนแผนผังดิจิทัลแบบเรียลไทม์',
+      fullDescription:
+        'โซลูชัน IoT แท็กอัจฉริยะติดเครื่องมือแพทย์ ช่วยให้แพทย์และพยาบาลสามารถค้นหาตำแหน่งเครื่องมือกู้ชีพที่ใกล้ที่สุดได้ทันทีในเวลาฉุกเฉิน พร้อมระบบแจ้งเตือนการบำรุงรักษาเครื่องมือตามรอบระยะเวลา และระบบเตือนเมื่ออุปกรณ์ถูกเคลื่อนย้ายออกนอกแผนก',
       challenge: 'ในเวลาฉุกเฉิน พยาบาลต้องเสียเวลาวิ่งตามหาเครื่องกระตุกหัวใจหรือเครื่องวัดสัญญาณชีพเคลื่อนที่ที่ถูกยืมไปแผนกอื่น',
       solution: 'ติดแท็ก BLE ขนาดจิ๋วบนอุปกรณ์การแพทย์ทุกชิ้น และแสดงผลพิกัดตำแหน่งบนแผนผังอาคารผ่านหน้าจอคอมพิวเตอร์และมือถือ',
       deliverables: [
@@ -605,7 +574,7 @@ export function mapSoftwareRecordToCardItem(
       ? r.program_code
       : r.category_id && r.category_id !== 'Software'
       ? r.category_id
-      : 'Hospital Claim';
+      : 'Hospital Software';
   const subCategory = r.client_subtitle || 'Healthcare Solution';
 
   let deliverables: string[] = [];
@@ -614,38 +583,43 @@ export function mapSoftwareRecordToCardItem(
   } else if (typeof r.key_features === 'string' && r.key_features.trim()) {
     deliverables = r.key_features.split('\n').map((s) => s.trim()).filter(Boolean);
   }
-  if (deliverables.length === 0) {
-    deliverables = [
-      'Real-time Claim Tracking',
-      'Pre-audit & Error Detection',
-      'Automated e-Claim Processing',
-    ];
-  }
 
   const metrics: { label: string; value: string }[] = [];
   if (r.metric_value) {
     metrics.push({
       value: r.metric_value,
-      label: r.metric_label || 'ความแม่นยำในการทำงาน',
+      label: r.metric_label || 'ประสิทธิภาพการทำงาน',
     });
   }
-  if (metrics.length === 0) {
-    metrics.push(
-      { label: 'ความแม่นยำในการส่งข้อมูลเคลม', value: '99.8%' },
-      { label: 'เจ้าหน้าที่จัดการงานเคลมได้เร็วขึ้น', value: '2.4x' }
-    );
-  } else if (metrics.length === 1) {
-    metrics.push({ label: 'เจ้าหน้าที่จัดการงานเคลมได้เร็วขึ้น', value: '2.4x' });
-  }
 
-  const coverImage = r.cover_image_url || '/images/vitanix-claim.png';
+  const rawCover = r.cover_image_url || '';
+  const coverImage = rawCover.startsWith('data:')
+    ? `/api/software-image/${r.id}`
+    : rawCover || (String(r.category_id).toLowerCase() === 'network' ? 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=1400&q=80' : '/images/vitanix-dashboard-hd.png');
+
+  const rawCat = (r.category_id || '').toLowerCase();
+  const tabCategory: SolutionCardItem['tabCategory'] =
+    rawCat === 'network' ? 'network'
+    : rawCat === 'printing' ? 'printing'
+    : rawCat === 'hardware' ? 'hardware'
+    : rawCat === 'medical' ? 'medical'
+    : rawCat === 'iot' ? 'iot'
+    : 'software';
+
+  const cardId =
+    tabCategory === 'network'
+      ? (r.id === 15 || r.name.toLowerCase().includes('server') ? 'network-datacenter' : 'network-firewall-wifi')
+      : `software-${r.id}`;
+
+  const ctaText = tabCategory === 'network' ? 'ดูสินค้า Network ทั้งหมด' : 'ดูรายละเอียดระบบ';
 
   return {
-    id: `software-${r.id}`,
-    tabCategory: 'software',
+    id: cardId,
+    tabCategory,
     counterText,
     urlPath: `Topprovider.co.th / ${r.name}`,
     clientSubtitle: `2026 • ${subCategory}`,
+    ctaText,
     project: {
       id: `vitanix-${r.id}`,
       name: r.name,
@@ -653,17 +627,198 @@ export function mapSoftwareRecordToCardItem(
       year: '2026',
       category: category,
       subCategory: subCategory,
-      shortDescription: r.short_description || '',
+      shortDescription: r.short_description || r.full_description || '',
       fullDescription: r.full_description || r.short_description || '',
       challenge: r.feature_1_desc || '',
       solution: r.feature_2_desc || '',
       deliverables,
       metrics,
-      technologies: ['React', 'TypeScript', 'Tailwind CSS', 'PostgreSQL', 'HL7/FHIR'],
+      technologies: tabCategory === 'network' ? ['Cisco/Aruba', 'SAN All-Flash', 'Fiber Optic 10G', 'VMware HA'] : ['React', 'TypeScript', 'Tailwind CSS', 'PostgreSQL', 'HL7/FHIR'],
       coverImage: coverImage,
-      videoUrl:
-        r.video_url ||
-        'https://www.youtube.com/embed/TNXBrlFZ5ps?autoplay=1&mute=1&playsinline=1&rel=0&start=1',
+      videoUrl: r.video_url || '',
+      galleryImages: [coverImage],
+      featured: true,
+      accentColor: '#0066FF',
+    },
+  };
+}
+
+export interface ProductRecord {
+  id: number;
+  name: string;
+  sku?: string;
+  slug?: string;
+  category_id?: string;
+  sub_category?: string;
+  brand?: string;
+  product_type?: string;
+  short_description?: string;
+  full_description?: string;
+  specifications?: { label?: string; value: string }[] | string;
+  cover_image_url?: string;
+  is_active?: boolean;
+}
+
+export function mapProductRecordToCardItem(
+  p: ProductRecord,
+  index: number,
+  total: number
+): SolutionCardItem {
+  const counterText = `${String(index + 1).padStart(2, '0')} / ${String(total).padStart(2, '0')}`;
+  const rawCat = (p.category_id || '').toLowerCase();
+  const tabCategory: SolutionCardItem['tabCategory'] =
+    rawCat.includes('network') ? 'network'
+    : rawCat.includes('print') ? 'printing'
+    : rawCat.includes('hard') ? 'hardware'
+    : 'printing';
+
+  let deliverables: string[] = [];
+  if (Array.isArray(p.specifications)) {
+    const specWithLines = p.specifications.find((s) => s.value && s.value.includes('\n'));
+    if (specWithLines && specWithLines.value) {
+      deliverables = specWithLines.value
+        .split('\n')
+        .map((l) => l.replace(/^-\s*/, '').trim())
+        .filter(Boolean)
+        .slice(0, 3);
+    } else {
+      deliverables = p.specifications
+        .slice(0, 3)
+        .map((s) => s.value || s.label || '')
+        .filter(Boolean);
+    }
+  }
+
+  const rawCover = p.cover_image_url || '';
+  const fallbackImg =
+    tabCategory === 'network'
+      ? 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=1400&q=80'
+      : tabCategory === 'hardware'
+      ? 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&w=1400&q=80'
+      : '/images/printer-product.png';
+
+  const coverImage = rawCover.startsWith('data:')
+    ? `/api/product-image/${p.id}`
+    : rawCover || fallbackImg;
+
+  const subCategory = p.sub_category || p.brand || 'Product Item';
+  const urlPath = `Topprovider.co.th / ${p.brand ? `${p.brand} ` : ''}${p.name}`;
+
+  let ctaText = 'ดูรายละเอียดสินค้า';
+  if (tabCategory === 'printing') {
+    ctaText = p.product_type === 'supply' ? 'ดูสินค้า Supply ทั้งหมด' : 'ดูสินค้า Printer ทั้งหมด';
+  } else if (tabCategory === 'network') {
+    ctaText = 'ดูสินค้า Network ทั้งหมด';
+  } else if (tabCategory === 'hardware') {
+    ctaText = 'ดูสินค้า Hardware ทั้งหมด';
+  }
+
+  let shortDesc = p.short_description || p.full_description || '';
+  if (!shortDesc && Array.isArray(p.specifications)) {
+    const specWithVal = p.specifications.find(
+      (s) => s.value && (s.label?.includes('คุณลักษณะ') || s.label?.includes('รายละเอียด') || s.value.length > 20)
+    );
+    if (specWithVal?.value) {
+      shortDesc = specWithVal.value.split('\n')[0].replace(/^-\s*/, '').trim();
+    }
+  }
+  if (!shortDesc) {
+    shortDesc = `${p.name} - ระบบและอุปกรณ์มาตรฐานระดับองค์กรสำหรับโรงพยาบาลและหน่วยงานสาธารณสุข`;
+  }
+
+  return {
+    id: `product-${p.id}`,
+    tabCategory,
+    counterText,
+    urlPath,
+    clientSubtitle: `2026 • ${subCategory}`,
+    ctaText,
+    isProductPhoto: true,
+    project: {
+      id: `prod-${p.id}`,
+      name: p.name,
+      client: subCategory,
+      year: '2026',
+      category: p.category_id || 'Product',
+      subCategory: subCategory,
+      shortDescription: shortDesc,
+      fullDescription: p.full_description || shortDesc,
+      challenge: '',
+      solution: '',
+      deliverables,
+      metrics: [],
+      technologies: [p.brand, p.sub_category].filter(Boolean) as string[],
+      coverImage,
+      galleryImages: [coverImage],
+      featured: true,
+      accentColor: '#0066FF',
+    },
+  };
+}
+
+function mapTopicRecordToCardItem(
+  t: Record<string, unknown>,
+  index: number,
+  total: number
+): SolutionCardItem {
+  let deliverables: string[] = [];
+  if (Array.isArray(t.key_features)) {
+    deliverables = t.key_features.map(String).filter(Boolean);
+  } else if (typeof t.key_features === 'string' && t.key_features.trim()) {
+    try {
+      const parsed = JSON.parse(t.key_features);
+      if (Array.isArray(parsed)) {
+        deliverables = parsed.map(String).filter(Boolean);
+      } else {
+        deliverables = t.key_features.split('\n').map((s) => s.trim()).filter(Boolean);
+      }
+    } catch {
+      deliverables = t.key_features.split('\n').map((s) => s.trim()).filter(Boolean);
+    }
+  }
+
+  const rawCat = String(t.tab_category || 'printing').toLowerCase();
+  const tabCategory: SolutionCardItem['tabCategory'] =
+    rawCat === 'network' ? 'network'
+    : rawCat === 'hardware' ? 'hardware'
+    : rawCat === 'software' ? 'software'
+    : rawCat === 'medical' ? 'medical'
+    : rawCat === 'iot' ? 'iot'
+    : 'printing';
+
+  const title = String(t.title || 'Solution');
+  const subtitle = String(t.subtitle || '');
+  const shortDesc = String(t.short_description || t.full_description || '');
+  const fullDesc = String(t.full_description || shortDesc);
+  const coverImage = String(t.cover_image_url || '/images/printer-product.png');
+  const ctaText = String(t.cta_text || 'ดูสินค้าทั้งหมด');
+  const ctaLink = String(t.cta_link || `/solutions/${tabCategory}`);
+  const counterText = `${String(index + 1).padStart(2, '0')} / ${String(total).padStart(2, '0')}`;
+
+  return {
+    id: `topic-${t.id || index}`,
+    tabCategory,
+    counterText,
+    urlPath: `Topprovider.co.th / ${title}`,
+    clientSubtitle: subtitle || `2026 • ${title}`,
+    ctaText,
+    ctaLink,
+    isProductPhoto: true,
+    project: {
+      id: `topic-proj-${t.id || index}`,
+      name: title,
+      client: subtitle || title,
+      year: '2026',
+      category: tabCategory,
+      subCategory: title,
+      shortDescription: shortDesc,
+      fullDescription: fullDesc,
+      challenge: '',
+      solution: '',
+      deliverables,
+      metrics: [],
+      technologies: deliverables.slice(0, 4),
+      coverImage,
       galleryImages: [coverImage],
       featured: true,
       accentColor: '#0066FF',
@@ -673,27 +828,44 @@ export function mapSoftwareRecordToCardItem(
 
 export const StickyProjectSection: React.FC<StickyProjectSectionProps> = ({
   onSelectProject,
+  initialCategories,
   initialSoftwareRecords,
+  initialProducts,
+  initialSolutionTopics,
 }) => {
   const router = useRouter();
 
   useEffect(() => {
     router.prefetch('/solutions/printing?type=printer');
     router.prefetch('/solutions/printing?type=supply');
+    router.prefetch('/solutions/hardware');
     router.prefetch('/solutions/software');
+    router.prefetch('/solutions/network');
+    router.prefetch('/products');
   }, [router]);
 
-  // Default to 'software' tab (Software Solution) as shown in Reference Image 2
-  const [activeTab, setActiveTab] = useState<string>('software');
+  // แท็บเริ่มต้น: Printing & Supply Solution ตามที่ผู้ใช้ต้องการ
+  const [activeTab, setActiveTab] = useState<string>('printing');
   const [playingVideoId, setPlayingVideoId] = useState<string | null>(null);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
 
-  // Dynamic Solution Category Tabs from /api/admin/categories
-  const [solutionTabs, setSolutionTabs] = useState<{ id: string; label: string }[]>(
-    SOLUTION_TABS.map((t) => ({ id: t.id, label: t.label }))
-  );
+  // Dynamic Solution Category Tabs from DB / props / fallback
+  const [solutionTabs, setSolutionTabs] = useState<{ id: string; label: string }[]>(() => {
+    if (initialCategories && initialCategories.length > 0) {
+      return initialCategories.map((c) => ({
+        id: (c.category_id || '').toLowerCase(),
+        label: c.name || c.category_id,
+      }));
+    }
+    return SOLUTION_TABS.map((t) => ({ id: t.id, label: t.label }));
+  });
+
+  const hasLoadedTabsRef = useRef(false);
 
   useEffect(() => {
+    if (initialCategories && initialCategories.length > 0) return;
+    if (hasLoadedTabsRef.current) return;
+    hasLoadedTabsRef.current = true;
     fetch('/api/admin/categories')
       .then((res) => res.json())
       .then((json) => {
@@ -708,9 +880,9 @@ export const StickyProjectSection: React.FC<StickyProjectSectionProps> = ({
         }
       })
       .catch((err) => console.log('Tabs API fallback:', err));
-  }, []);
+  }, [initialCategories]);
 
-  // Dynamic software cards from Supabase TB_PRODUCT_SOFTWARE
+  // Cards from DB (Software)
   const initialCards = useMemo(() => {
     if (initialSoftwareRecords && initialSoftwareRecords.length > 0) {
       return initialSoftwareRecords.map((r, i) =>
@@ -720,36 +892,110 @@ export const StickyProjectSection: React.FC<StickyProjectSectionProps> = ({
     return [];
   }, [initialSoftwareRecords]);
 
-  const [dynamicSoftwareCards, setDynamicSoftwareCards] = useState<SolutionCardItem[]>(initialCards);
+  const [dynamicRecords, setDynamicRecords] = useState<SolutionCardItem[]>(initialCards);
+  const [dbLoading, setDbLoading] = useState<boolean>(initialCards.length === 0);
 
-  // Client-side fetch fallback
   useEffect(() => {
-    if (initialCards.length > 0) return;
+    if (initialCards.length > 0) {
+      setDynamicRecords(initialCards);
+      setDbLoading(false);
+    }
+  }, [initialCards]);
 
-    fetchRecords<SoftwareRecord>({
-      table: 'TB_PRODUCT_SOFTWARE',
-      orderBy: 'id',
-      orderDir: 'asc',
-    })
-      .then((records) => {
-        if (records && records.length > 0) {
-          const total = records.length;
-          setDynamicSoftwareCards(
-            records.map((r, i) => mapSoftwareRecordToCardItem(r, i, total))
-          );
-        }
+  // Client-side fetch fallback from DB for Software
+  useEffect(() => {
+    if (dynamicRecords.length === 0) {
+      setDbLoading(true);
+      fetchPublicRecords<SoftwareRecord>({
+        table: 'TB_PRODUCT_SOFTWARE',
+        orderBy: 'id',
+        orderDir: 'asc',
       })
-      .catch((err) => {
-        console.log('Could not load software programs dynamically (using fallback):', err);
-      });
-  }, [initialCards.length]);
+        .then((records) => {
+          if (records && records.length > 0) {
+            setDynamicRecords(
+              records.map((r, i) => mapSoftwareRecordToCardItem(r, i, records.length))
+            );
+          }
+        })
+        .catch((err) => console.error('Error loading software records from DB:', err))
+        .finally(() => {
+          setDbLoading(false);
+        });
+    }
+  }, [dynamicRecords.length]);
 
-  // Filter cards for active tab
-  const staticCards = ALL_SOLUTION_CARDS.filter((item) => item.tabCategory === activeTab);
-  const currentCards =
-    activeTab === 'software' && dynamicSoftwareCards.length > 0
-      ? dynamicSoftwareCards
-      : staticCards;
+  // Dynamic Solution Topics from TB_SOLUTION_TOPICS
+  const initialTopics = useMemo(() => {
+    if (initialSolutionTopics && initialSolutionTopics.length > 0) {
+      return initialSolutionTopics.map((t, i) =>
+        mapTopicRecordToCardItem(t, i, initialSolutionTopics.length)
+      );
+    }
+    return [];
+  }, [initialSolutionTopics]);
+
+  const [dynamicTopics, setDynamicTopics] = useState<SolutionCardItem[]>(initialTopics);
+
+  useEffect(() => {
+    if (initialTopics.length > 0) {
+      setDynamicTopics(initialTopics);
+    }
+  }, [initialTopics]);
+
+  // Client-side fetch fallback for TB_SOLUTION_TOPICS
+  useEffect(() => {
+    if (dynamicTopics.length === 0) {
+      fetchPublicRecords({
+        table: 'TB_SOLUTION_TOPICS',
+        orderBy: 'sort_order',
+        orderDir: 'asc',
+      })
+        .then((records) => {
+          if (records && records.length > 0) {
+            const activeOnly = (records as Record<string, unknown>[]).filter(
+              (r) => r.is_active !== false
+            );
+            if (activeOnly.length > 0) {
+              setDynamicTopics(
+                activeOnly.map((r, i) => mapTopicRecordToCardItem(r, i, activeOnly.length))
+              );
+            }
+          }
+        })
+        .catch(() => {
+          // Table doesn't exist yet, seamlessly falls back
+        });
+    }
+  }, [dynamicTopics.length]);
+
+  // Current cards:
+  // - ถ้าเป็น Software: ดึงรายการระบบจากฐานข้อมูล TB_PRODUCT_SOFTWARE
+  // - ถ้าเป็น หมวดอื่นๆ: ตรวจสอบ TB_SOLUTION_TOPICS ก่อน ถ้ามีให้ใช้จาก DB ถ้าไม่มีให้ใช้ ALL_SOLUTION_CARDS (Fallback)
+  const currentCards = useMemo(() => {
+    if (activeTab === 'software') {
+      if (dbLoading) return [];
+      const matched = dynamicRecords.filter((item) => item.tabCategory === 'software');
+      return matched.map((item, idx) => ({
+        ...item,
+        counterText: `${String(idx + 1).padStart(2, '0')} / ${String(matched.length).padStart(2, '0')}`,
+      }));
+    }
+
+    const matchedTopics = dynamicTopics.filter((item) => item.tabCategory === activeTab);
+    if (matchedTopics.length > 0) {
+      return matchedTopics.map((item, idx) => ({
+        ...item,
+        counterText: `${String(idx + 1).padStart(2, '0')} / ${String(matchedTopics.length).padStart(2, '0')}`,
+      }));
+    }
+
+    const overviewCards = ALL_SOLUTION_CARDS.filter((item) => item.tabCategory === activeTab);
+    return overviewCards.map((item, idx) => ({
+      ...item,
+      counterText: `${String(idx + 1).padStart(2, '0')} / ${String(overviewCards.length).padStart(2, '0')}`,
+    }));
+  }, [activeTab, dynamicRecords, dynamicTopics, dbLoading]);
 
   const handleTabClick = (tabId: string) => {
     setActiveTab(tabId);
@@ -770,6 +1016,10 @@ export const StickyProjectSection: React.FC<StickyProjectSectionProps> = ({
   };
 
   const handleSelectCard = (cardItem: SolutionCardItem) => {
+    if (cardItem.ctaLink) {
+      router.push(cardItem.ctaLink);
+      return;
+    }
     if (cardItem.tabCategory === 'printing') {
       if (cardItem.id === 'printing-printer') {
         router.push('/solutions/printing?type=printer');
@@ -782,25 +1032,57 @@ export const StickyProjectSection: React.FC<StickyProjectSectionProps> = ({
       router.push('/solutions/printing');
       return;
     }
+    if (cardItem.tabCategory === 'hardware') {
+      if (cardItem.id === 'hardware-barcode-scanner') {
+        router.push('/solutions/hardware?sub=Handheld Barcode Scanner');
+        return;
+      }
+      if (cardItem.id === 'hardware-computer-display') {
+        router.push('/solutions/hardware?sub=Computer');
+        return;
+      }
+      if (cardItem.id === 'hardware-equipment-power') {
+        router.push('/solutions/hardware?sub=UPS');
+        return;
+      }
+      router.push('/solutions/hardware');
+      return;
+    }
+    if (cardItem.tabCategory === 'network') {
+      if (cardItem.id === 'network-datacenter') {
+        router.push('/solutions/network?type=server');
+        return;
+      }
+      if (cardItem.id === 'network-firewall-wifi') {
+        router.push('/solutions/network?type=firewall');
+        return;
+      }
+      router.push('/solutions/network');
+      return;
+    }
+    if (cardItem.tabCategory === 'software') {
+      router.push('/solutions/software');
+      return;
+    }
     handleSelectProject(cardItem.project);
   };
 
   return (
     <section id="showcase" className="py-12 sm:py-16 lg:py-20 bg-[#F8FAFC] text-slate-900 relative z-20 border-b border-slate-200/80 select-none">
-      <div id="case-studies" className="w-[94%] max-w-[1680px] mx-auto px-2 sm:px-4 lg:px-6">
+      <div id="case-studies" className="w-[94%] max-w-[2200px] mx-auto px-2 sm:px-4 lg:px-6">
         {/* Section Header */}
         <div className="mb-6 sm:mb-8">
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-[#0F172A] leading-[1.2]">
             IT Solution & Product
           </h2>
           <p className="text-xs sm:text-sm text-slate-500 mt-2 font-normal">
-            เลือกดูโซลูชันและผลิตภัณฑ์ตามหมวดหมู่การใช้งานที่ครอบคลุมทุกระบบโรงพยาบาลและองค์กร
+            เลือกดูภาพรวมโซลูชันและผลิตภัณฑ์ตามหมวดหมู่การใช้งานที่ครอบคลุมทุกระบบโรงพยาบาลและองค์กร
           </p>
         </div>
 
-        {/* Sticky Tab List / Pill Navigation Bar - Locked at Top while Scrolling (matching Reference Image) */}
+        {/* Sticky Tab List / Pill Navigation Bar */}
         <div className="sticky top-0 z-30 py-2.5 sm:py-3 bg-[#F8FAFC]/95 backdrop-blur-md mb-6 sm:mb-8 -mx-2 px-2 sm:-mx-4 sm:px-4 transition-all">
-          <div className="flex items-center gap-2 sm:gap-3 overflow-x-auto py-2 px-1.5 -mx-1.5 no-scrollbar">
+          <div className="flex items-center justify-start sm:justify-center gap-2 sm:gap-3 overflow-x-auto py-2 px-1.5 -mx-1.5 no-scrollbar">
             {solutionTabs.map((tab) => {
               const isActive = tab.id === activeTab;
               return (
@@ -820,78 +1102,101 @@ export const StickyProjectSection: React.FC<StickyProjectSectionProps> = ({
           </div>
         </div>
 
-        {/* Sticky Stacked Product Cards Stage - EXACTLY PRESERVING THE SCROLL STACKING EFFECT */}
-        <div className="relative space-y-10 lg:space-y-14">
-          {currentCards.map((cardItem, index) => {
-            // Top offset positioned right below the locked tablist for sticky stacked deck effect
-            const topOffset = 84 + index * 16;
-            const project = cardItem.project;
-            const isPlaying = playingVideoId === cardItem.id;
+        {/* Dynamic Cards Stage or Loading / Empty State */}
+        {dbLoading ? (
+          <div className="min-h-[500px] sm:min-h-[660px] md:min-h-[760px] rounded-[32px] sm:rounded-[36px] bg-white border border-slate-200/90 shadow-sm p-4 sm:p-8 flex flex-col items-center justify-center text-center my-6 overflow-hidden">
+            <MedicalCrossLoader size="lg" />
+          </div>
+        ) : currentCards.length === 0 ? (
+          <div className="rounded-3xl bg-white border border-slate-200/90 p-12 text-center my-8 shadow-sm">
+            <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-blue-50 flex items-center justify-center text-[#0066FF]">
+              <Package className="w-8 h-8" />
+            </div>
+            <h3 className="text-lg font-bold text-slate-800 mb-1">ยังไม่มีข้อมูลในหมวดหมู่นี้</h3>
+            <p className="text-sm text-slate-500 max-w-md mx-auto">
+              ขณะนี้ยังไม่มีข้อมูลโซลูชันในหมวดหมู่นี้ คุณสามารถเลือกดูหมวดหมู่อื่นๆ หรือติดต่อทีมงานเพื่อสอบถามรายละเอียด
+            </p>
+          </div>
+        ) : (
+          <div className="relative space-y-10 lg:space-y-14">
+            {currentCards.map((cardItem, index) => {
+              const topOffset = 84 + Math.min(index, 1) * 16;
+              const project = cardItem.project;
+              const isPlaying = playingVideoId === cardItem.id;
 
-            return (
-              <motion.div
-                key={cardItem.id}
-                initial={{ opacity: 0, y: 35 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, amount: 0.15 }}
-                transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-                style={{ top: `${topOffset}px` }}
-                className="sticky rounded-[24px] sm:rounded-[32px] lg:rounded-[36px] bg-[#FFFFFF] border border-blue-100/90 shadow-[0_20px_50px_rgba(0,102,255,0.06)] overflow-hidden transition-all duration-300"
-              >
-                    {/* 1. Top Browser Window Bar: Vertically Centered & Uniform Padding */}
-                    <div className="px-6 sm:px-8 py-3.5 bg-slate-50/80 border-b border-slate-100 flex items-center justify-between gap-4">
-                      {/* Left: Window Controls & URL Path */}
-                      <div className="flex items-center gap-2.5 min-w-0">
-                        <div className="flex items-center gap-1.5 shrink-0">
-                          <span className="w-2.5 h-2.5 rounded-full bg-[#FF5F56] inline-block" />
-                          <span className="w-2.5 h-2.5 rounded-full bg-[#FFBD2E] inline-block" />
-                          <span className="w-2.5 h-2.5 rounded-full bg-[#27C93F] inline-block" />
-                        </div>
-                        <span className="text-xs font-medium text-slate-500 ml-2 truncate">
-                          {cardItem.urlPath}
-                        </span>
+              return (
+                <motion.div
+                  key={cardItem.id}
+                  initial={{ opacity: 0, y: 35 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, amount: 0.15 }}
+                  transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+                  style={{ top: `${topOffset}px` }}
+                  suppressHydrationWarning
+                  className="relative lg:sticky rounded-[24px] sm:rounded-[32px] lg:rounded-[36px] bg-[#FFFFFF] border border-blue-100/90 shadow-[0_20px_50px_rgba(0,102,255,0.06)] overflow-hidden transition-all duration-300"
+                >
+                  {/* Top Browser Window Bar */}
+                  <div className="px-6 sm:px-8 py-3.5 bg-slate-50/80 border-b border-slate-100 flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        <span className="w-2.5 h-2.5 rounded-full bg-[#FF5F56] inline-block" />
+                        <span className="w-2.5 h-2.5 rounded-full bg-[#FFBD2E] inline-block" />
+                        <span className="w-2.5 h-2.5 rounded-full bg-[#27C93F] inline-block" />
                       </div>
-
-                      {/* Right: Category Badges */}
-                      <div className="flex items-center gap-2 shrink-0">
-                        <span className="text-xs font-medium text-[#0066FF] bg-white px-3.5 py-1 rounded-full border border-blue-200/90 shadow-2xs">
-                          {project.category}
-                        </span>
-                        {project.subCategory ? (
-                          <span className="text-xs font-medium text-[#0066FF] bg-white px-3.5 py-1 rounded-full border border-blue-200/90 shadow-2xs">
-                            {project.subCategory}
-                          </span>
-                        ) : null}
-                      </div>
+                      <span className="text-xs font-medium text-slate-500 ml-2 truncate">
+                        {cardItem.urlPath}
+                      </span>
                     </div>
 
-                    {/* 2. Card Body: 38% Information : 62% Laptop Mockup */}
-                    <div className="flex flex-col lg:flex-row min-h-[480px] lg:min-h-[520px]">
-                      {/* Left Column (38%): Product Information */}
-                      <div className="w-full lg:w-[38%] p-6 sm:p-8 lg:p-8 xl:p-9 flex flex-col justify-between border-b lg:border-b-0 lg:border-r border-slate-100 bg-[#FFFFFF] shrink-0">
-                        {/* Top Group: Counter, Title, Description & Features */}
-                        <div className="space-y-4">
-                          {/* Counter & Subtitle */}
-                          <div className="flex items-center justify-between gap-4">
-                            <span className="inline-flex items-center justify-center text-xs font-mono font-semibold text-[#0066FF] bg-blue-50/90 px-3 py-1 rounded-full border border-blue-100 leading-none">
-                              {cardItem.counterText}
-                            </span>
-                            <span className="text-xs text-slate-400 font-medium">
-                              {cardItem.clientSubtitle}
-                            </span>
-                          </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[11px] font-mono text-slate-400 bg-white px-2.5 py-1 rounded-md border border-slate-200/80">
+                        {project.category}
+                      </span>
+                      {project.videoUrl && (
+                        <button
+                          type="button"
+                          onClick={(e) => toggleVideoPlayback(e, cardItem.id)}
+                          className="px-3 py-1 rounded-full bg-[#0066FF] hover:bg-[#0052CC] text-white text-[11px] font-medium flex items-center gap-1.5 transition-colors shadow-sm cursor-pointer"
+                        >
+                          {isPlaying ? (
+                            <>
+                              <Pause className="w-3 h-3 fill-white" />
+                              <span>หยุดวิดีโอ</span>
+                            </>
+                          ) : (
+                            <>
+                              <Play className="w-3 h-3 fill-white" />
+                              <span>เล่นวิดีโอ</span>
+                            </>
+                          )}
+                        </button>
+                      )}
+                    </div>
+                  </div>
 
-                          {/* Product Title */}
-                          <h3 className="text-2xl sm:text-3xl lg:text-[34px] font-bold tracking-tight text-[#0F172A] leading-tight">
-                            {project.name}
-                          </h3>
+                  {/* Main Card Body */}
+                  <div className="flex flex-col lg:flex-row min-h-[460px] sm:min-h-[500px]">
+                    {/* Left Column: Product Information */}
+                    <div className="w-full lg:w-[38%] p-6 sm:p-8 lg:p-8 xl:p-9 flex flex-col justify-between border-b lg:border-b-0 lg:border-r border-slate-100 bg-[#FFFFFF] shrink-0">
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between gap-4">
+                          <span className="inline-flex items-center justify-center text-xs font-mono font-semibold text-[#0066FF] bg-blue-50/90 px-3 py-1 rounded-full border border-blue-100 leading-none">
+                            {cardItem.counterText}
+                          </span>
+                          <span className="text-xs text-slate-400 font-medium">
+                            {cardItem.clientSubtitle}
+                          </span>
+                        </div>
 
-                          {/* Description */}
-                          <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-normal">
-                            {project.shortDescription}
-                          </p>
+                        <h3 className="text-2xl sm:text-3xl lg:text-[34px] font-bold tracking-tight text-[#0F172A] leading-tight">
+                          {project.name}
+                        </h3>
 
-                          {/* Key Features */}
+                        <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-normal whitespace-pre-line">
+                          {project.shortDescription || project.fullDescription}
+                        </p>
+
+                        {project.deliverables && project.deliverables.length > 0 && (
                           <div className="space-y-2 pt-1">
                             <p className="text-[11px] font-mono uppercase tracking-wider text-slate-400 font-bold">
                               KEY FEATURES :
@@ -908,159 +1213,173 @@ export const StickyProjectSection: React.FC<StickyProjectSectionProps> = ({
                               ))}
                             </div>
                           </div>
-                        </div>
-
-                        {/* Bottom Group: Metrics & Action Button */}
-                        <div className="pt-6 sm:pt-8 mt-4 sm:mt-6 border-t border-slate-100/90">
-                          {project.metrics && project.metrics.length > 0 && (
-                            <div className="grid grid-cols-2 gap-4 mb-5 sm:mb-6">
-                              <div>
-                                <p className="text-2xl sm:text-3xl font-bold text-[#0066FF] tracking-tight">
-                                  {project.metrics[0].value}
-                                </p>
-                                <p className="text-xs text-slate-500 mt-1 font-normal leading-snug">
-                                  {project.metrics[0].label}
-                                </p>
-                              </div>
-                              {project.metrics[1] && (
-                                <div>
-                                  <p className="text-2xl sm:text-3xl font-bold text-[#0F172A] tracking-tight">
-                                    {project.metrics[1].value}
-                                  </p>
-                                  <p className="text-xs text-slate-500 mt-1 font-normal leading-snug">
-                                    {project.metrics[1].label}
-                                  </p>
-                                </div>
-                              )}
-                            </div>
-                          )}
-
-                          {/* Primary CTA in Electric Blue */}
-                          {cardItem.tabCategory === 'printing' ? (
-                            <Link
-                              href={
-                                cardItem.id === 'printing-printer'
-                                  ? '/solutions/printing?type=printer'
-                                  : '/solutions/printing?type=supply'
-                              }
-                              prefetch={true}
-                              className="w-full py-3.5 px-6 rounded-full bg-[#0066FF] hover:bg-[#0052CC] text-white font-medium text-xs sm:text-sm flex items-center justify-center gap-2 shadow-[0_8px_20px_rgba(0,102,255,0.3)] hover:shadow-[0_12px_28px_rgba(0,102,255,0.45)] transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] cursor-pointer group"
-                            >
-                              <span>{cardItem.ctaText || 'ดูสินค้าทั้งหมด'}</span>
-                              <ArrowUpRight className="w-4 h-4 stroke-[2.5] transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-                            </Link>
-                          ) : (
-                            <button
-                              onClick={() => handleSelectCard(cardItem)}
-                              className="w-full py-3.5 px-6 rounded-full bg-[#0066FF] hover:bg-[#0052CC] text-white font-medium text-xs sm:text-sm flex items-center justify-center gap-2 shadow-[0_8px_20px_rgba(0,102,255,0.3)] hover:shadow-[0_12px_28px_rgba(0,102,255,0.45)] transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] cursor-pointer group"
-                            >
-                              <span>{cardItem.ctaText || 'ดูรายละเอียด'}</span>
-                              <ArrowUpRight className="w-4 h-4 stroke-[2.5] transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-                            </button>
-                          )}
-                        </div>
+                        )}
                       </div>
 
-                      {/* Right Column (62%): Centered Product Preview */}
-                      {cardItem.tabCategory === 'printing' ? (
-                        <Link
-                          href={
-                            cardItem.id === 'printing-printer'
-                              ? '/solutions/printing?type=printer'
-                              : '/solutions/printing?type=supply'
-                          }
-                          prefetch={true}
-                          className={`w-full lg:w-[62%] relative overflow-hidden group cursor-pointer flex items-center justify-center p-6 sm:p-8 lg:p-10 min-h-[360px] sm:min-h-[420px] lg:min-h-full ${
-                            cardItem.isProductPhoto
-                              ? 'bg-white'
-                              : 'bg-gradient-to-br from-slate-50/80 to-blue-50/20'
-                          }`}
-                        >
-                          {cardItem.isProductPhoto ? (
-                            <div className="relative w-full max-w-[740px] xl:max-w-[780px] my-auto flex items-center justify-center p-2 sm:p-4 lg:p-6">
-                              <img
-                                src={project.coverImage}
-                                alt={project.name}
-                                className="w-full max-w-[440px] sm:max-w-[560px] md:max-w-[640px] lg:max-w-[720px] max-h-[440px] sm:max-h-[480px] lg:max-h-[520px] h-auto object-contain transition-transform duration-500 ease-out group-hover:scale-[1.03] drop-shadow-[0_18px_35px_rgba(0,0,0,0.12)]"
-                                loading="lazy"
-                              />
+                      {/* Bottom Action Area */}
+                      <div className="pt-6 sm:pt-8 mt-4 sm:mt-6 border-t border-slate-100/90">
+                        {project.metrics && project.metrics.length > 0 && (
+                          <div className="grid grid-cols-2 gap-4 mb-5 sm:mb-6">
+                            <div>
+                              <p className="text-2xl sm:text-3xl font-bold text-[#0066FF] tracking-tight">
+                                {project.metrics[0].value}
+                              </p>
+                              <p className="text-xs text-slate-500 mt-1 font-normal leading-snug">
+                                {project.metrics[0].label}
+                              </p>
                             </div>
-                          ) : (
-                            /* Centered Laptop Mockup matching Reference Image 2 */
-                            <div className="relative w-full max-w-[760px] my-auto transition-transform duration-500 ease-out group-hover:scale-[1.015] flex flex-col items-center justify-center">
-                              <div className="relative w-full rounded-t-xl bg-[#0F172A] border-[6px] sm:border-[8px] border-slate-900 shadow-[0_20px_50px_rgba(0,102,255,0.12)] overflow-hidden aspect-[16/10] flex items-center justify-center">
-                                <img
-                                  src={project.coverImage}
-                                  alt={project.name}
-                                  className="w-full h-full object-cover"
-                                  loading="lazy"
-                                />
+                            {project.metrics[1] && (
+                              <div>
+                                <p className="text-2xl sm:text-3xl font-bold text-[#0F172A] tracking-tight">
+                                  {project.metrics[1].value}
+                                </p>
+                                <p className="text-xs text-slate-500 mt-1 font-normal leading-snug">
+                                  {project.metrics[1].label}
+                                </p>
                               </div>
-                              <div className="relative w-full h-3 sm:h-3.5 bg-gradient-to-b from-slate-200 to-slate-300 rounded-b-xl border-t border-slate-400/80 shadow-md flex justify-center items-start">
-                                <div className="w-20 h-1.5 rounded-b-sm bg-slate-400" />
-                              </div>
-                            </div>
-                          )}
-                        </Link>
+                            )}
+                          </div>
+                        )}
+
+                        {/* CTA Button ลิงก์ตรงไปหน้า Product เสมอ */}
+                        {cardItem.ctaLink ? (
+                          <Link
+                            href={cardItem.ctaLink}
+                            prefetch={true}
+                            className="w-full py-3.5 px-6 rounded-full bg-[#0066FF] hover:bg-[#0052CC] text-white font-medium text-xs sm:text-sm flex items-center justify-center gap-2 shadow-[0_8px_20px_rgba(0,102,255,0.3)] hover:shadow-[0_12px_28px_rgba(0,102,255,0.45)] transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] cursor-pointer group"
+                          >
+                            <span>{cardItem.ctaText || 'ดูสินค้าทั้งหมด'}</span>
+                            <ArrowUpRight className="w-4 h-4 stroke-[2.5] transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                          </Link>
+                        ) : cardItem.tabCategory === 'printing' ? (
+                          <Link
+                            href={
+                              cardItem.id === 'printing-printer'
+                                ? '/solutions/printing?type=printer'
+                                : '/solutions/printing?type=supply'
+                            }
+                            prefetch={true}
+                            className="w-full py-3.5 px-6 rounded-full bg-[#0066FF] hover:bg-[#0052CC] text-white font-medium text-xs sm:text-sm flex items-center justify-center gap-2 shadow-[0_8px_20px_rgba(0,102,255,0.3)] hover:shadow-[0_12px_28px_rgba(0,102,255,0.45)] transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] cursor-pointer group"
+                          >
+                            <span>{cardItem.ctaText || 'ดูสินค้าทั้งหมด'}</span>
+                            <ArrowUpRight className="w-4 h-4 stroke-[2.5] transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                          </Link>
+                        ) : cardItem.tabCategory === 'network' ? (
+                          <Link
+                            href={
+                              cardItem.id === 'network-datacenter'
+                                ? '/solutions/network?type=server'
+                                : '/solutions/network?type=firewall'
+                            }
+                            prefetch={true}
+                            className="w-full py-3.5 px-6 rounded-full bg-[#0066FF] hover:bg-[#0052CC] text-white font-medium text-xs sm:text-sm flex items-center justify-center gap-2 shadow-[0_8px_20px_rgba(0,102,255,0.3)] hover:shadow-[0_12px_28px_rgba(0,102,255,0.45)] transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] cursor-pointer group"
+                          >
+                            <span>{cardItem.ctaText || 'ดูสินค้า Network ทั้งหมด'}</span>
+                            <ArrowUpRight className="w-4 h-4 stroke-[2.5] transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                          </Link>
+                        ) : cardItem.tabCategory === 'hardware' ? (
+                          <Link
+                            href={
+                              cardItem.id === 'hardware-barcode-scanner'
+                                ? '/solutions/hardware?sub=Handheld Barcode Scanner'
+                                : cardItem.id === 'hardware-computer-display'
+                                ? '/solutions/hardware?sub=Computer'
+                                : cardItem.id === 'hardware-equipment-power'
+                                ? '/solutions/hardware?sub=UPS'
+                                : '/solutions/hardware'
+                            }
+                            prefetch={true}
+                            className="w-full py-3.5 px-6 rounded-full bg-[#0066FF] hover:bg-[#0052CC] text-white font-medium text-xs sm:text-sm flex items-center justify-center gap-2 shadow-[0_8px_20px_rgba(0,102,255,0.3)] hover:shadow-[0_12px_28px_rgba(0,102,255,0.45)] transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] cursor-pointer group"
+                          >
+                            <span>{cardItem.ctaText || 'ดูสินค้าทั้งหมด'}</span>
+                            <ArrowUpRight className="w-4 h-4 stroke-[2.5] transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                          </Link>
+                        ) : cardItem.tabCategory === 'software' ? (
+                          <Link
+                            href="/solutions/software"
+                            prefetch={true}
+                            className="w-full py-3.5 px-6 rounded-full bg-[#0066FF] hover:bg-[#0052CC] text-white font-medium text-xs sm:text-sm flex items-center justify-center gap-2 shadow-[0_8px_20px_rgba(0,102,255,0.3)] hover:shadow-[0_12px_28px_rgba(0,102,255,0.45)] transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] cursor-pointer group"
+                          >
+                            <span>{cardItem.ctaText || 'ดูรายละเอียดระบบ'}</span>
+                            <ArrowUpRight className="w-4 h-4 stroke-[2.5] transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                          </Link>
+                        ) : (
+                          <button
+                            onClick={() => handleSelectCard(cardItem)}
+                            className="w-full py-3.5 px-6 rounded-full bg-[#0066FF] hover:bg-[#0052CC] text-white font-medium text-xs sm:text-sm flex items-center justify-center gap-2 shadow-[0_8px_20px_rgba(0,102,255,0.3)] hover:shadow-[0_12px_28px_rgba(0,102,255,0.45)] transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] cursor-pointer group"
+                          >
+                            <span>{cardItem.ctaText || 'ดูรายละเอียด'}</span>
+                            <ArrowUpRight className="w-4 h-4 stroke-[2.5] transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                          </button>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Right Column: Preview / Media */}
+                    <div
+                      onClick={() => handleSelectCard(cardItem)}
+                      className={`w-full lg:w-[62%] relative overflow-hidden group cursor-pointer flex items-center justify-center ${
+                        cardItem.isProductPhoto
+                          ? 'p-0 bg-slate-100 min-h-0 md:min-h-[420px] lg:min-h-full'
+                          : 'p-6 sm:p-8 lg:p-10 bg-gradient-to-br from-slate-50/80 to-blue-50/20 min-h-[300px] sm:min-h-[400px] lg:min-h-full'
+                      }`}
+                    >
+                      {isPlaying && project.videoUrl ? (
+                        <div className="relative w-full aspect-[16/10] rounded-xl overflow-hidden shadow-2xl bg-black">
+                          <iframe
+                            src={project.videoUrl}
+                            title={project.name}
+                            className="w-full h-full border-0"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowFullScreen
+                          />
+                        </div>
+                      ) : cardItem.isProductPhoto ? (
+                        <div className="relative w-full h-auto md:h-full md:min-h-[420px] lg:min-h-[500px] overflow-hidden bg-slate-100 group/photo">
+                          <img
+                            src={project.coverImage}
+                            alt={project.name}
+                            className="w-full h-auto object-contain md:h-full md:min-h-[420px] lg:min-h-[500px] md:object-cover object-center transition-transform duration-500 ease-out group-hover/photo:scale-[1.03]"
+                            loading="lazy"
+                          />
+                        </div>
                       ) : (
-                        <div
-                          onClick={() => handleSelectCard(cardItem)}
-                          className={`w-full lg:w-[62%] relative overflow-hidden group cursor-pointer flex items-center justify-center p-6 sm:p-8 lg:p-10 min-h-[360px] sm:min-h-[420px] lg:min-h-full ${
-                            cardItem.isProductPhoto
-                              ? 'bg-white'
-                              : 'bg-gradient-to-br from-slate-50/80 to-blue-50/20'
-                          }`}
-                        >
-                          {cardItem.isProductPhoto ? (
-                            <div className="relative w-full max-w-[740px] xl:max-w-[780px] my-auto flex items-center justify-center p-2 sm:p-4 lg:p-6">
-                              <img
-                                src={project.coverImage}
-                                alt={project.name}
-                                className="w-full max-w-[440px] sm:max-w-[560px] md:max-w-[640px] lg:max-w-[720px] max-h-[440px] sm:max-h-[480px] lg:max-h-[520px] h-auto object-contain transition-transform duration-500 ease-out group-hover:scale-[1.03] drop-shadow-[0_18px_35px_rgba(0,0,0,0.12)]"
-                                loading="lazy"
-                              />
-                            </div>
-                          ) : (
-                            /* Centered Laptop Mockup matching Reference Image 2 */
-                            <div className="relative w-full max-w-[760px] my-auto transition-transform duration-500 ease-out group-hover:scale-[1.015] flex flex-col items-center justify-center">
-                              {/* Laptop Screen Bezel */}
-                              <div className="relative w-full rounded-t-xl bg-[#0F172A] border-[6px] sm:border-[8px] border-slate-900 shadow-[0_20px_50px_rgba(0,102,255,0.12)] overflow-hidden aspect-[16/10] flex items-center justify-center">
-                                <img
-                                  src={project.coverImage}
-                                  alt={project.name}
-                                  className="w-full h-full object-cover"
-                                  loading="lazy"
-                                />
+                        <div className="relative w-full max-w-[760px] my-auto transition-transform duration-500 ease-out group-hover:scale-[1.015] flex flex-col items-center justify-center">
+                          <div className="relative w-full rounded-t-xl bg-[#0F172A] border-[6px] sm:border-[8px] border-slate-900 shadow-[0_20px_50px_rgba(0,102,255,0.12)] overflow-hidden aspect-[16/10] flex items-center justify-center">
+                            <img
+                              src={project.coverImage}
+                              alt={project.name}
+                              className="w-full h-full object-cover object-top"
+                              loading="lazy"
+                            />
 
-                                {/* Video Popup Trigger Button if video is available */}
-                                {project.videoUrl && (
-                                  <button
-                                    type="button"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleSelectProject(project);
-                                    }}
-                                    className="absolute bottom-3 right-3 px-3 py-1.5 rounded-full bg-black/60 hover:bg-black/80 backdrop-blur-md text-white text-[11px] font-medium flex items-center gap-1.5 transition-transform hover:scale-105 active:scale-95 shadow-lg border border-white/20 cursor-pointer"
-                                  >
-                                    <Play className="w-3.5 h-3.5 fill-white" />
-                                    <span>ดูคลิปสาธิต</span>
-                                  </button>
-                                )}
-                              </div>
+                            {project.videoUrl && (
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleSelectProject(project);
+                                }}
+                                className="absolute bottom-3 right-3 px-3 py-1.5 rounded-full bg-black/60 hover:bg-black/80 backdrop-blur-md text-white text-[11px] font-medium flex items-center gap-1.5 transition-transform hover:scale-105 active:scale-95 shadow-lg border border-white/20 cursor-pointer"
+                              >
+                                <Play className="w-3.5 h-3.5 fill-white" />
+                                <span>ดูคลิปสาธิต</span>
+                              </button>
+                            )}
+                          </div>
 
-                              {/* Laptop Bottom Base */}
-                              <div className="relative w-full h-3 sm:h-3.5 bg-gradient-to-b from-slate-200 to-slate-300 rounded-b-xl border-t border-slate-400/80 shadow-md flex justify-center items-start">
-                                <div className="w-20 h-1.5 rounded-b-sm bg-slate-400" />
-                              </div>
-                            </div>
-                          )}
+                          <div className="relative w-full h-3 sm:h-3.5 bg-gradient-to-b from-slate-200 to-slate-300 rounded-b-xl border-t border-slate-400/80 shadow-md flex justify-center items-start">
+                            <div className="w-20 h-1.5 rounded-b-sm bg-slate-400" />
+                          </div>
                         </div>
                       )}
                     </div>
-                  </motion.div>
-                );
-              })}
-        </div>
+                  </div>
+                </motion.div>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {/* Project Detail Modal */}

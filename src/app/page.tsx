@@ -1,34 +1,70 @@
-import { supabase } from "@/lib/supabase";
+
+import { pgSelect } from "@/lib/db";
+import { listPublicProducts, listPublicSoftware, listPublicSolutionTopics } from "@/lib/public-catalog";
 import { Navbar } from "@/components/navbar";
 import { HeroShowcase } from "@/components/hero-showcase";
 import { HospitalDashboard } from "@/components/hospital-dashboard";
 import { CaseStudies } from "@/components/case-studies";
-import { TeamSection } from "@/components/team-section";
+import { TeamSection, TeamMember } from "@/components/team-section";
+import { listTeamMembers } from "@/lib/team";
+import { listPublicCustomers, type PublicCustomer } from "@/lib/public-customers";
 import { StatsTicker } from "@/components/stats-ticker";
 import { AboutSection } from "@/components/about-section";
 import { Footer } from "@/components/footer";
 
-export const revalidate = 60;
+export const dynamic = "force-dynamic";
 
 export default async function Home() {
+  let initialCategories: { id: number; category_id: string; name: string }[] = [];
   let initialSoftwareRecords: Record<string, unknown>[] = [];
-  try {
-    const fetchPromise = supabase
-      .from("TB_PRODUCT_SOFTWARE")
-      .select("*")
-      .order("id", { ascending: true });
+  let initialProducts: Record<string, unknown>[] = [];
+  let initialSolutionTopics: Record<string, unknown>[] = [];
+  let initialTeamMembers: TeamMember[] = [];
+  let initialCustomers: PublicCustomer[] = [];
 
-    const timeoutPromise = new Promise<{ data: null; error: Error }>((resolve) =>
-      setTimeout(() => resolve({ data: null, error: new Error("Timeout") }), 500)
-    );
+  // 1. โหลดข้อมูลจาก Local PostgreSQL (ไม่ดึง base64 blob ลงมาใน HTML)
+  {
+    try {
+      const [catData, softData, prodData, topicsData, teamData, customerData] = await Promise.all([
+        pgSelect({ table: "TBM_PRODUCT_CATEGORIES", where: { is_active: true }, orderBy: "id", orderDir: "asc" }),
+        listPublicSoftware(30),
+        listPublicProducts({ limit: 300, orderDir: "asc" }),
+        listPublicSolutionTopics(),
+        listTeamMembers(),
+        listPublicCustomers(),
+      ]);
 
-    const { data: records, error } = await Promise.race([fetchPromise, timeoutPromise]);
-
-    if (!error && records && records.length > 0) {
-      initialSoftwareRecords = records as Record<string, unknown>[];
+      initialCategories = (catData || []).map((c) => ({
+        id: Number(c.id),
+        category_id: String(c.category_id),
+        name: String(c.name),
+      }));
+      initialSoftwareRecords = (softData || []).map((item) => ({
+        ...item,
+        cover_image_url:
+          typeof item.cover_image_url === "string" && item.cover_image_url
+            ? item.cover_image_url
+            : "/images/showcase-laptop.png",
+      }));
+      initialProducts = (prodData || []).map((item) => {
+        const isNetwork = String(item.category_id || "").toLowerCase().includes("network");
+        const defaultFallback = isNetwork
+          ? "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=1400&q=80"
+          : "/images/printer-product.png";
+        return {
+          ...item,
+          cover_image_url:
+            typeof item.cover_image_url === "string" && item.cover_image_url
+              ? item.cover_image_url
+              : defaultFallback,
+        };
+      });
+      initialSolutionTopics = topicsData || [];
+      initialTeamMembers = teamData || [];
+      initialCustomers = customerData || [];
+    } catch (pgErr) {
+      throw pgErr;
     }
-  } catch (err) {
-    console.error("Error loading software programs on home page:", err);
   }
 
   return (
@@ -45,13 +81,18 @@ export default async function Home() {
         <HospitalDashboard />
 
         {/* 3. IT Solution & Product (Sticky Stacked Cards) */}
-        <CaseStudies initialSoftwareRecords={initialSoftwareRecords} />
+        <CaseStudies
+          initialCategories={initialCategories}
+          initialSoftwareRecords={initialSoftwareRecords}
+          initialProducts={initialProducts}
+          initialSolutionTopics={initialSolutionTopics}
+        />
 
         {/* 4. Core Leadership & Specialist Team */}
-        <TeamSection />
+        <TeamSection initialMembers={initialTeamMembers} />
 
-        {/* 5. Partner Strip & Key Enterprise Metrics (15+ Years, 12 Systems, 99.9%, 24/7) */}
-        <StatsTicker />
+        {/* 5. Partner Strip & Key Enterprise Metrics */}
+        <StatsTicker initialCustomers={initialCustomers} />
 
         {/* 6. About TOP PROVIDER SYSTEM GROUP */}
         <AboutSection />

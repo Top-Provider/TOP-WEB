@@ -1,24 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
-
-const rawUrl =
-  process.env.NEXT_PUBLIC_SUPABASE_URL ||
-  "https://placeholder-project.supabase.co";
-const cleanUrl = rawUrl.replace(/\/rest\/v1\/?$/, "").replace(/\/$/, "");
-
-const supabaseKey =
-  process.env.SUPABASE_SERVICE_ROLE_KEY ||
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
-  process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
-  "";
-
-const supabase = createClient(cleanUrl, supabaseKey, {
-  auth: {
-    persistSession: false,
-    autoRefreshToken: false,
-  },
-});
-
+import { pgSelect } from "@/lib/db";
 export interface ProductItemResponse {
   id: number;
   name: string;
@@ -27,7 +8,7 @@ export interface ProductItemResponse {
   category_id: string;
   sub_category?: string;
   brand?: string;
-  product_type: "printer" | "supply";
+  product_type: "printer" | "supply" | "hardware" | "network" | string;
   short_description?: string;
   full_description?: string;
   specifications: { label: string; value: string }[];
@@ -46,23 +27,10 @@ export async function GET(req: NextRequest) {
     const categoryParam = searchParams.get("category"); // 'Printing'
     const searchParam = searchParams.get("search")?.toLowerCase();
 
-    // ดึงข้อมูลจากตารางรวม TB_PRODUCTS
-    let query = supabase
-      .from("TB_PRODUCTS")
-      .select("*")
-      .eq("is_active", true)
-      .order("id", { ascending: false });
-
-    if (categoryParam) {
-      query = query.eq("category_id", categoryParam);
-    }
-    if (typeParam && typeParam !== "all") {
-      query = query.eq("product_type", typeParam);
-    }
-
-    const { data: productsData } = await query;
-    const allRecords: Record<string, unknown>[] = productsData && Array.isArray(productsData) ? productsData : [];
-
+    const records = await pgSelect({ table: "TB_PRODUCTS", where: { is_active: true }, orderBy: "id", orderDir: "desc", limit: 1000 });
+    const allRecords: Record<string, unknown>[] = records.filter(item =>
+      (!categoryParam || String(item.category_id).toLowerCase() === categoryParam.toLowerCase()) &&
+      (!typeParam || typeParam === "all" || item.product_type === typeParam));
     let products: ProductItemResponse[] = [];
 
     if (allRecords.length > 0) {
@@ -82,11 +50,17 @@ export async function GET(req: NextRequest) {
           category_id: String(item.category_id || "Printing"),
           sub_category: String(item.sub_category || ""),
           brand: String(item.brand || ""),
-          product_type: (item.product_type === "supply" ? "supply" : "printer"),
+          product_type: String(item.product_type || "printer"),
           short_description: String(item.short_description || ""),
           full_description: String(item.full_description || ""),
           specifications: specs,
-          cover_image_url: String(item.cover_image_url || "/images/printer-product.png"),
+          cover_image_url: item.cover_image_url
+            ? (String(item.cover_image_url).startsWith("data:")
+                ? `/api/product-image/${item.id}`
+                : String(item.cover_image_url))
+            : (String(item.category_id).toLowerCase() === "network"
+                ? "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=800&q=80"
+                : "/images/printer-product.png"),
           gallery_images: Array.isArray(item.gallery_images) ? (item.gallery_images as string[]) : [],
           compatible_products: compat,
           datasheet_en_url: String(item.datasheet_en_url || ""),

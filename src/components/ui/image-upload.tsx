@@ -5,14 +5,14 @@ import { UploadCloud, X, RefreshCw, Link as LinkIcon, Image as ImageIcon } from 
 import { cn } from "cn";
 
 interface ImageUploadProps {
-  value: string;
+  value?: string;
   onChange: (value: string) => void;
   label?: string;
   description?: string;
 }
 
 export function ImageUpload({
-  value,
+  value = "",
   onChange,
   label = "รูปภาพ (Image)",
   description = "รองรับไฟล์ PNG, JPG, WebP หรือ SVG",
@@ -27,11 +27,51 @@ export function ImageUpload({
       return;
     }
 
+    // หากเป็น SVG ให้อ่านเป็น Data URL ตรงๆ
+    if (file.type === "image/svg+xml") {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        if (event.target?.result) {
+          onChange(event.target.result as string);
+        }
+      };
+      reader.readAsDataURL(file);
+      return;
+    }
+
+    // บีบอัดรูปภาพผ่าน Canvas ก่อนส่งค่า ป้องกันขนาด Payload บวมเกิน Limit ของ Vercel
     const reader = new FileReader();
     reader.onload = (event) => {
-      if (event.target?.result) {
-        onChange(event.target.result as string);
-      }
+      const img = document.createElement("img");
+      img.onload = () => {
+        const maxWidth = 1920;
+        const maxHeight = 1920;
+        let width = img.width;
+        let height = img.height;
+
+        if (width > maxWidth || height > maxHeight) {
+          if (width > height) {
+            height = Math.round((height * maxWidth) / width);
+            width = maxWidth;
+          } else {
+            width = Math.round((width * maxHeight) / height);
+            height = maxHeight;
+          }
+        }
+
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        if (ctx) {
+          ctx.drawImage(img, 0, 0, width, height);
+          const compressedDataUrl = canvas.toDataURL("image/webp", 0.9);
+          onChange(compressedDataUrl);
+        } else {
+          onChange(event.target?.result as string);
+        }
+      };
+      img.src = event.target?.result as string;
     };
     reader.readAsDataURL(file);
   };

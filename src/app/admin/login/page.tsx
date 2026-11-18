@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabase";
+
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -18,59 +18,22 @@ export default function AdminLoginPage() {
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  // ถ้าล็อกอินอยู่แล้ว ให้ redirect ไปที่ /admin ทันที
   React.useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) {
-        router.replace("/admin");
-      }
-    });
+    fetch("/api/auth/session", { cache: "no-store" }).then(res => { if (res.ok) router.replace("/admin"); }).catch(() => {});
   }, [router]);
-
   const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setErrorMessage(null);
-
-    const cleanUsername = username.trim().toLowerCase();
-
-    // 1. รองรับ Username หรือ Email:
-    // ถ้าพิมพ์ username เพียวๆ (เช่น admin) ให้แปลงเป็นอีเมลอัตโนมัติ (เช่น admin@topprovider.co.th) เพื่อส่งให้ Supabase Auth
-    const emailToAuth = cleanUsername.includes("@")
-      ? cleanUsername
-      : `${cleanUsername}@topprovider.co.th`;
-
+    e.preventDefault(); setLoading(true); setErrorMessage(null);
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: emailToAuth,
-        password: password,
+      const res = await fetch("/api/auth/login", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username: username.trim(), password }),
       });
-
-      if (error) {
-        // กรณี credentials ไม่ถูกต้อง
-        if (
-          error.message.includes("Invalid login credentials") ||
-          error.message.includes("Email not confirmed")
-        ) {
-          setErrorMessage("ชื่อผู้ใช้งาน (Username) หรือรหัสผ่านไม่ถูกต้อง");
-        } else {
-          setErrorMessage(`ไม่สามารถเข้าสู่ระบบได้: ${error.message}`);
-        }
-      } else if (data?.user) {
-        // บันทึกชื่อ username ไว้แสดงผลใน layout
-        if (typeof window !== "undefined") {
-          localStorage.setItem("admin_username", username.trim());
-        }
-        router.push("/admin");
-      }
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : String(err);
-      setErrorMessage(`เกิดข้อผิดพลาด: ${msg}`);
-    } finally {
-      setLoading(false);
-    }
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "ไม่สามารถเข้าสู่ระบบได้");
+      router.replace("/admin"); router.refresh();
+    } catch (error) { setErrorMessage(error instanceof Error ? error.message : "ไม่สามารถเข้าสู่ระบบได้"); }
+    finally { setLoading(false); }
   };
-
   return (
     <div className="min-h-screen bg-slate-900 flex flex-col justify-center items-center p-4 selection:bg-blue-600 selection:text-white relative overflow-hidden">
       {/* Background Glow effects */}

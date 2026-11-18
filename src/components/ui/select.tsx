@@ -18,6 +18,7 @@ export interface CustomSelectProps {
   options: SelectOption[];
   placeholder?: string;
   className?: string;
+  triggerClassName?: string;
   disabled?: boolean;
 }
 
@@ -28,6 +29,7 @@ export function Select({
   options,
   placeholder = "เลือกรายการ...",
   className,
+  triggerClassName,
   disabled = false,
 }: CustomSelectProps) {
   const [isOpen, setIsOpen] = useState(false);
@@ -91,7 +93,8 @@ export function Select({
           "hover:border-blue-400/70 hover:shadow-xs focus:outline-none focus:border-blue-600 focus:ring-3 focus:ring-blue-500/15",
           isOpen && "border-blue-600 ring-3 ring-blue-500/15 shadow-xs",
           disabled && "opacity-50 cursor-not-allowed bg-slate-50",
-          !selectedOption ? "text-slate-400" : "text-slate-800"
+          !selectedOption ? "text-slate-400" : "text-slate-800",
+          triggerClassName
         )}
       >
         <span className="truncate flex items-center gap-2">

@@ -23,6 +23,7 @@ import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Modal } from "@/components/ui/modal";
+import { AdminLoadingState } from "@/components/admin/admin-loading-state";
 import { toast } from "@/components/ui/toast";
 import { fetchRecords, saveRecord } from "@/lib/crud";
 
@@ -118,7 +119,7 @@ export function MasterDataHub() {
   // Fetch Main Categories
   const loadMainCategories = async () => {
     try {
-      const res = await fetch("/api/admin/categories");
+      const res = await fetch("/api/admin/categories?all=true");
       const json = await res.json();
       if (json && json.success && Array.isArray(json.categories)) {
         setMainCategories(json.categories);
@@ -378,7 +379,7 @@ export function MasterDataHub() {
         <Button
           type="button"
           onClick={handleOpenAdd}
-          className="bg-[#0066FF] hover:bg-[#0052CC] text-white rounded-xl shadow-sm text-xs font-semibold px-4 py-2.5 flex items-center gap-1.5 cursor-pointer shrink-0"
+          className="rounded-xl bg-blue-600 hover:bg-blue-700 text-white h-10 px-5 text-sm font-semibold shadow-sm shadow-blue-600/20 gap-2 cursor-pointer shrink-0"
         >
           <Plus className="w-4 h-4" />
           <span>เพิ่มข้อมูลใหม่</span>
@@ -451,6 +452,19 @@ export function MasterDataHub() {
         onClose={() => setStatusModal((prev) => ({ ...prev, isOpen: false }))}
         title={statusModal.type === "success" ? "แจ้งเตือนการทำรายการ" : "เกิดข้อผิดพลาด"}
         maxWidth="sm"
+        footer={
+          <Button
+            type="button"
+            onClick={() => setStatusModal((prev) => ({ ...prev, isOpen: false }))}
+            className={`w-full rounded-xl h-10 text-white text-sm font-semibold cursor-pointer ${
+              statusModal.type === "success"
+                ? "bg-emerald-600 hover:bg-emerald-700"
+                : "bg-slate-800 hover:bg-slate-900"
+            }`}
+          >
+            ตกลง
+          </Button>
+        }
       >
         <div className="py-2 text-center space-y-4">
           <div className="flex justify-center">
@@ -476,20 +490,6 @@ export function MasterDataHub() {
             <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
               {statusModal.message}
             </p>
-          </div>
-
-          <div className="pt-2">
-            <Button
-              type="button"
-              onClick={() => setStatusModal((prev) => ({ ...prev, isOpen: false }))}
-              className={`w-full py-2.5 rounded-xl text-white text-xs font-semibold cursor-pointer ${
-                statusModal.type === "success"
-                  ? "bg-emerald-600 hover:bg-emerald-700"
-                  : "bg-slate-800 hover:bg-slate-900"
-              }`}
-            >
-              ตกลง
-            </Button>
           </div>
         </div>
       </Modal>
@@ -573,7 +573,7 @@ export function MasterDataTable({
                 </>
               )}
               <th className="py-3.5 px-4">สถานะ</th>
-              <th className="py-3.5 px-4 text-right">การจัดการ</th>
+              <th className="py-3.5 px-4 text-right sticky right-0 z-10 bg-slate-50 border-l border-slate-200/70 whitespace-nowrap">การจัดการ</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100 text-slate-700">
@@ -631,14 +631,14 @@ export function MasterDataTable({
                       )}
                     </td>
 
-                    <td className="py-3.5 px-4 text-right">
+                    <td className="py-3.5 px-4 text-right sticky right-0 z-10 bg-white border-l border-slate-100">
                       <div className="flex items-center justify-end gap-1.5">
                         <Button
                           type="button"
                           variant="ghost"
                           size="xs"
                           onClick={() => onEdit(item)}
-                          className="text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg cursor-pointer"
+                          className="bg-amber-50 text-amber-600 hover:bg-amber-100 hover:text-amber-700 border border-amber-200/70 rounded-lg cursor-pointer"
                           title="แก้ไข"
                         >
                           <Edit className="w-3.5 h-3.5" />
@@ -654,7 +654,7 @@ export function MasterDataTable({
                               isMain ? mainItem.name : (optItem.label || optItem.value)
                             )
                           }
-                          className="text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg cursor-pointer"
+                          className="bg-rose-50 text-rose-600 hover:bg-rose-100 hover:text-rose-700 border border-rose-200/70 rounded-lg cursor-pointer"
                           title="ลบ"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
@@ -664,10 +664,16 @@ export function MasterDataTable({
                   </tr>
                 );
               })
+            ) : isLoading ? (
+              <tr>
+                <td colSpan={7}>
+                  <AdminLoadingState label="กำลังโหลดข้อมูล..." />
+                </td>
+              </tr>
             ) : (
               <tr>
                 <td colSpan={7} className="py-12 text-center text-slate-400">
-                  {isLoading ? "กำลังโหลดข้อมูล..." : "ไม่พบข้อมูลในหมวดหมู่นี้"}
+                  ไม่พบข้อมูลในหมวดหมู่นี้
                 </td>
               </tr>
             )}
@@ -717,8 +723,31 @@ export function MasterDataModal({
           ? `แก้ไข${isMain ? "หมวดหมู่หลัก" : "ตัวเลือก"}`
           : `เพิ่ม${isMain ? "หมวดหมู่หลักใหม่" : "ตัวเลือกใหม่"}`
       }
+      footer={
+        <>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onClose}
+            disabled={isSaving}
+            className="rounded-xl px-5 h-10 text-sm font-medium cursor-pointer"
+          >
+            ยกเลิก
+          </Button>
+          <Button
+            type="submit"
+            form="master-data-form"
+            disabled={isSaving}
+            className="rounded-xl bg-blue-600 hover:bg-blue-700 text-white px-6 h-10 text-sm font-semibold shadow-sm shadow-blue-600/20 cursor-pointer flex items-center gap-2"
+          >
+            {isSaving && <Loader2 className="w-4 h-4 animate-spin" />}
+            <span>{editingId ? "บันทึกการแก้ไข" : "บันทึกข้อมูล"}</span>
+          </Button>
+        </>
+      }
     >
       <form
+        id="master-data-form"
         onSubmit={onSubmit}
         onKeyDown={(e) => {
           if (e.key === "Enter" && (e.target as HTMLElement).tagName !== "TEXTAREA") {
@@ -853,25 +882,6 @@ export function MasterDataModal({
             </div>
           </>
         )}
-
-        <div className="flex items-center justify-end gap-2.5 pt-4 border-t border-slate-100">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={onClose}
-            className="text-xs rounded-xl cursor-pointer"
-          >
-            ยกเลิก
-          </Button>
-          <Button
-            type="submit"
-            disabled={isSaving}
-            className="bg-[#0066FF] hover:bg-[#0052CC] text-white text-xs font-semibold rounded-xl px-5 cursor-pointer flex items-center gap-1.5"
-          >
-            {isSaving && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
-            <span>{editingId ? "บันทึกการแก้ไข" : "บันทึกข้อมูล"}</span>
-          </Button>
-        </div>
       </form>
     </Modal>
   );

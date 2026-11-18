@@ -1,14 +1,17 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { Inter, Noto_Sans_Thai } from "next/font/google";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { ToastContainer } from "@/components/ui/toast";
-import { supabase } from "@/lib/supabase";
+import { ToastContainer, toast } from "@/components/ui/toast";
+import { AdminNotificationBell } from "@/components/helpdesk/admin-notification-bell";
+
 import {
   LayoutDashboard,
+  LayoutGrid,
   Package,
   Layers,
   FolderTree,
@@ -19,12 +22,44 @@ import {
   ChevronLeft,
   ChevronRight,
   Loader2,
+  Users,
+  Calendar,
+  Wrench,
+  SlidersHorizontal,
+  UserPlus,
+  Building2,
+  MessageSquare,
 } from "lucide-react";
+
+const inter = Inter({
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700", "800"],
+  display: "swap",
+});
+
+const notoSansThai = Noto_Sans_Thai({
+  subsets: ["thai"],
+  weight: ["300", "400", "500", "600", "700", "800"],
+  display: "swap",
+});
+
+const adminFontStyle = {
+  ["--font-sans" as string]: `${inter.style.fontFamily}, ${notoSansThai.style.fontFamily}, sans-serif`,
+  fontFamily: `${inter.style.fontFamily}, ${notoSansThai.style.fontFamily}, sans-serif`,
+};
 
 const navigation = [
   { name: "แดชบอร์ด", href: "/admin", icon: LayoutDashboard },
+  { name: "แจ้งซ่อม (Helpdesk)", href: "/admin/helpdesk", icon: Wrench },
+  { name: "ลงทะเบียนลูกค้า (Helpdesk)", href: "/admin/helpdesk/customers", icon: UserPlus },
+  { name: "Master ลูกค้า", href: "/admin/customers", icon: Building2 },
+  { name: "ตั้งค่า SLA", href: "/admin/helpdesk/settings", icon: SlidersHorizontal },
   { name: "จัดการสินค้า (Master)", href: "/admin/products", icon: Package },
   { name: "จัดการโปรแกรม (Programs)", href: "/admin/programs", icon: Layers },
+  { name: "การ์ดภาพรวมโซลูชัน", href: "/admin/solution-topics", icon: LayoutGrid },
+  { name: "จัดการบุคลากร (Users)", href: "/admin/users", icon: Users },
+  { name: "กิจกรรมบริษัท (Activities)", href: "/admin/activities", icon: Calendar },
+  { name: "ข้อความติดต่อ (Contact)", href: "/admin/contact", icon: MessageSquare },
   { name: "ข้อมูลหลัก (Master Data)", href: "/admin/categories", icon: FolderTree },
 ];
 
@@ -40,6 +75,7 @@ export default function AdminLayout({
   const [displayUsername, setDisplayUsername] = useState("admin");
   const [checkingAuth, setCheckingAuth] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [newTicketCount, setNewTicketCount] = useState(0);
 
   useEffect(() => {
     try {
@@ -61,70 +97,19 @@ export default function AdminLayout({
   };
 
   React.useEffect(() => {
-    // ถ้าอยู่ที่หน้า Login ไม่ต้องตรวจสิทธิ์
-    if (pathname === "/admin/login") {
-      setCheckingAuth(false);
-      return;
-    }
-
-    let isMounted = true;
-
-    async function checkUserSession() {
-      try {
-        const {
-          data: { session },
-        } = await supabase.auth.getSession();
-
-        if (!session) {
-          if (isMounted) {
-            setIsAuthenticated(false);
-            setCheckingAuth(false);
-            router.replace("/admin/login");
-          }
-          return;
-        }
-
-        if (isMounted) {
-          setIsAuthenticated(true);
-          setCheckingAuth(false);
-          if (session.user?.email) {
-            const name = session.user.email.split("@")[0];
-            setDisplayUsername(name);
-          }
-        }
-      } catch (err) {
-        console.error("Auth session check error:", err);
-        if (isMounted) {
-          setIsAuthenticated(false);
-          setCheckingAuth(false);
-          router.replace("/admin/login");
-        }
-      }
-    }
-
-    checkUserSession();
-
-    // ฟังสถานะเปลี่ยน session (เช่น Logout หรือ Token หมดอายุ)
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === "SIGNED_OUT") {
-        setIsAuthenticated(false);
-        router.replace("/admin/login");
-      } else if (session) {
-        setIsAuthenticated(true);
-      }
-    });
-
-    return () => {
-      isMounted = false;
-      subscription.unsubscribe();
-    };
+    if (pathname === "/admin/login") { setCheckingAuth(false); return; }
+    let active = true;
+    setCheckingAuth(true);
+    fetch("/api/auth/session", { cache: "no-store" })
+      .then(async res => { if (!res.ok) throw new Error("Unauthorized"); return res.json(); })
+      .then(data => { if (active) { setIsAuthenticated(true); setDisplayUsername(data.user.username); } })
+      .catch(() => { if (active) { setIsAuthenticated(false); router.replace("/admin/login"); } })
+      .finally(() => { if (active) setCheckingAuth(false); });
+    return () => { active = false; };
   }, [pathname, router]);
-
   // ถ้าเป็นหน้า login ให้แสดง children ธรรมดา โดยไม่มี Sidebar
   if (pathname === "/admin/login") {
-    return <>{children}</>;
+    return <div className={`${inter.className} ${notoSansThai.className}`} style={adminFontStyle}>{children}</div>;
   }
 
   // กำลังตรวจสอบ Auth: แสดง Loading หน้าจอแอดมิน
@@ -153,18 +138,18 @@ export default function AdminLayout({
 
   const handleLogout = async () => {
     try {
-      await supabase.auth.signOut();
-      if (typeof window !== "undefined") {
-        localStorage.removeItem("admin_username");
-      }
+      const response = await fetch("/api/auth/logout", { method: "POST" });
+      if (!response.ok) throw new Error("Logout failed");
+      setIsAuthenticated(false);
+      router.replace("/admin/login");
     } catch (e) {
       console.error(e);
+      toast.error("ออกจากระบบไม่สำเร็จ กรุณาลองใหม่");
     }
-    router.push("/admin/login");
   };
 
   return (
-    <div className="min-h-screen bg-slate-100 flex">
+    <div className={`min-h-screen bg-slate-100 flex ${inter.className} ${notoSansThai.className}`} style={adminFontStyle}>
       {/* Mobile Sidebar Overlay */}
       {sidebarOpen && (
         <div
@@ -175,16 +160,16 @@ export default function AdminLayout({
 
       {/* Sidebar */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 bg-slate-900 text-slate-100 flex flex-col justify-between transition-all duration-300 ease-in-out lg:static lg:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-50 bg-slate-900 text-slate-100 flex flex-col justify-between transition-all duration-300 ease-in-out lg:sticky lg:top-0 lg:h-screen lg:translate-x-0 ${
           sidebarOpen
             ? "translate-x-0 w-64 shadow-2xl"
             : "-translate-x-full lg:translate-x-0"
         } ${isCollapsed ? "lg:w-20" : "lg:w-64"}`}
       >
-        <div>
+        <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
           {/* Logo & Header */}
           <div
-            className={`h-16 flex items-center border-b border-slate-800 transition-all duration-300 ${
+            className={`h-16 flex items-center border-b border-slate-800 shrink-0 transition-all duration-300 ${
               isCollapsed ? "px-3 justify-center" : "px-5 justify-between"
             }`}
           >
@@ -240,7 +225,7 @@ export default function AdminLayout({
 
           {/* Desktop Uncollapse Button when collapsed */}
           {isCollapsed && (
-            <div className="hidden lg:flex justify-center py-2 border-b border-slate-800/60">
+            <div className="hidden lg:flex justify-center py-2 border-b border-slate-800/60 shrink-0">
               <Button
                 variant="ghost"
                 size="icon-sm"
@@ -254,7 +239,7 @@ export default function AdminLayout({
           )}
 
           {/* Navigation Menu */}
-          <nav className="p-3 space-y-1.5">
+          <nav className="flex-1 p-3 space-y-1.5 overflow-y-auto">
             {!isCollapsed ? (
               <p className="px-3 text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-2">
                 จัดการระบบ
@@ -265,13 +250,14 @@ export default function AdminLayout({
             {navigation.map((item) => {
               const Icon = item.icon;
               const isActive = pathname === item.href;
+              const showBadge = item.href === "/admin/helpdesk" && newTicketCount > 0;
               return (
                 <Link
                   key={item.name}
                   href={item.href}
                   onClick={() => setSidebarOpen(false)}
                   title={item.name}
-                  className={`flex items-center rounded-xl text-xs sm:text-sm font-medium transition-all ${
+                  className={`relative flex items-center rounded-xl text-xs sm:text-sm font-medium transition-all ${
                     isCollapsed
                       ? "justify-center p-3"
                       : "gap-3 px-3 py-2.5"
@@ -282,7 +268,17 @@ export default function AdminLayout({
                   }`}
                 >
                   <Icon className="w-4 h-4 shrink-0" />
-                  {!isCollapsed && <span className="truncate">{item.name}</span>}
+                  {!isCollapsed && (
+                    <span className="truncate flex-1">{item.name}</span>
+                  )}
+                  {showBadge && !isCollapsed && (
+                    <span className="ml-auto inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-rose-500 px-1.5 text-[10px] font-bold text-white">
+                      {newTicketCount > 99 ? "99+" : newTicketCount}
+                    </span>
+                  )}
+                  {showBadge && isCollapsed && (
+                    <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-rose-500" />
+                  )}
                 </Link>
               );
             })}
@@ -290,7 +286,16 @@ export default function AdminLayout({
         </div>
 
         {/* Footer Actions */}
-        <div className="p-3 border-t border-slate-800 space-y-2">
+        <div className="p-3 border-t border-slate-800 space-y-2 shrink-0 bg-slate-900">
+          {!isCollapsed && (
+            <div className="px-3 py-1.5 rounded-lg bg-slate-800/60 flex items-center justify-between text-[11px] text-slate-400">
+              <span className="truncate">เข้าสู่ระบบโดย</span>
+              <span className="font-semibold text-emerald-400 flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                {displayUsername}
+              </span>
+            </div>
+          )}
           <Link
             href="/"
             target="_blank"
@@ -346,6 +351,7 @@ export default function AdminLayout({
           </div>
 
           <div className="flex items-center gap-3">
+            <AdminNotificationBell onNewCountChange={setNewTicketCount} />
             <div className="flex items-center gap-2.5">
               <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-700 font-bold text-xs flex items-center justify-center uppercase">
                 {displayUsername.charAt(0) || "A"}

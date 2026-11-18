@@ -46,7 +46,7 @@ export function HospitalDashboard() {
 
   return (
     <section className="py-12 sm:py-16 bg-[#F8FAFC]">
-      <div className="w-[94%] max-w-[1680px] mx-auto px-2 sm:px-4 lg:px-6">
+      <div className="w-[94%] max-w-[2200px] mx-auto px-2 sm:px-4 lg:px-6">
         {/* Section Header */}
         <div className="text-center mb-8 sm:mb-10">
           <p className="text-[10px] sm:text-[11px] font-bold uppercase tracking-[0.2em] text-[#0066FF] mb-2">
@@ -80,6 +80,7 @@ export function HospitalDashboard() {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.3 }}
+                suppressHydrationWarning
                 className="w-full h-full relative"
               >
                 {/* Top-Left Live/Part Indicator Overlay */}
@@ -112,18 +113,36 @@ export function HospitalDashboard() {
           </button>
         </div>
 
-        {/* Pagination Dots */}
-        <div className="flex items-center justify-center gap-2 mt-6">
-          {slides.map((slide, idx) => (
-            <button
-              key={slide.id}
-              onClick={() => setActiveSlide(idx)}
-              aria-label={`Go to slide ${idx + 1}`}
-              className={`h-2 rounded-full transition-all duration-300 cursor-pointer ${
-                activeSlide === idx ? "w-7 bg-[#0066FF]" : "w-2 bg-slate-300 hover:bg-slate-400"
-              }`}
-            />
-          ))}
+        {/* Pagination Dots & Mobile Controls */}
+        <div className="flex items-center justify-center gap-3 mt-5 sm:mt-6">
+          <button
+            onClick={prevSlide}
+            aria-label="Previous slide"
+            className="sm:hidden w-8 h-8 rounded-full bg-white border border-slate-200 text-slate-700 flex items-center justify-center shadow-xs active:bg-slate-100 cursor-pointer"
+          >
+            <ChevronLeft className="w-4 h-4" />
+          </button>
+
+          <div className="flex items-center gap-2">
+            {slides.map((slide, idx) => (
+              <button
+                key={slide.id}
+                onClick={() => setActiveSlide(idx)}
+                aria-label={`Go to slide ${idx + 1}`}
+                className={`h-2 rounded-full transition-all duration-300 cursor-pointer ${
+                  activeSlide === idx ? "w-7 bg-[#0066FF]" : "w-2 bg-slate-300 hover:bg-slate-400"
+                }`}
+              />
+            ))}
+          </div>
+
+          <button
+            onClick={nextSlide}
+            aria-label="Next slide"
+            className="sm:hidden w-8 h-8 rounded-full bg-white border border-slate-200 text-slate-700 flex items-center justify-center shadow-xs active:bg-slate-100 cursor-pointer"
+          >
+            <ChevronRight className="w-4 h-4" />
+          </button>
         </div>
       </div>
     </section>

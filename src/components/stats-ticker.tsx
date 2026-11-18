@@ -1,57 +1,79 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { Award, Layers, ShieldCheck, Headphones } from "lucide-react";
-
-const partnerBadges = [
-  { name: "Panacea Plus", tag: "Hospital HIS" },
-  { name: "Vitanix Claim", tag: "e-Claim Engine" },
-  { name: "HL7 / FHIR", tag: "Health Standard" },
-  { name: "Smart EMR", tag: "Paperless Ward" },
-  { name: "Medical Hardware", tag: "IP65 Grade" },
-  { name: "Core Network", tag: "10G Backbone" },
-  { name: "Smart Kiosk", tag: "Self-Service" },
-  { name: "AI & RTLS IoT", tag: "Smart Hospital" },
-];
+import { Zap, Award, ShieldCheck, TrendingUp, Building2 } from "lucide-react";
+import type { PublicCustomer } from "@/lib/public-customers";
 
 const stats = [
   {
-    icon: Award,
-    badge: "EXPERIENCE",
-    value: "15+ Years",
-    label: "ประสบการณ์เชี่ยวชาญ",
-    subtext: "ผู้นำด้านระบบสารสนเทศโรงพยาบาลครบวงจร",
+    icon: Zap,
+    badge: "EXPERTISE",
+    value: "10+ Years",
+    label: "ประสบการณ์ความเชี่ยวชาญ",
+    subtext: "วางแผน ออกแบบ และติดตั้งระบบโรงพยาบาลครบวงจร",
   },
   {
-    icon: Layers,
+    icon: Award,
     badge: "SOLUTIONS",
     value: "12 Systems",
-    label: "โซลูชันครอบคลุม",
-    subtext: "ซอฟต์แวร์ ฮาร์ดแวร์ เครือข่าย และเครื่องมือแพทย์",
+    label: "โซลูชันซอฟต์แวร์เฉพาะทาง",
+    subtext: "ครอบคลุมตั้งแต่ฐานข้อมูลคนไข้ แอดมิด คิว ไปจนถึงระบบเคลม",
   },
   {
     icon: ShieldCheck,
-    badge: "RELIABILITY",
+    badge: "ISO",
     value: "99.9%",
-    label: "ความเสถียรของระบบ",
-    subtext: "พร้อมใช้งานต่อเนื่องและปลอดภัยสูงสุด",
+    label: "เสถียรภาพและความปลอดภัย",
+    subtext: "รักษาความปลอดภัยข้อมูลคนไข้ตามมาตรฐานสากล",
   },
   {
-    icon: Headphones,
-    badge: "SUPPORT",
+    icon: TrendingUp,
+    badge: "VERIFIED",
     value: "24/7",
-    label: "บริการดูแลหลังการขาย",
-    subtext: "ทีมวิศวกรพร้อมซัพพอร์ตตลอด 24 ชั่วโมง",
+    label: "ทีมผู้เชี่ยวชาญดูแลครบวงจร",
+    subtext: "ให้คำแนะนำ แก้ปัญหา และดูแลระบบ",
   },
 ];
 
-export function StatsTicker() {
+interface StatsTickerProps {
+  initialCustomers?: PublicCustomer[];
+}
+
+export function StatsTicker({ initialCustomers = [] }: StatsTickerProps) {
+  const [customers, setCustomers] = useState<PublicCustomer[]>(initialCustomers);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    fetch("/api/customers", { cache: "no-store", signal: controller.signal })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((json) => {
+        if (json?.success && Array.isArray(json.data)) {
+          setCustomers(json.data);
+        }
+      })
+      .catch(() => {
+        // Ignore abort/network errors when initialCustomers is already rendered
+      });
+    return () => controller.abort();
+  }, []);
+
+  // Repeat enough items so the seamless -50% marquee loop fills wide screens smoothly
+  const marqueeItems = useMemo(() => {
+    if (customers.length === 0) return [];
+    const minItemsPerHalf = Math.max(customers.length, 8);
+    const half: PublicCustomer[] = [];
+    while (half.length < minItemsPerHalf) {
+      half.push(...customers);
+    }
+    return [...half, ...half];
+  }, [customers]);
+
   return (
     <section id="stats" className="bg-[#F8FAFC]">
-      {/* Top Partner & Technology Strip */}
+      {/* Top Partner & Hospital Customers Infinite Marquee */}
       <div className="bg-white border-y border-slate-200/80 py-6">
-        <div className="w-[94%] max-w-[1680px] mx-auto px-2 sm:px-4 lg:px-6">
+        <div className="w-[94%] max-w-[2200px] mx-auto px-2 sm:px-4 lg:px-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-5">
             <div className="flex items-center gap-2 text-xs font-semibold text-[#0066FF]">
               <span className="w-2 h-2 rounded-full bg-[#0066FF]" />
@@ -62,26 +84,44 @@ export function StatsTicker() {
             </span>
           </div>
 
-          <div className="flex items-center gap-3 overflow-x-auto py-1 no-scrollbar">
-            {partnerBadges.map((item) => (
+          {marqueeItems.length > 0 && (
+            <div className="relative overflow-hidden py-1">
+              <div className="pointer-events-none absolute inset-y-0 left-0 w-10 bg-gradient-to-r from-white to-transparent z-10" />
+              <div className="pointer-events-none absolute inset-y-0 right-0 w-10 bg-gradient-to-l from-white to-transparent z-10" />
               <div
-                key={item.name}
-                className="shrink-0 inline-flex items-center gap-2.5 px-4 py-2 rounded-full bg-slate-50/70 border border-slate-200/80 text-xs font-semibold text-slate-700"
+                className="animate-marquee-loop flex items-center gap-3.5"
+                style={{ animation: "marquee-loop 35s linear infinite", width: "max-content" }}
               >
-                <span className="w-1.5 h-1.5 rounded-full bg-[#0066FF]" />
-                <span>{item.name}</span>
-                <span className="text-[10px] font-medium text-[#0066FF] bg-blue-50 px-2.5 py-0.5 rounded-full border border-blue-100">
-                  {item.tag}
-                </span>
+                {marqueeItems.map((customer, index) => (
+                  <div
+                    key={`${customer.customerId}-${index}`}
+                    className="shrink-0 inline-flex items-center gap-2.5 px-4 py-2 rounded-full bg-slate-50/80 border border-slate-200/80 text-xs font-semibold text-slate-700 shadow-2xs"
+                  >
+                    {customer.logoUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={customer.logoUrl}
+                        alt={customer.customerName}
+                        className="w-6 h-6 rounded-full object-contain bg-white border border-slate-200/80 p-0.5 shrink-0"
+                        loading="lazy"
+                      />
+                    ) : (
+                      <span className="w-6 h-6 rounded-full bg-blue-50 border border-blue-100 flex items-center justify-center shrink-0">
+                        <Building2 className="w-3.5 h-3.5 text-[#0066FF]" />
+                      </span>
+                    )}
+                    <span className="whitespace-nowrap">{customer.customerName}</span>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
+            </div>
+          )}
         </div>
       </div>
 
       {/* Bottom 4-Column Stats Grid */}
-      <div className="py-14 sm:py-18 border-b border-slate-200/80">
-        <div className="w-[94%] max-w-[1680px] mx-auto px-2 sm:px-4 lg:px-6">
+      <div className="bg-white py-14 sm:py-18 border-b border-slate-200/80">
+        <div className="w-[94%] max-w-[2200px] mx-auto px-2 sm:px-4 lg:px-6">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {stats.map((stat, idx) => {
               const Icon = stat.icon;
@@ -92,10 +132,11 @@ export function StatsTicker() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ duration: 0.5, delay: idx * 0.1 }}
-                  className="bg-white rounded-3xl p-6 sm:p-7 border border-slate-200/70 shadow-sm hover:border-blue-200 hover:shadow-lg transition-all duration-300"
+                  suppressHydrationWarning
+                  className="bg-[#F8FAFC] rounded-3xl p-6 sm:p-7 border border-slate-200/70 shadow-2xs hover:border-blue-200 hover:shadow-md transition-all duration-300"
                 >
                   <div className="flex items-center justify-between mb-5">
-                    <div className="w-10 h-10 rounded-xl bg-blue-50/80 border border-blue-100 flex items-center justify-center text-[#0066FF]">
+                    <div className="w-10 h-10 rounded-xl bg-white border border-slate-200/80 shadow-2xs flex items-center justify-center text-[#0066FF]">
                       <Icon className="w-4 h-4" />
                     </div>
                     <span className="text-[10px] font-bold tracking-wider uppercase text-[#0066FF] bg-blue-50 px-2.5 py-1 rounded-full border border-blue-100">
