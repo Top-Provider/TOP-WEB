@@ -89,28 +89,26 @@ export function StatsTicker({ initialCustomers = [] }: StatsTickerProps) {
               <div className="pointer-events-none absolute inset-y-0 left-0 w-10 bg-gradient-to-r from-white to-transparent z-10" />
               <div className="pointer-events-none absolute inset-y-0 right-0 w-10 bg-gradient-to-l from-white to-transparent z-10" />
               <div
-                className="animate-marquee-loop flex items-center gap-3.5"
+                className="animate-marquee-loop flex items-center gap-7 sm:gap-10"
                 style={{ animation: "marquee-loop 35s linear infinite", width: "max-content" }}
               >
                 {marqueeItems.map((customer, index) => (
                   <div
                     key={`${customer.customerId}-${index}`}
-                    className="shrink-0 inline-flex items-center gap-2.5 px-4 py-2 rounded-full bg-slate-50/80 border border-slate-200/80 text-xs font-semibold text-slate-700 shadow-2xs"
+                    title={customer.customerName}
+                    className="shrink-0 w-32 h-32 sm:w-40 sm:h-40 flex items-center justify-center transition-transform hover:scale-105"
                   >
                     {customer.logoUrl ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
                         src={customer.logoUrl}
                         alt={customer.customerName}
-                        className="w-6 h-6 rounded-full object-contain bg-white border border-slate-200/80 p-0.5 shrink-0"
+                        className="w-full h-full object-contain"
                         loading="lazy"
                       />
                     ) : (
-                      <span className="w-6 h-6 rounded-full bg-blue-50 border border-blue-100 flex items-center justify-center shrink-0">
-                        <Building2 className="w-3.5 h-3.5 text-[#0066FF]" />
-                      </span>
+                      <Building2 className="w-12 h-12 sm:w-14 sm:h-14 text-[#0066FF]" />
                     )}
-                    <span className="whitespace-nowrap">{customer.customerName}</span>
                   </div>
                 ))}
               </div>

@@ -3,13 +3,14 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { SolutionCtaBanner } from "@/components/solution-cta-banner";
+import { SolutionCategoryTabs } from "@/components/solution-category-tabs";
 import {
   ShieldCheck,
   Cpu,
   Zap,
   RefreshCw,
   CheckCircle2,
-  ArrowRight,
   PhoneCall,
   ChevronRight,
   Award,
@@ -83,13 +84,6 @@ export const VITANIX_FALLBACK = {
 
 // ค่าเริ่มต้นเป็น Array ว่าง ไม่ใช้ข้อมูล mock
 export const DEFAULT_PROGRAMS: ProgramItem[] = [];
-
-export const SOLUTION_CATEGORY_TABS = [
-  { id: "printing", label: "Printing & Supply Solution", href: "/solutions/printing" },
-  { id: "hardware", label: "Hardware Solution", href: "/solutions/hardware" },
-  { id: "software", label: "Software Solution", href: "/solutions/software", active: true },
-  { id: "network", label: "Network Solution", href: "/solutions/network" },
-];
 
 export function mapSoftwareRecordToProgram(
   r: {
@@ -262,40 +256,6 @@ export function SoftwareSolutionView({ initialRecords, initialPrograms }: Softwa
   const [loading, setLoading] = useState(!hasInitial);
   const [selectedId, setSelectedId] = useState<string>(initialList[0]?.id || "");
 
-  // Dynamic Solution Category Tabs from /api/admin/categories
-  const [categoryTabs, setCategoryTabs] = useState(SOLUTION_CATEGORY_TABS);
-  const hasLoadedCategoriesRef = useRef(false);
-
-  useEffect(() => {
-    if (hasLoadedCategoriesRef.current) return;
-    hasLoadedCategoriesRef.current = true;
-    fetch("/api/admin/categories")
-      .then((res) => res.json())
-      .then((json) => {
-        if (json && json.success && Array.isArray(json.categories) && json.categories.length > 0) {
-          const dynamicTabs = json.categories
-            .filter((c: { is_active?: boolean }) => c.is_active !== false)
-            .map((c: { category_id: string; name: string }) => {
-              const rawId = (c.category_id || "").toLowerCase();
-              let href = "/#case-studies";
-              if (rawId.includes("software")) href = "/solutions/software";
-              else if (rawId.includes("print")) href = "/solutions/printing";
-              else if (rawId.includes("network")) href = "/solutions/network";
-              else if (rawId.includes("hard")) href = "/solutions/hardware";
-
-              return {
-                id: rawId,
-                label: c.name || c.category_id,
-                href,
-                active: rawId.includes("software"),
-              };
-            });
-          if (dynamicTabs.length > 0) setCategoryTabs(dynamicTabs);
-        }
-      })
-      .catch((err) => console.log("Category tabs API fallback:", err));
-  }, []);
-
   // Client-side fetch fallback
   useEffect(() => {
     if (hasInitial && programs.length > 0) {
@@ -353,39 +313,10 @@ export function SoftwareSolutionView({ initialRecords, initialPrograms }: Softwa
   const activeProgram =
     programs.find((p) => p.id === selectedId) || programs[0] || null;
 
-  const scrollToDetails = () => {
-    const el = document.getElementById("details-deep-dive");
-    if (el) {
-      el.scrollIntoView({ behavior: "smooth" });
-    }
-  };
-
   return (
     <div className="w-full bg-[#F8FAFC] text-slate-900 pb-20 select-none">
       {/* 1. TOP SOLUTION CATEGORY TABS */}
-      <div className="w-full pt-4 pb-2">
-        <div className="w-[94%] max-w-[1720px] mx-auto px-2 sm:px-4 lg:px-6">
-          <div className="flex items-center justify-start sm:justify-center gap-2 sm:gap-2.5 overflow-x-auto no-scrollbar py-1">
-            {categoryTabs.map((tab) => {
-              const isActive = tab.active;
-              return (
-                <Link
-                  key={tab.id}
-                  href={tab.href}
-                  prefetch={true}
-                  className={`shrink-0 px-4 sm:px-5 py-2 sm:py-2.5 rounded-full text-xs font-medium transition-all ${
-                    isActive
-                      ? "bg-[#0062FF] text-white shadow-sm shadow-blue-600/30 font-semibold border border-[#0062FF]"
-                      : "bg-white hover:bg-slate-50 text-slate-700 border border-slate-200/90 shadow-2xs hover:border-blue-200 hover:text-blue-600"
-                  }`}
-                >
-                  {tab.label}
-                </Link>
-              );
-            })}
-          </div>
-        </div>
-      </div>
+      <SolutionCategoryTabs activeId="software" />
 
       {/* 2. HERO SHOWCASE: SIDEBAR PROGRAM SELECTOR + BROWSER DASHBOARD */}
       <div className="w-[94%] max-w-[1720px] mx-auto px-2 sm:px-4 lg:px-6 pt-8 sm:pt-10">
@@ -547,35 +478,6 @@ export function SoftwareSolutionView({ initialRecords, initialPrograms }: Softwa
                   </div>
                 </div>
 
-                {/* Info Summary Card */}
-                <Card className="p-5 sm:p-6 rounded-3xl bg-white border border-slate-200/90 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                  <div className="space-y-1 max-w-xl">
-                    <div className="flex items-center gap-2">
-                      <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                      <span className="text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full">
-                        {activeProgram.category}
-                      </span>
-                    </div>
-                    <h4 className="text-base sm:text-lg font-bold text-slate-900">
-                      {activeProgram.name}
-                    </h4>
-                    {activeProgram.shortDesc && (
-                      <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">
-                        {activeProgram.shortDesc}
-                      </p>
-                    )}
-                  </div>
-
-                  <div className="shrink-0 flex items-center gap-2">
-                    <Button
-                      onClick={scrollToDetails}
-                      className="rounded-full bg-[#0062FF] hover:bg-blue-700 text-white font-semibold text-xs px-5 py-2.5 shadow-sm shadow-blue-500/25 flex items-center gap-1.5 cursor-pointer"
-                    >
-                      <span>ดูรายละเอียดระบบ</span>
-                      <ArrowRight className="w-3.5 h-3.5" />
-                    </Button>
-                  </div>
-                </Card>
               </div>
             ) : null}
           </div>
@@ -609,18 +511,6 @@ export function SoftwareSolutionView({ initialRecords, initialPrograms }: Softwa
                     {activeProgram.fullDesc || activeProgram.shortDesc}
                   </p>
                 )}
-              </div>
-
-              <div className="shrink-0">
-                <Button
-                  asChild
-                  className="rounded-full bg-[#0062FF] hover:bg-blue-700 text-white font-semibold text-xs sm:text-sm px-6 py-3 shadow-md shadow-blue-600/20"
-                >
-                  <Link href="/#contact" className="flex items-center gap-2">
-                    <PhoneCall className="w-4 h-4" />
-                    <span>ติดต่อขอคำปรึกษา</span>
-                  </Link>
-                </Button>
               </div>
             </div>
 
@@ -826,33 +716,7 @@ export function SoftwareSolutionView({ initialRecords, initialPrograms }: Softwa
         </div>
 
         {/* 5. CALL TO ACTION BANNER */}
-        <div className="rounded-[32px] sm:rounded-[36px] bg-gradient-to-r from-[#0B1C3D] via-[#0B328A] to-[#0066FF] p-8 sm:p-12 text-white shadow-xl shadow-blue-900/20 relative overflow-hidden">
-          <div className="relative z-10 max-w-4xl space-y-3.5">
-            <span className="text-[11px] font-semibold text-blue-100 uppercase tracking-wider bg-white/10 border border-white/15 px-3.5 py-1 rounded-full inline-block">
-              TOP PROVIDER SYSTEM GROUP
-            </span>
-            <h3 className="text-xl sm:text-2xl lg:text-[28px] font-extrabold tracking-tight leading-snug">
-              พร้อมยกระดับองค์กรของคุณด้วยเทคโนโลยีที่ใช่หรือยัง?
-            </h3>
-            <p className="text-xs sm:text-sm text-blue-100/90 leading-relaxed">
-              เราพร้อมเป็นส่วนหนึ่งในการขับเคลื่อนองค์กรของคุณ ด้วยโซลูชันเทคโนโลยีที่ตอบโจทย์ทุกความต้องการ
-              <br className="hidden sm:inline" /> ไม่ว่าจะเป็นการพัฒนาระบบ การออกแบบซอฟต์แวร์ หรือระบบบริหารจัดการองค์กร
-              <br className="hidden sm:inline" /> ให้ทีมงานของเราช่วยแนะนำแนวทางที่เหมาะสมสำหรับคุณ
-            </p>
-
-            <div className="pt-2">
-              <Button
-                asChild
-                className="rounded-full bg-white hover:bg-slate-100 text-[#0062FF] font-bold text-xs sm:text-sm px-6 py-3 h-auto shadow-md transition-all cursor-pointer"
-              >
-                <Link href="/contact" className="flex items-center gap-2">
-                  <PhoneCall className="w-4 h-4" />
-                  <span>Contact Our Team</span>
-                </Link>
-              </Button>
-            </div>
-          </div>
-        </div>
+        <SolutionCtaBanner />
       </div>
     </div>
   );

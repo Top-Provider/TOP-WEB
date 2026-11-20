@@ -179,7 +179,7 @@ export default function AdminCustomersPage() {
         <div>
           <h1 className="text-2xl font-bold text-slate-900">Master ลูกค้า</h1>
           <p className="mt-1 text-sm text-slate-500">
-            จัดการรายชื่อโรงพยาบาลสำหรับเลือกใช้ในกิจกรรมและระบบ Helpdesk
+            จัดการรายชื่อโรงพยาบาลสำหรับเลือกใช้ในกิจกรรม
           </p>
         </div>
         <Button

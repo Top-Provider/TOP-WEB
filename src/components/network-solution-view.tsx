@@ -4,6 +4,9 @@ import React, { useState, useEffect, useMemo, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
+import { openContactSocialModal } from "@/components/contact-social-modal";
+import { SolutionCtaBanner } from "@/components/solution-cta-banner";
+import { SolutionCategoryTabs } from "@/components/solution-category-tabs";
 import {
   Search,
   PhoneCall,
@@ -27,13 +30,6 @@ import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { MedicalCrossLoader } from "@/components/ui/medical-cross-loader";
 import type { ProductItemResponse } from "@/app/api/products/route";
-
-export const SOLUTION_CATEGORY_TABS = [
-  { id: "printing", label: "Printing & Supply Solution", href: "/solutions/printing" },
-  { id: "hardware", label: "Hardware Solution", href: "/solutions/hardware" },
-  { id: "software", label: "Software Solution", href: "/solutions/software" },
-  { id: "network", label: "Network Solution", href: "/solutions/network", active: true },
-];
 
 export interface ExtendedProductItem extends ProductItemResponse {
   is_new?: boolean;
@@ -79,9 +75,6 @@ export function NetworkSolutionView({
   const [selectedSubCategory, setSelectedSubCategory] = useState<string>("Server");
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [detailProduct, setDetailProduct] = useState<ExtendedProductItem | null>(null);
-
-  // Dynamic Solution Category Tabs from /api/admin/categories
-  const [categoryTabs, setCategoryTabs] = useState(SOLUTION_CATEGORY_TABS);
 
   // Sub-categories list
   const [networkCategories, setNetworkCategories] = useState<{ value: string; label: string }[]>(
@@ -173,37 +166,6 @@ export function NetworkSolutionView({
       });
   }, [initialProducts]);
 
-  // Fetch dynamic category tabs (only once)
-  useEffect(() => {
-    if (hasLoadedCategoriesRef.current) return;
-    hasLoadedCategoriesRef.current = true;
-    fetch("/api/admin/categories")
-      .then((res) => res.json())
-      .then((json) => {
-        if (json && json.success && Array.isArray(json.categories) && json.categories.length > 0) {
-          const dynamicTabs = json.categories
-            .filter((c: { is_active?: boolean }) => c.is_active !== false)
-            .map((c: { category_id: string; name: string }) => {
-              const rawId = (c.category_id || "").toLowerCase();
-              let href = "/#case-studies";
-              if (rawId === "printing") href = "/solutions/printing";
-              else if (rawId === "software") href = "/solutions/software";
-              else if (rawId === "network") href = "/solutions/network";
-              else if (rawId === "hardware" || rawId.includes("hard")) href = "/solutions/hardware";
-
-              return {
-                id: rawId,
-                label: c.name || c.category_id,
-                href,
-                active: rawId === "network",
-              };
-            });
-          if (dynamicTabs.length > 0) setCategoryTabs(dynamicTabs);
-        }
-      })
-      .catch((err) => console.log("Category tabs API fallback:", err));
-  }, []);
-
   // Sync with URL query parameter (?type=server or ?type=network or ?sub=...)
   useEffect(() => {
     const typeParam = searchParams.get("type")?.toLowerCase();
@@ -261,29 +223,7 @@ export function NetworkSolutionView({
       {/* ========================================================================= */}
       {/* 1. TOP SOLUTION CATEGORY TABS (Active: Network Solution)                 */}
       {/* ========================================================================= */}
-      <div className="w-full pt-4 pb-2">
-        <div className="w-[94%] max-w-[1720px] mx-auto px-2 sm:px-4 lg:px-6">
-          <div className="flex items-center justify-start sm:justify-center gap-2 sm:gap-2.5 overflow-x-auto no-scrollbar py-1">
-            {categoryTabs.map((tab) => {
-              const isActive = tab.active;
-              return (
-                <Link
-                  key={tab.id}
-                  href={tab.href}
-                  prefetch={true}
-                  className={`shrink-0 px-4 sm:px-5 py-2 sm:py-2.5 rounded-full text-xs font-medium transition-all ${
-                    isActive
-                      ? "bg-[#0062FF] text-white shadow-sm shadow-blue-600/30 font-semibold border border-[#0062FF]"
-                      : "bg-white hover:bg-slate-50 text-slate-700 border border-slate-200/90 shadow-2xs hover:border-blue-200 hover:text-blue-600"
-                  }`}
-                >
-                  {tab.label}
-                </Link>
-              );
-            })}
-          </div>
-        </div>
-      </div>
+      <SolutionCategoryTabs activeId="network" />
 
       {/* ========================================================================= */}
       {/* 2. MAIN CATALOG LAYOUT (SIDEBAR + PRODUCT GRID)                           */}
@@ -449,37 +389,7 @@ export function NetworkSolutionView({
       {/* 3. CALL TO ACTION BANNER (Vibrant Blue Enterprise matching mockup)        */}
       {/* ========================================================================= */}
       <div className="w-[94%] max-w-[1720px] mx-auto px-2 sm:px-4 lg:px-6 pt-14 sm:pt-16">
-        <div className="rounded-[28px] sm:rounded-[34px] bg-[#0062FF] p-8 sm:p-12 text-white shadow-xl shadow-blue-600/20 relative overflow-hidden">
-          {/* Subtle Glow */}
-          <div className="absolute top-0 right-0 w-80 h-80 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
-
-          <div className="relative z-10 max-w-3xl space-y-4">
-            <span className="text-[11px] font-bold uppercase tracking-wider px-3 py-1 rounded-full bg-white/20 backdrop-blur-md text-white inline-block">
-              ENTERPRISE NETWORK & SERVER SOLUTIONS
-            </span>
-            <h3 className="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight leading-tight">
-              ต้องการวางระบบโครงสร้างพื้นฐาน Network & Server สำหรับโรงพยาบาลและองค์กร?
-            </h3>
-            <p className="text-sm sm:text-base text-blue-100/90 leading-relaxed font-normal">
-              ทีมวิศวกรผู้เชี่ยวชาญพร้อมให้คำปรึกษา ออกแบบสถาปัตยกรรมระบบเครือข่ายความปลอดภัยสูง ป้องกัน Ransomware ตามมาตรฐาน PDPA และบริการดูแลบำรุงรักษาแบบ Onsite ทั่วประเทศ
-            </p>
-            <div className="pt-3 flex flex-wrap items-center gap-3.5">
-              <Link
-                href="/#contact"
-                className="px-6 py-3 rounded-full bg-white text-[#0062FF] font-semibold text-xs sm:text-sm hover:bg-blue-50 transition-all shadow-md flex items-center gap-2 group cursor-pointer"
-              >
-                <span>ติดต่อขอคำปรึกษาและใบเสนอราคา</span>
-                <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-              </Link>
-              <Link
-                href="/products"
-                className="px-6 py-3 rounded-full bg-blue-700/60 hover:bg-blue-700/80 border border-white/20 text-white font-medium text-xs sm:text-sm transition-all"
-              >
-                ดูแคตตาล็อกสินค้าทั้งหมด
-              </Link>
-            </div>
-          </div>
-        </div>
+        <SolutionCtaBanner />
       </div>
 
       {/* ========================================================================= */}
@@ -724,14 +634,17 @@ export function NetworkSolutionView({
               >
                 ปิดหน้าต่าง
               </button>
-              <Link
-                href={`/#contact?subject=${encodeURIComponent(detailProduct.name)}`}
-                onClick={() => setDetailProduct(null)}
-                className="px-5 py-2.5 rounded-xl bg-[#0062FF] hover:bg-[#0052CC] text-white text-xs font-medium flex items-center gap-2 shadow-sm transition-all"
+              <button
+                type="button"
+                onClick={() => {
+                  setDetailProduct(null);
+                  openContactSocialModal();
+                }}
+                className="px-5 py-2.5 rounded-xl bg-[#0062FF] hover:bg-[#0052CC] text-white text-xs font-medium flex items-center gap-2 shadow-sm transition-all cursor-pointer"
               >
                 <PhoneCall className="w-3.5 h-3.5" />
-                <span>ขอใบเสนอราคา & สเปกระบบ</span>
-              </Link>
+                <span>ติดต่อ</span>
+              </button>
             </div>
           </div>
         </div>

@@ -5,13 +5,22 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { ContactSocialModal } from "@/components/contact-social-modal";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Menu, Calendar } from "lucide-react";
+import { NAV_LINKS } from "@/lib/site-navigation";
 
 export function Navbar() {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
+  const [contactModalOpen, setContactModalOpen] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
+
+  useEffect(() => {
+    const onOpen = () => setContactModalOpen(true);
+    window.addEventListener("top:open-contact-modal", onOpen);
+    return () => window.removeEventListener("top:open-contact-modal", onOpen);
+  }, []);
 
   const lastScrollY = useRef(0);
   const upScrollCount = useRef(0);
@@ -76,13 +85,7 @@ export function Navbar() {
     }
   }, [pathname]);
 
-  const navLinks = [
-    { label: "Home", href: "/" },
-    { label: "IT Solution & Product", href: "/solutions/software" },
-    { label: "Service Solution", href: "/service-solution" },
-    { label: "News & Activities", href: "/activities" },
-    // { label: "About Us", href: "/#team" },
-  ];
+  const navLinks = NAV_LINKS;
 
   const isLinkActive = (href: string) => {
     if (href === "/") return pathname === "/";
@@ -130,8 +133,8 @@ export function Navbar() {
   return (
     <div
       className={`sticky top-0 z-50 w-full px-4 sm:px-6 pt-3 sm:pt-4 pb-2 transition-all duration-300 ease-in-out ${isVisible
-          ? "translate-y-0 opacity-100"
-          : "-translate-y-full opacity-0 pointer-events-none"
+        ? "translate-y-0 opacity-100"
+        : "-translate-y-full opacity-0 pointer-events-none"
         }`}
     >
       <div className="w-[94%] max-w-[2200px] mx-auto bg-white/95 backdrop-blur-md rounded-full shadow-lg shadow-slate-200/50 border border-slate-100/90 px-6 sm:px-10 py-3 sm:py-3.5 flex items-center justify-between transition-all">
@@ -163,8 +166,8 @@ export function Navbar() {
                 href={link.href}
                 onClick={(e) => handleNavClick(e, link.href)}
                 className={`text-[13.5px] lg:text-[14px] xl:text-[15px] 2xl:text-[16px] font-semibold transition-colors whitespace-nowrap cursor-pointer ${active
-                    ? "text-[#0062FF] font-bold"
-                    : "text-slate-600 hover:text-blue-600"
+                  ? "text-[#0062FF] font-bold"
+                  : "text-slate-600 hover:text-blue-600"
                   }`}
               >
                 {link.label}
@@ -176,17 +179,12 @@ export function Navbar() {
         {/* Right Section: Action Button & Mobile Menu */}
         <div className="flex items-center gap-2 sm:gap-3 shrink-0">
           <Button
-            asChild
-            className="hidden sm:inline-flex rounded-full bg-[#0062FF] hover:bg-blue-700 text-white font-semibold text-sm sm:text-[15px] px-6 py-2.5 shadow-sm hover:shadow-md hover:shadow-blue-500/25 transition-all h-10 sm:h-11"
+            type="button"
+            onClick={() => setContactModalOpen(true)}
+            className="hidden sm:inline-flex rounded-full bg-[#0062FF] hover:bg-blue-700 text-white font-semibold text-sm sm:text-[15px] px-6 py-2.5 shadow-sm hover:shadow-md hover:shadow-blue-500/25 transition-all h-10 sm:h-11 gap-2 cursor-pointer"
           >
-            <Link
-              href="/contact"
-
-              className="flex items-center gap-2 cursor-pointer"
-            >
-              <Calendar className="w-4 h-4" />
-              <span>contact</span>
-            </Link>
+            <Calendar className="w-4 h-4" />
+            <span>contact</span>
           </Button>
 
           {/* Mobile Navigation Trigger */}
@@ -221,8 +219,8 @@ export function Navbar() {
                             href={link.href}
                             onClick={(e) => handleNavClick(e, link.href, () => setIsOpen(false))}
                             className={`text-base py-1.5 transition-colors cursor-pointer ${active
-                                ? "text-[#0062FF] font-bold"
-                                : "text-slate-700 font-medium hover:text-blue-600"
+                              ? "text-[#0062FF] font-bold"
+                              : "text-slate-700 font-medium hover:text-blue-600"
                               }`}
                           >
                             {link.label}
@@ -233,17 +231,15 @@ export function Navbar() {
                   </div>
                   <div className="pt-6 border-t border-slate-100">
                     <Button
-                      asChild
-                      className="w-full rounded-full bg-[#0062FF] hover:bg-blue-700 text-white py-3 font-semibold text-sm sm:text-base h-11"
+                      type="button"
+                      onClick={() => {
+                        setIsOpen(false);
+                        setContactModalOpen(true);
+                      }}
+                      className="w-full rounded-full bg-[#0062FF] hover:bg-blue-700 text-white py-3 font-semibold text-sm sm:text-base h-11 flex items-center justify-center gap-2 cursor-pointer"
                     >
-                      <Link
-                        href="/contact"
-                        onClick={() => setIsOpen(false)}
-                        className="flex items-center justify-center gap-2 cursor-pointer"
-                      >
-                        <Calendar className="w-4 h-4" />
-                        <span>contact</span>
-                      </Link>
+                      <Calendar className="w-4 h-4" />
+                      <span>contact</span>
                     </Button>
                   </div>
                 </div>
@@ -252,6 +248,11 @@ export function Navbar() {
           </div>
         </div>
       </div>
+
+      <ContactSocialModal
+        isOpen={contactModalOpen}
+        onClose={() => setContactModalOpen(false)}
+      />
     </div>
   );
 }

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, Noto_Sans_Thai, Geist_Mono } from "next/font/google";
 import { LocatorProvider } from "@/components/locator-provider";
+import { ConnectionStatusBanner } from "@/components/ui/connection-status-banner";
 import "./globals.css";
 
 const inter = Inter({
@@ -73,6 +74,7 @@ export default function RootLayout({
         className="min-h-full flex flex-col bg-slate-50/50 text-slate-900 font-sans selection:bg-blue-600 selection:text-white"
       >
         <LocatorProvider />
+        <ConnectionStatusBanner />
         {children}
       </body>
     </html>

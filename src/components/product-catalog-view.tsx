@@ -4,6 +4,8 @@ import React, { useState, useEffect, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
+import { openContactSocialModal } from "@/components/contact-social-modal";
+import { SolutionCtaBanner } from "@/components/solution-cta-banner";
 import {
   Search,
   FileText,
@@ -715,11 +717,14 @@ export function ProductCatalogView({
               </button>
               <button
                 type="button"
-                onClick={() => handleInquireProduct(detailProduct.name)}
-                className="px-5 py-2.5 rounded-xl bg-[#0066FF] hover:bg-[#0052CC] text-white text-xs font-medium flex items-center gap-2 shadow-sm transition-all"
+                onClick={() => {
+                  setDetailProduct(null);
+                  openContactSocialModal();
+                }}
+                className="px-5 py-2.5 rounded-xl bg-[#0066FF] hover:bg-[#0052CC] text-white text-xs font-medium flex items-center gap-2 shadow-sm transition-all cursor-pointer"
               >
                 <PhoneCall className="w-3.5 h-3.5" />
-                <span>สอบถามข้อมูล / ขอใบเสนอราคา</span>
+                <span>ติดต่อ</span>
               </button>
             </div>
           </div>
@@ -727,29 +732,9 @@ export function ProductCatalogView({
       )}
 
       {/* 5. Contact Consultation Banner */}
-      <section className="bg-slate-900 text-white py-12 sm:py-16">
-        <div className="w-[94%] max-w-[1680px] mx-auto px-2 sm:px-4 lg:px-6 text-center">
-          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight mb-3">
-            ต้องการคำแนะนำในการเลือกรุ่นเครื่องพิมพ์หรือหมึกพิมพ์ที่เหมาะสม?
-          </h2>
-          <p className="text-xs sm:text-sm text-slate-400 max-w-2xl mx-auto mb-6">
-            ทีมวิศวกรและผู้เชี่ยวชาญพร้อมให้คำปรึกษา ออกแบบระบบ และจัดส่งใบเสนอราคาอย่างรวดเร็ว
-          </p>
-          <div className="flex items-center justify-center gap-4 flex-wrap">
-            <Link
-              href="/#contact"
-              className="px-6 py-3 rounded-full bg-[#0066FF] hover:bg-[#0052CC] text-white text-xs sm:text-sm font-medium transition-all shadow-lg shadow-blue-500/30"
-            >
-              ติดต่อฝ่ายขาย / ปรึกษาผู้เชี่ยวชาญ
-            </Link>
-            <a
-              href="tel:021234567"
-              className="px-6 py-3 rounded-full bg-slate-800 hover:bg-slate-700 text-white text-xs sm:text-sm font-medium border border-slate-700 transition-all flex items-center gap-2"
-            >
-              <PhoneCall className="w-4 h-4 text-blue-400" />
-              <span>โทรปรึกษาฝ่ายขาย</span>
-            </a>
-          </div>
+      <section className="py-10 sm:py-14">
+        <div className="w-[94%] max-w-[1680px] mx-auto px-2 sm:px-4 lg:px-6">
+          <SolutionCtaBanner />
         </div>
       </section>
     </div>

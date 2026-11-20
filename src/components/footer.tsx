@@ -4,6 +4,7 @@ import React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowUp } from "lucide-react";
+import { NAV_LINKS, SOCIAL_CHANNELS } from "@/lib/site-navigation";
 
 export function Footer() {
   const scrollToTop = () => {
@@ -47,31 +48,13 @@ export function Footer() {
               NAVIGATION
             </h4>
             <ul className="space-y-2.5 text-xs text-slate-600 font-medium">
-              <li>
-                <Link href="/" className="hover:text-[#0066FF] transition-colors">
-                  Home
-                </Link>
-              </li>
-              <li>
-                <Link href="/#case-studies" className="hover:text-[#0066FF] transition-colors">
-                  IT Solution &amp; Product
-                </Link>
-              </li>
-              <li>
-                <Link href="/service-solution" className="hover:text-[#0066FF] transition-colors">
-                  Service Solution
-                </Link>
-              </li>
-              <li>
-                <Link href="/activities" className="hover:text-[#0066FF] transition-colors">
-                  News &amp; Activities
-                </Link>
-              </li>
-              <li>
-                <Link href="/#capabilities" className="hover:text-[#0066FF] transition-colors">
-                  About Us
-                </Link>
-              </li>
+              {NAV_LINKS.map((link) => (
+                <li key={link.href}>
+                  <Link href={link.href} className="hover:text-[#0066FF] transition-colors">
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 
@@ -81,26 +64,18 @@ export function Footer() {
               CONNECT
             </h4>
             <ul className="space-y-2.5 text-xs text-slate-600 font-medium">
-              <li>
-                <Link href="/contact" className="hover:text-[#0066FF] transition-colors">
-                  LinkedIn
-                </Link>
-              </li>
-              <li>
-                <Link href="/contact" className="hover:text-[#0066FF] transition-colors">
-                  Facebook
-                </Link>
-              </li>
-              <li>
-                <Link href="/contact" className="hover:text-[#0066FF] transition-colors">
-                  GitHub
-                </Link>
-              </li>
-              <li>
-                <Link href="/contact" className="hover:text-[#0066FF] transition-colors">
-                  Line Official
-                </Link>
-              </li>
+              {SOCIAL_CHANNELS.map((channel) => (
+                <li key={channel.id}>
+                  <a
+                    href={channel.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:text-[#0066FF] transition-colors"
+                  >
+                    {channel.name}
+                  </a>
+                </li>
+              ))}
             </ul>
           </div>
 

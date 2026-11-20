@@ -11,27 +11,18 @@ import {
   LayoutGrid,
   Users,
   Calendar,
-  Wrench,
-  UserPlus,
   Building2,
-  SlidersHorizontal,
-  MessageSquare,
 } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
 interface DashboardCounts {
-  tickets: number;
-  openTickets: number;
-  helpdeskCustomers: number;
   hospitals: number;
-  slaTargets: number;
   products: number;
   programs: number;
   solutionTopics: number;
   users: number;
   activities: number;
-  contactMessages: number;
   categories: number;
   recentProducts: Array<{
     id: number;
@@ -53,17 +44,12 @@ async function getDashboardCounts(): Promise<DashboardCounts> {
   const [countsRes, recentProductsRes, recentProgramsRes] = await Promise.all([
     query(`
       SELECT
-        (SELECT count(*)::int FROM public."TB_HD_TICKETS") AS tickets,
-        (SELECT count(*)::int FROM public."TB_HD_TICKETS" WHERE status NOT IN ('CLOSED', 'CANCELLED')) AS open_tickets,
-        (SELECT count(*)::int FROM public.admin_accounts WHERE role = 'viewer') AS helpdesk_customers,
         (SELECT count(*)::int FROM public."TBM_HD_HOSPITALS") AS hospitals,
-        (SELECT count(*)::int FROM public."TBM_HD_SLA_TARGETS") AS sla_targets,
         (SELECT count(*)::int FROM public."TB_PRODUCTS") AS products,
         (SELECT count(*)::int FROM public."TB_PRODUCT_SOFTWARE") AS programs,
         (SELECT count(*)::int FROM public."TB_SOLUTION_TOPICS") AS solution_topics,
         (SELECT count(*)::int FROM public."TB_USERS") AS users,
         (SELECT count(*)::int FROM public."TB_ACTIVITIES") AS activities,
-        (SELECT count(*)::int FROM public."TB_CONTACT_MESSAGES") AS contact_messages,
         (SELECT count(*)::int FROM public."TBM_PRODUCT_CATEGORIES") AS categories
     `),
     query(
@@ -82,17 +68,12 @@ async function getDashboardCounts(): Promise<DashboardCounts> {
 
   const row = (countsRes.rows[0] || {}) as Record<string, number>;
   return {
-    tickets: Number(row.tickets || 0),
-    openTickets: Number(row.open_tickets || 0),
-    helpdeskCustomers: Number(row.helpdesk_customers || 0),
     hospitals: Number(row.hospitals || 0),
-    slaTargets: Number(row.sla_targets || 0),
     products: Number(row.products || 0),
     programs: Number(row.programs || 0),
     solutionTopics: Number(row.solution_topics || 0),
     users: Number(row.users || 0),
     activities: Number(row.activities || 0),
-    contactMessages: Number(row.contact_messages || 0),
     categories: Number(row.categories || 0),
     recentProducts: recentProductsRes.rows as DashboardCounts["recentProducts"],
     recentPrograms: recentProgramsRes.rows as DashboardCounts["recentPrograms"],
@@ -101,17 +82,12 @@ async function getDashboardCounts(): Promise<DashboardCounts> {
 
 export default async function AdminDashboardPage() {
   let stats: DashboardCounts = {
-    tickets: 0,
-    openTickets: 0,
-    helpdeskCustomers: 0,
     hospitals: 0,
-    slaTargets: 0,
     products: 0,
     programs: 0,
     solutionTopics: 0,
     users: 0,
     activities: 0,
-    contactMessages: 0,
     categories: 0,
     recentProducts: [],
     recentPrograms: [],
@@ -126,36 +102,12 @@ export default async function AdminDashboardPage() {
 
   const statCards = [
     {
-      title: "แจ้งซ่อม (Helpdesk)",
-      count: stats.tickets.toLocaleString("th-TH"),
-      desc: `งานที่ยังไม่ปิด ${stats.openTickets.toLocaleString("th-TH")} รายการ`,
-      href: "/admin/helpdesk",
-      icon: Wrench,
-      color: "bg-sky-50 text-sky-600 border-sky-100",
-    },
-    {
-      title: "ลงทะเบียนลูกค้า (Helpdesk)",
-      count: stats.helpdeskCustomers.toLocaleString("th-TH"),
-      desc: "บัญชีผู้ใช้งานแจ้งซ่อมโรงพยาบาล",
-      href: "/admin/helpdesk/customers",
-      icon: UserPlus,
-      color: "bg-cyan-50 text-cyan-600 border-cyan-100",
-    },
-    {
       title: "Master ลูกค้า",
       count: stats.hospitals.toLocaleString("th-TH"),
       desc: "รายชื่อโรงพยาบาลและโลโก้ลูกค้า",
       href: "/admin/customers",
       icon: Building2,
       color: "bg-teal-50 text-teal-600 border-teal-100",
-    },
-    {
-      title: "ตั้งค่า SLA",
-      count: stats.slaTargets.toLocaleString("th-TH"),
-      desc: "ระดับความเร่งด่วน เวลาทำการ วันหยุด",
-      href: "/admin/helpdesk/settings",
-      icon: SlidersHorizontal,
-      color: "bg-slate-100 text-slate-700 border-slate-200",
     },
     {
       title: "จัดการสินค้า (Master)",
@@ -198,14 +150,6 @@ export default async function AdminDashboardPage() {
       color: "bg-rose-50 text-rose-600 border-rose-100",
     },
     {
-      title: "ข้อความติดต่อ (Contact)",
-      count: stats.contactMessages.toLocaleString("th-TH"),
-      desc: "ข้อความที่ลูกค้าส่งผ่านหน้าติดต่อเรา",
-      href: "/admin/contact",
-      icon: MessageSquare,
-      color: "bg-violet-50 text-violet-600 border-violet-100",
-    },
-    {
       title: "ข้อมูลหลัก (Master Data)",
       count: stats.categories.toLocaleString("th-TH"),
       desc: "Printing, Hardware, Software ฯลฯ",
@@ -227,7 +171,7 @@ export default async function AdminDashboardPage() {
             ยินดีต้อนรับสู่ระบบจัดการ TOP PROVIDER
           </h2>
           <p className="text-xs sm:text-sm text-slate-500 mt-1 max-w-2xl">
-            จัดการข้อมูลระบบแจ้งซ่อม (Helpdesk &amp; SLA), รายชื่อโรงพยาบาล, สินค้า Master, โปรแกรมซอฟต์แวร์, บุคลากร และกิจกรรมองค์กรได้ครบในที่เดียว
+            จัดการข้อมูลรายชื่อโรงพยาบาล, สินค้า Master, โปรแกรมซอฟต์แวร์, บุคลากร และกิจกรรมองค์กรได้ครบในที่เดียว
           </p>
         </div>
       </Card>

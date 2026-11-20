@@ -35,31 +35,3 @@ export async function requireAdmin(req: NextRequest) {
   if (user.role !== "admin") throw new HttpError(403, "บัญชีนี้ไม่มีสิทธิ์ผู้ดูแลระบบ");
   return { ...user, role: "admin" as const };
 }
-
-export async function requireHelpdeskUser(req: NextRequest) {
-  const user = await requireAccount(req);
-  if (user.role !== "viewer" && user.role !== "admin") {
-    throw new HttpError(403, "บัญชีนี้ไม่มีสิทธิ์ใช้งานระบบแจ้งซ่อม");
-  }
-  return user;
-}
-
-export type HelpdeskAccount = Awaited<ReturnType<typeof requireHelpdeskUser>>;
-
-export function canAccessHelpdeskTicket(
-  account: HelpdeskAccount,
-  ticket: { created_by: string; customer_org: string }
-) {
-  if (account.role === "admin") return true;
-  if (ticket.created_by === account.username) return true;
-  return Boolean(account.org_name && ticket.customer_org === account.org_name);
-}
-
-export function assertHelpdeskTicketAccess(
-  account: HelpdeskAccount,
-  ticket: { created_by: string; customer_org: string }
-) {
-  if (!canAccessHelpdeskTicket(account, ticket)) {
-    throw new HttpError(403, "คุณไม่มีสิทธิ์เข้าถึงใบแจ้งซ่อมนี้");
-  }
-}

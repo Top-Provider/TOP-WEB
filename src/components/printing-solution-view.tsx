@@ -4,6 +4,9 @@ import React, { useState, useEffect, useMemo, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
+import { openContactSocialModal } from "@/components/contact-social-modal";
+import { SolutionCtaBanner } from "@/components/solution-cta-banner";
+import { SolutionCategoryTabs } from "@/components/solution-category-tabs";
 import {
   Search,
   PhoneCall,
@@ -18,13 +21,6 @@ import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { MedicalCrossLoader } from "@/components/ui/medical-cross-loader";
 import type { ProductItemResponse } from "@/app/api/products/route";
-
-export const SOLUTION_CATEGORY_TABS = [
-  { id: "printing", label: "Printing & Supply Solution", href: "/solutions/printing", active: true },
-  { id: "hardware", label: "Hardware Solution", href: "/solutions/hardware" },
-  { id: "software", label: "Software Solution", href: "/solutions/software" },
-  { id: "network", label: "Network Solution", href: "/solutions/network" },
-];
 
 export interface ExtendedProductItem extends ProductItemResponse {
   is_new?: boolean;
@@ -86,9 +82,6 @@ export function PrintingSolutionView({
   );
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [detailProduct, setDetailProduct] = useState<ExtendedProductItem | null>(null);
-
-  // Dynamic Solution Category Tabs from /api/admin/categories
-  const [categoryTabs, setCategoryTabs] = useState(SOLUTION_CATEGORY_TABS);
 
   // Dynamic categories from /api/admin/program-options
   const [printerCategories, setPrinterCategories] = useState<{ value: string; label: string }[]>(
@@ -169,37 +162,6 @@ export function PrintingSolutionView({
       });
   }, [initialProducts]);
 
-  // Fetch dynamic categories tabs (only once)
-  useEffect(() => {
-    if (hasLoadedCategoriesRef.current) return;
-    hasLoadedCategoriesRef.current = true;
-    fetch("/api/admin/categories")
-      .then((res) => res.json())
-      .then((json) => {
-        if (json && json.success && Array.isArray(json.categories) && json.categories.length > 0) {
-          const dynamicTabs = json.categories
-            .filter((c: { is_active?: boolean }) => c.is_active !== false)
-            .map((c: { category_id: string; name: string }) => {
-              const rawId = (c.category_id || "").toLowerCase();
-              let href = "/#case-studies";
-              if (rawId === "printing") href = "/solutions/printing";
-              else if (rawId === "software") href = "/solutions/software";
-              else if (rawId === "network") href = "/solutions/network";
-              else if (rawId === "hardware" || rawId.includes("hard")) href = "/solutions/hardware";
-
-              return {
-                id: rawId,
-                label: c.name || c.category_id,
-                href,
-                active: rawId === "printing",
-              };
-            });
-          if (dynamicTabs.length > 0) setCategoryTabs(dynamicTabs);
-        }
-      })
-      .catch((err) => console.log("Category tabs API fallback:", err));
-  }, []);
-
   // Sync with URL query parameter (?type=printer or ?type=supply or ?sub=...)
   useEffect(() => {
     const typeParam = searchParams.get("type");
@@ -270,29 +232,7 @@ export function PrintingSolutionView({
       {/* ========================================================================= */}
       {/* 1. TOP SOLUTION CATEGORY TABS (Active: Printing & Supply Solution)       */}
       {/* ========================================================================= */}
-      <div className="w-full pt-4 pb-2">
-        <div className="w-[94%] max-w-[1720px] mx-auto px-2 sm:px-4 lg:px-6">
-          <div className="flex items-center justify-start sm:justify-center gap-2 sm:gap-2.5 overflow-x-auto no-scrollbar py-1">
-            {categoryTabs.map((tab) => {
-              const isActive = tab.active;
-              return (
-                <Link
-                  key={tab.id}
-                  href={tab.href}
-                  prefetch={true}
-                  className={`shrink-0 px-4 sm:px-5 py-2 sm:py-2.5 rounded-full text-xs font-medium transition-all ${
-                    isActive
-                      ? "bg-[#0062FF] text-white shadow-sm shadow-blue-600/30 font-semibold border border-[#0062FF]"
-                      : "bg-white hover:bg-slate-50 text-slate-700 border border-slate-200/90 shadow-2xs hover:border-blue-200 hover:text-blue-600"
-                  }`}
-                >
-                  {tab.label}
-                </Link>
-              );
-            })}
-          </div>
-        </div>
-      </div>
+      <SolutionCategoryTabs activeId="printing" />
 
       {/* ========================================================================= */}
       {/* 2. MAIN CATALOG LAYOUT (SIDEBAR + PRODUCT GRID)                           */}
@@ -457,36 +397,8 @@ export function PrintingSolutionView({
       {/* 3. CALL TO ACTION BANNER (Vibrant Blue Enterprise matching mockup)        */}
       {/* ========================================================================= */}
       <div className="w-[94%] max-w-[1720px] mx-auto px-2 sm:px-4 lg:px-6 pt-14 sm:pt-16">
-        <div className="rounded-[28px] sm:rounded-[34px] bg-[#0062FF] p-8 sm:p-12 text-white shadow-xl shadow-blue-600/20 relative overflow-hidden">
-          {/* Subtle Glow */}
-          <div className="absolute top-0 right-0 w-80 h-80 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
-
-          <div className="relative z-10 max-w-2xl space-y-3.5">
-            <span className="text-[11px] font-bold text-blue-100 uppercase tracking-wider bg-white/15 px-3 py-1 rounded-full inline-block backdrop-blur-xs">
-              TOP PROVIDER SYSTEM GROUP
-            </span>
-            <h3 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight leading-snug">
-              พร้อมยกระดับองค์กรของคุณด้วยเทคโนโลยีที่ใช่หรือยัง?
-            </h3>
-            <p className="text-xs sm:text-sm text-blue-100/90 leading-relaxed font-light">
-              เราพร้อมเป็นส่วนหนึ่งในการขับเคลื่อนองค์กรของคุณ ด้วยโซลูชันเทคโนโลยีที่ตอบโจทย์ทุกความต้องการ ไม่ว่าจะเป็นการพัฒนาระบบ การออกแบบซอฟต์แวร์ หรือระบบบริหารจัดการองค์กร ให้ทีมงานผู้เชี่ยวชาญของเราช่วยแนะนำแนวทางที่เหมาะสมกับคุณ
-            </p>
-
-            <div className="pt-2">
-              <Button
-                asChild
-                className="rounded-full bg-white hover:bg-slate-100 text-[#0062FF] font-bold text-xs sm:text-sm px-7 py-3.5 shadow-md transition-all cursor-pointer"
-              >
-                <Link href="/#contact" className="flex items-center gap-2">
-                  <span>Contact Our Team</span>
-                  <ArrowRight className="w-4 h-4" />
-                </Link>
-              </Button>
-            </div>
-          </div>
-        </div>
+        <SolutionCtaBanner />
       </div>
-
       {/* ========================================================================= */}
       {/* 4. PRODUCT DETAIL MODAL (Triggered by "View Product")                      */}
       {/* ========================================================================= */}
@@ -847,14 +759,17 @@ export function PrintingSolutionView({
               >
                 ปิดหน้าต่าง
               </button>
-              <Link
-                href={`/#contact?subject=${encodeURIComponent(detailProduct.name)}`}
-                onClick={() => setDetailProduct(null)}
-                className="px-5 py-2.5 rounded-xl bg-[#0066FF] hover:bg-[#0052CC] text-white text-xs font-medium flex items-center gap-2 shadow-sm transition-all"
+              <button
+                type="button"
+                onClick={() => {
+                  setDetailProduct(null);
+                  openContactSocialModal();
+                }}
+                className="px-5 py-2.5 rounded-xl bg-[#0066FF] hover:bg-[#0052CC] text-white text-xs font-medium flex items-center gap-2 shadow-sm transition-all cursor-pointer"
               >
                 <PhoneCall className="w-3.5 h-3.5" />
-                <span>ขอใบเสนอราคา</span>
-              </Link>
+                <span>ติดต่อ</span>
+              </button>
             </div>
           </div>
         </div>
