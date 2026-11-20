@@ -1,8 +1,7 @@
 "use client";
 
 import React from "react";
-import Link from "next/link";
-import { ServerCrash, RefreshCw, Home } from "lucide-react";
+import { ServerCrash, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export default function GlobalPageError({
@@ -28,7 +27,7 @@ export default function GlobalPageError({
           </p>
         </div>
 
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+        <div className="flex items-center justify-center pt-2">
           <Button
             type="button"
             onClick={reset}
@@ -36,16 +35,6 @@ export default function GlobalPageError({
           >
             <RefreshCw className="h-4 w-4" />
             ลองเชื่อมต่อใหม่
-          </Button>
-          <Button
-            asChild
-            variant="outline"
-            className="w-full sm:w-auto rounded-xl px-5 h-10 text-sm font-medium"
-          >
-            <Link href="/" className="flex items-center justify-center gap-2">
-              <Home className="h-4 w-4" />
-              กลับหน้าหลัก
-            </Link>
           </Button>
         </div>
       </div>
